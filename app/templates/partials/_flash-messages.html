@@ -1,0 +1,44 @@
+<div
+  id="flash-message-container"
+  hx-get="{{ url_for('main.flash_messages') }}"
+  hx-trigger="flash-update from:body">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div id="flash-messages">
+        {% for category, message in messages %}
+          {% if category == 'error' %}
+            {% set background = 'bg-red-300' %}
+          {% elif category == 'success' %}
+            {% set background = 'bg-green-300' %}
+          {% elif category == 'info' %}
+            {% set background = 'bg-blue-300' %}
+          {% elif category == 'warning' %}
+            {% set background = 'bg-yellow-300' %}
+          {% else %}
+            {% set background = 'bg-gray-300' %}
+          {% endif %}
+          <div
+            class="flash-message {{ background }} fixed bottom-4 left-1/2 z-50 min-w-80 -translate-x-1/2 transform rounded-lg px-4 py-2 text-black opacity-100 transition-opacity duration-500">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+</div>
+<script>
+  // Add fade-out effect to flashed messages after 5 seconds
+  setTimeout(() => {
+    const flashMessages = document.querySelectorAll('.flash-message');
+    if (flashMessages) {
+      flashMessages.forEach((message) => {
+        message.classList.remove('opacity-100');
+        message.classList.add('opacity-0');
+        // remove the message after the transition ends
+        message.addEventListener('transitionend', () => {
+          message.remove();
+        });
+      });
+    }
+  }, 5000);
+</script>

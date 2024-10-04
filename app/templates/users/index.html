@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block head %}
+<script src="{{ url_for('static', filename='js/d3/d3.v5.min.js') }}"></script>
+{% endblock %}
+{% block content %}
+<div class="mb-3"><span class="text-3xl font-bold">Users</span></div>
+<svg style="display: none" version="2.0">
+  <defs>
+    <symbol id="add-contact" viewBox="0 0 24 24" stroke-width="1.5">
+      <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
+    </symbol>
+    <symbol id="check" viewBox="0 0 24 24" stroke-width="1.5">
+      <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="m4.5 12.75 6 6 9-13.5" />
+    </symbol>
+    <symbol id="cross" viewBox="0 0 24 24" stroke-width="1.5">
+      <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M6 18 18 6M6 6l12 12" />
+    </symbol>
+  </defs>
+</svg>
+<div
+     class="grid grid-cols-1 gap-grid-gap text-sky-100 xl:grid-cols-4 xl:gap-grid-gap-lg">
+  <div
+       class="tile p-6"
+       id="friends"
+       hx-get="{{ url_for('users.friends') }}"
+       hx-trigger="friends_update from:body">
+    {% include "users/partials/_friends.html" %}
+  </div>
+  <div
+       class="tile col-span-1 p-6"
+       id="friend-requests"
+       hx-get="{{ url_for('users.friend_requests') }}"
+       hx-trigger="friends_update from:body">
+    {% include "users/partials/_friend-requests.html" %}
+  </div>
+  <div class="tile p-6 sm:col-span-1 lg:col-span-1">
+    <div class="container rounded-lg ">
+      <h2 class="text-xl font-bold">Search Users</h2>
+      <div class="flex flex-row items-center rounded-lg bg-gray-800 px-2">
+        <svg
+             xmlns="http://www.w3.org/2000/svg"
+             fill="none"
+             viewBox="0 0 24 24"
+             class="inline size-5 flex-shrink-0 stroke-gray-600 stroke-2">
+          <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+        </svg>
+        <input
+               class="flex-grow bg-transparent pl-2 pr-1 min-w-0 py-1 text-xl outline-none placeholder:text-gray-500"
+               type="search"
+               name="search"
+               placeholder="search"
+               autofocus
+               hx-post="{{ url_for('users.search_users') }}"
+               hx-trigger="contact-added from:body, input changed delay:80ms"
+               hx-target="#search-results" />
+      </div>
+      <table class="w-full">
+        <tbody
+               id="search-results"
+               class=" [&>*:nth-child(even)]:bg-gray-700 [&>*:nth-child(odd)]:bg-gray-900 [&>tr:hover]:bg-gray-600 [&>tr]:transition-all">
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

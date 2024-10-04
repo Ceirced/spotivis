@@ -1,0 +1,34 @@
+<h2 class="text-xl font-bold">Incoming Friend Requests</h2>
+
+{% if not incoming_requests %}
+<p class="text-sm text-gray-600">No incoming friend requests</p>
+{% endif %}
+{% for (request,user)in incoming_requests %}
+<div class="friend-request-row flex flex-row justify-between">
+	<a href="{{ url_for('users.profile', username = user.username) }}">
+		{{ user.username }}
+	</a>
+	<div class="space-x-4">
+		<button
+				hx-post="{{ url_for('users.accept_friend_request') }}"
+				hx-vals='{"request_id": {{ request.request_id }}}'
+				hx-trigger="click"
+				hx-target="closest .friend-request-row"
+				class="group">
+			<svg class="size-6 fill-none stroke-current group-active:stroke-white">
+				<use href="#check"></use>
+			</svg>
+		</button>
+		<button
+				hx-post="{{ url_for('users.decline_friend_request') }}"
+				hx-vals='{"request_id": {{ request.request_id }}}'
+				hx-trigger="click"
+				hx-target="closest .friend-request-row"
+				class="group">
+			<svg class="size-6 fill-none stroke-current group-active:stroke-white">
+				<use href="#cross"></use>
+			</svg>
+		</button>
+	</div>
+</div>
+{% endfor %}

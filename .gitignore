@@ -1,0 +1,16 @@
+.env
+node_modules
+.prettierrc
+backups/
+mariadb.session.sql
+.flaskenv
+
+__pycache__/
+.vscode/
+env
+
+logs/
+backup.sh
+.venv/
+
+.mypy_cache/

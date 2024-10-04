@@ -1,0 +1,73 @@
+networks:
+  template_app:
+  default:
+    external: true
+    name: proxy
+
+volumes:
+  mariadb:
+
+name: template-app-prod
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: flask-prod
+    container_name: flask-prod
+    hostname: ${PROD_HOSTNAME}
+    entrypoint: ['./boot.sh']
+    depends_on:
+      - mariadb
+    stop_signal: SIGINT
+    # to sync the ./api dir with the container only for development
+    volumes:
+      - ./logs/app:/home/app/logs
+      - ./migrations:/home/app/migrations
+    environment:
+      - FLASK_APP=template_app.py
+      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://${MARIADB_USER}:${MARIADB_PASSWORD}@mariadb:3306/${MARIADB_DATABASE}
+      - SECRET_KEY=${SECRET_KEY}
+      - APP_SETTINGS=config.ProductionConfig
+      - HOSTNAME=${PROD_HOSTNAME}
+      - POSTHOG_API_KEY=${POSTHOG_API_KEY}
+      - MAINTENANCE_MODE=False
+      - STRIPE_SECRET_KEY=${STRIPE_PROD_SECRET_KEY}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PROD_PUBLIC_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_PROD_WEBHOOK_SECRET}
+    healthcheck:
+      test: curl --fail http://${PROD_HOSTNAME}:5000 -H 'Host:${PROD_HOSTNAME}' || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+    networks:
+      template_app:
+        aliases:
+          - template_app
+    restart: always
+
+  nginx:
+    build: nginx
+    ports:
+      - 5010:80
+    depends_on:
+      - app
+    networks:
+      template_app:
+      default:
+    restart: always
+
+  mariadb:
+    image: mariadb:11
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+    volumes:
+      - mariadb:/var/lib/mysql
+    restart: always
+    networks:
+      template_app:
