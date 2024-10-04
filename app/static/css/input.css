@@ -10,10 +10,10 @@
     @apply rounded-md bg-slate-900 p-4 text-gray-400 shadow-md;
   }
   .auth-input {
-    @apply block w-full rounded-2xl border border-gray-600 bg-gray-700 p-2.5 py-2 text-center text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 sm:text-sm;
+    @apply block w-full rounded-2xl border border-gray-600 bg-gray-700 p-2.5 py-2 text-center text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-800 focus:ring-2 sm:text-sm focus:outline-none;
   }
   .auth-submit {
-    @apply w-full rounded-2xl bg-blue-600 px-5 py-2.5 text-center text-base font-medium text-white hover:bg-sky-900  focus:outline-none focus:ring-4 focus:ring-primary-800;
+    @apply w-full rounded-2xl bg-blue-600 px-5 py-2.5 text-center text-base font-medium text-white hover:bg-sky-900  focus:outline-none focus:ring-2 focus:ring-blue-800;
   }
   .auth-heading {
     @apply mx-auto text-center text-xl font-bold leading-tight tracking-tight text-white md:text-2xl;
