@@ -27,7 +27,7 @@
   </defs>
 </svg>
 <div
-     class="grid grid-cols-1 gap-grid-gap text-sky-100 xl:grid-cols-4 xl:gap-grid-gap-lg">
+     class="grid grid-cols-1 gap-6 xl:grid-cols-4">
   <div
        class="tile p-6"
        id="friends"
@@ -45,12 +45,12 @@
   <div class="tile p-6 sm:col-span-1 lg:col-span-1">
     <div class="container rounded-lg ">
       <h2 class="text-xl font-bold">Search Users</h2>
-      <div class="flex flex-row items-center rounded-lg bg-gray-800 px-2">
+      <div class="flex flex-row items-center rounded-lg dark:bg-zinc-800 px-2 bg-zinc-200">
         <svg
              xmlns="http://www.w3.org/2000/svg"
              fill="none"
              viewBox="0 0 24 24"
-             class="inline size-5 flex-shrink-0 stroke-gray-600 stroke-2">
+             class="inline size-5 flex-shrink-0 stroke-gray-500 stroke-2">
           <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -66,11 +66,9 @@
                hx-trigger="contact-added from:body, input changed delay:80ms"
                hx-target="#search-results" />
       </div>
-      <table class="w-full">
-        <tbody
-               id="search-results"
-               class=" [&>*:nth-child(even)]:bg-gray-700 [&>*:nth-child(odd)]:bg-gray-900 [&>tr:hover]:bg-gray-600 [&>tr]:transition-all">
-        </tbody>
+      <table class="w-full border-collapse has-[tr]:mt-4">
+        <tbody id="search-results"
+               class="[&>tr:hover]:bg-zinc-200/80 [&>tr:hover]:dark:bg-zinc-800/80"></tbody>
       </table>
     </div>
   </div>

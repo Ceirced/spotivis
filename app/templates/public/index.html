@@ -4,12 +4,12 @@
 {% endblock %}
 {% block body %}
 
-<body class="container mx-auto bg-slate-800 font-sans">
+<body class="container mx-auto dark:bg-background-dark bg-background-light font-sans">
 	<header class="flex justify-end p-6">
 		<div class="flex items-center">
 			<a
 			   href="{{ url_for('auth.login') }}"
-			   class="text-lg font-medium text-gray-300">Login
+			   class="text-lg font-medium text-blue-500">Login
 				<svg
 					 xmlns="http://www.w3.org/2000/svg"
 					 fill="none"
@@ -28,21 +28,21 @@
 	<main class="mt-16 flex min-h-screen flex-col gap-40">
 		<hgroup class="m-4 text-center">
 			<h2
-				class="mb-4 bg-gradient-to-b from-white to-zinc-400 bg-clip-text text-2xl font-medium text-transparent sm:text-3xl">
+				class="mb-4 bg-gradient-to-b dark:from-white dark:to-zinc-500 from-zinc-400 to-black bg-clip-text text-2xl font-medium text-transparent sm:text-3xl">
 				Template App
 			</h2>
 			<h1
-				class="mb-4 bg-gradient-to-b from-white to-zinc-400 bg-clip-text text-4xl font-semibold leading-normal text-transparent sm:text-5xl sm:leading-normal">
+				class="mb-4 bg-gradient-to-b dark:from-white dark:to-zinc-400 from-zinc-400 to-black bg-clip-text text-4xl font-semibold leading-normal text-transparent sm:text-5xl sm:leading-normal">
 				dream big, start small
 			</h1>
 		</hgroup>
 		<section>
 			<div class="flex-row items-center md:flex">
 				<div class="m-12 flex-1 text-center">
-					<h3 class="mb-4 text-2xl font-bold text-gray-400 ">
+					<h3 class="mb-4 text-2xl font-bold dark:text-gray-400 text-zinc-500 ">
 						Visualize your social network
 					</h3>
-					<p class="text-l mb-4 font-medium text-gray-300 ">
+					<p class="text-l mb-4 font-medium dark:text-gray-300 text-zinc-400 ">
 						Explore Your social network in a graph. <br />
 						See who knows whom and how they are connected.
 					</p>
@@ -51,7 +51,8 @@
 		</section>
 		<section id="quotes" class="my-14 grid gap-4 md:grid-cols-2">
 			<div class="mx-4 max-w-96 justify-self-center md:justify-self-end">
-				<div class="rounded-md bg-slate-900 p-4  text-gray-400 shadow-md">
+				<div
+					 class="rounded-md dark:bg-zinc-900 p-4 bg-white  dark:text-gray-400 text-gray-500 shadow-md">
 					<div class="italic">
 						"Measurement is the first step that leads to control and
 						eventually to improvement. If you can't measure something, you
@@ -66,7 +67,7 @@
 			<div
 				 class="mx-4 max-w-96 justify-self-center md:w-96 md:justify-self-start">
 				<div
-					 class="w-full rounded-md bg-slate-900  p-4 text-gray-400 shadow-md">
+					 class="w-full rounded-md dark:bg-zinc-900  p-4 bg-white  dark:text-gray-400 text-gray-500 shadow-md">
 					<div class="italic">"What you measure moves"</div>
 					<span class="mt-2 inline-block w-full text-right ">- Peter F. Drucker</span>
 				</div>
@@ -78,7 +79,7 @@
 					Join hundreds of daily user who are already using this app.
 				</p>
 				<a href="{{ url_for('auth.register') }}"><button
-							class="rounded-full bg-purple-700 px-6 py-3 font-medium text-white hover:bg-purple-800 active:bg-purple-900">
+							class="rounded-full bg-blue-500 px-6 py-3 font-medium text-white hover:bg-blue-600 active:bg-blue-700">
 						Start now
 					</button></a>
 			</div>

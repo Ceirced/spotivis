@@ -3,31 +3,32 @@
 {% endblock %}
 
 {% block body %}
-  <body
-    class="h-full touch-pan-y touch-manipulation scroll-smooth bg-slate-800 font-sans text-base lg:text-xl">
-    <div id="body-container" class="container mx-auto pb-2 pt-[20px] md:pt-24">
-      <div id="content" class="h-full px-2 text-sky-100">
-        <div
-          class="mx-auto flex flex-col items-center justify-center px-6 py-8 md:h-full lg:py-0">
-            <div class="space-y-4 p-6 md:space-y-6">
-              {% block auth_content %}
-              {% endblock %}
-            </div>
+
+<body
+      class="h-full touch-pan-y touch-manipulation scroll-smooth bg-background-light dark:bg-background-dark font-sans text-base lg:text-xl">
+  <div id="body-container" class="container mx-auto pb-2 pt-[20px] md:pt-24">
+    <div id="content" class="h-full px-2">
+      <div
+           class="mx-auto flex flex-col items-center justify-center px-6 py-8 md:h-full lg:py-0">
+        <div class="space-y-4 p-6 md:space-y-6">
+          {% block auth_content %}
+          {% endblock %}
         </div>
       </div>
     </div>
-    {% include 'partials/_flash-messages.html' %}
-    <script>
-      // Add fade-out effect to flashed messages after 5 seconds
-      setTimeout(() => {
-        const flashMessages = document.querySelectorAll('.flash-message');
-        if (flashMessages) {
-          flashMessages.forEach((message) => {
-            message.classList.remove('opacity-100');
-            message.classList.add('opacity-0');
-          });
-        }
-      }, 5000);
-    </script>
-  </body>
+  </div>
+  {% include 'partials/_flash-messages.html' %}
+  <script>
+    // Add fade-out effect to flashed messages after 5 seconds
+    setTimeout(() => {
+      const flashMessages = document.querySelectorAll('.flash-message');
+      if (flashMessages) {
+        flashMessages.forEach((message) => {
+          message.classList.remove('opacity-100');
+          message.classList.add('opacity-0');
+        });
+      }
+    }, 5000);
+  </script>
+</body>
 {% endblock %}

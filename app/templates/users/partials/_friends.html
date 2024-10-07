@@ -6,7 +6,7 @@
 	{% for friend in friends %}
 	<div class="flex flex-row-reverse justify-between">
 		<a
-		   class="flex flex-1 flex-row items-center justify-center flex-grow-0"
+		   class="flex flex-1 flex-row items-center justify-center flex-grow-0 underline"
 		   href="{{ url_for('users.profile', username = friend.username) }}">
 			{{ friend.username}}
 		</a>

@@ -15,10 +15,10 @@
 {% endblock %}
 {% block content %}
 <div class="mb-3"><span class="text-3xl font-bold">Settings</span></div>
-<div class="tile flex flex-col gap-6 mx-1">
-  <div>
+<div class="flex flex-col gap-6 mx-1">
+  <div class="space-y-1">
     <div
-         class="flex flex-row justify-between rounded-lg bg-gray-800 px-3 py-2">
+         class="tile flex flex-row justify-between rounded-lg dark:bg-zinc-800 px-3 items-center py-2">
       <span>some switch</span>
       <label
              class="inline-flex cursor-pointer items-center"
@@ -35,10 +35,12 @@
         </div>
       </label>
     </div>
-    <div class="px-3 pt-2 text-sm text-gray-500">
+    <div class="px-3 text-sm text-gray-500">
+      description
     </div>
   </div>
-  <div class="flex flex-row justify-between rounded-lg bg-gray-800 px-3 py-2">
+  <div
+       class="tile flex flex-row justify-between rounded-lg dark:bg-zinc-800 px-3 py-2 items-center">
     <span>some switch</span>
     <label
            class="inline-flex cursor-pointer items-center"

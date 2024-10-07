@@ -39,17 +39,17 @@
 {% endblock %} {% block body %}
 
 
-<body class="h-screen touch-pan-y touch-manipulation scroll-smooth bg-slate-800 pt-[env(safe-area-inset-top)] font-sans text-base"
+<body class="h-screen touch-pan-y touch-manipulation scroll-smooth bg-background-light dark:text-text-dark text-text-light dark:bg-background-dark pt-[env(safe-area-inset-top)] font-sans text-base"
       hx-indicator=".loading-bar">
 
   <div
-       class="fixed top-0 z-20 flex h-[calc(env(safe-area-inset-top)+40px)] pt-[env(safe-area-inset-top)] container -translate-x-1/2 left-1/2 items-center bg-slate-800/60 pt-30 text-gray-400  backdrop-blur-md px-1">
+       class="fixed top-0 z-20 flex h-[calc(env(safe-area-inset-top)+40px)] pt-[env(safe-area-inset-top)] container -translate-x-1/2 left-1/2 items-center bg-background-light/60 pt-30 text-gray-500 dark:bg-background-dark/60 backdrop-blur-md px-1">
     {% block top_bar %}
     {% endblock %}
   </div>
   <div id="body-container"
        class="container mx-auto pb-[calc(env(safe-area-inset-bottom)+56px)] pt-12 lg:pt-12 px-4">
-    <div id="content" class=" text-white">
+    <div id="content">
       {% block content %}
 
       {% endblock %}
