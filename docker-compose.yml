@@ -16,7 +16,6 @@ services:
       dockerfile: Dockerfile
     image: flask-prod
     container_name: flask-prod
-    hostname: ${PROD_HOSTNAME}
     entrypoint: ['./boot.sh']
     depends_on:
       - mariadb
@@ -25,19 +24,10 @@ services:
     volumes:
       - ./logs/app:/home/app/logs
       - ./migrations:/home/app/migrations
-    environment:
-      - FLASK_APP=template_app.py
-      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://${MARIADB_USER}:${MARIADB_PASSWORD}@mariadb:3306/${MARIADB_DATABASE}
-      - SECRET_KEY=${SECRET_KEY}
-      - APP_SETTINGS=config.ProductionConfig
-      - HOSTNAME=${PROD_HOSTNAME}
-      - POSTHOG_API_KEY=${POSTHOG_API_KEY}
-      - MAINTENANCE_MODE=False
-      - STRIPE_SECRET_KEY=${STRIPE_PROD_SECRET_KEY}
-      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PROD_PUBLIC_KEY}
-      - STRIPE_WEBHOOK_SECRET=${STRIPE_PROD_WEBHOOK_SECRET}
+    env_file:
+      - template-app.env
     healthcheck:
-      test: curl --fail http://${PROD_HOSTNAME}:5000 -H 'Host:${PROD_HOSTNAME}' || exit 1
+      test: curl --fail http://localhost:5000 -H 'Host:localhost' || exit 1
       interval: 30s
       timeout: 10s
       retries: 5
@@ -61,11 +51,8 @@ services:
 
   mariadb:
     image: mariadb:11
-    environment:
-      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
-      MARIADB_DATABASE: ${MARIADB_DATABASE}
-      MARIADB_USER: ${MARIADB_USER}
-      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+    env_file:
+      - template-app.env
     volumes:
       - mariadb:/var/lib/mysql
     restart: always

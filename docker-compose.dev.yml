@@ -22,18 +22,10 @@ services:
     volumes:
       - ./app:/home/app/app
       - ./migrations:/home/app/migrations
-    environment:
-      - FLASK_APP=template_app.py
-      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://${MARIADB_USER}:${MARIADB_PASSWORD}@mariadb:3306/${MARIADB_DATABASE}
-      - SECRET_KEY=${SECRET_KEY}
-      - APP_SETTINGS=config.DevelopmentConfig
-      - HOSTNAME=${DEV_HOSTNAME}
-      - POSTHOG_API_KEY=${POSTHOG_API_KEY}
-      - MAINTENANCE_MODE=False
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
-      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+    env_file:
+      - template-app.env
     healthcheck:
-      test: curl --fail http://${DEV_HOSTNAME}:5000 -H 'Host:${DEV_HOSTNAME}' || exit 1
+      test: curl --fail http://localhost:5000 -H 'Host:localhost' || exit 1
       interval: 10s
       timeout: 10s
       retries: 5
@@ -56,11 +48,8 @@ services:
 
   mariadb:
     image: mariadb:11
-    environment:
-      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
-      MARIADB_DATABASE: ${MARIADB_DATABASE}
-      MARIADB_USER: ${MARIADB_USER}
-      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+    env_file:
+      - template-app.env
     volumes:
       - mariadb:/var/lib/mysql
     restart: always
