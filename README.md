@@ -6,3 +6,21 @@ Todo before:
 - [ ] rename all occurences of `template_app` to the name of the new app
 - [ ] remove nginx conf if not necessary
 - [ ] run `npm i` and `poetry install` to setup tailwind and the dependencies
+
+To run in production
+
+```bash
+./start prod
+```
+
+To run in dev
+
+```bash
+./start dev
+```
+
+To stop the container
+
+```bash
+./start stop
+```
