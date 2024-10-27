@@ -13,8 +13,7 @@ services:
       dockerfile: Dockerfile
     image: template-flask-app-dev
     container_name: template-flask-app
-    hostname: ${DEV_HOSTNAME}
-    command: python3 template_app.py
+    entrypoint: ['./boot.sh']
     depends_on:
       - mariadb
     stop_signal: SIGINT
@@ -34,7 +33,7 @@ services:
       template_app:
         aliases:
           - template_flask_app
-    restart: always
+    restart: unless-stopped
 
   nginx:
     build: nginx
@@ -44,7 +43,7 @@ services:
       - app
     networks:
       template_app:
-    restart: always
+    restart: unless-stopped
 
   mariadb:
     image: mariadb:11
@@ -52,6 +51,6 @@ services:
       - template-app.env
     volumes:
       - mariadb:/var/lib/mysql
-    restart: always
+    restart: unless-stopped
     networks:
       template_app:

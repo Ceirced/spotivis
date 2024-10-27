@@ -36,7 +36,7 @@ services:
       template_app:
         aliases:
           - template_app
-    restart: always
+    restart: unless-stopped
 
   nginx:
     build: nginx
@@ -47,7 +47,7 @@ services:
     networks:
       template_app:
       default:
-    restart: always
+    restart: unless-stopped
 
   mariadb:
     image: mariadb:11
@@ -55,6 +55,6 @@ services:
       - template-app.env
     volumes:
       - mariadb:/var/lib/mysql
-    restart: always
+    restart: unless-stopped
     networks:
       template_app:
