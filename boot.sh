@@ -5,7 +5,7 @@
 start_server() {
     if [ "$APP_SETTINGS" = "config.ProductionConfig" ]; then
         echo "Starting Flask server in production..."
-        exec gunicorn --bind :5000 --access-logfile - --error-logfile - template_app_app:app --workers 4
+        exec gunicorn --bind :5000 --access-logfile - --error-logfile - template_app:app --workers 4
     else
         echo "Starting Flask server in dev..."
         python3 template_app.py

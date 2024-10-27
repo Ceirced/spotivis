@@ -7,15 +7,15 @@ networks:
 volumes:
   mariadb:
 
-name: template-app-prod
+name: template-app
 
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    image: flask-prod
-    container_name: flask-prod
+    image: template-flask-app
+    container_name: template_flask_app-prod
     entrypoint: ['./boot.sh']
     depends_on:
       - mariadb
@@ -26,6 +26,8 @@ services:
       - ./migrations:/home/app/migrations
     env_file:
       - template-app.env
+    environment:
+      - APP_SETTINGS=config.ProductionConfig
     healthcheck:
       test: curl --fail http://localhost:5000 -H 'Host:localhost' || exit 1
       interval: 30s

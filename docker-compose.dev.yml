@@ -1,56 +1,8 @@
-networks:
-  template_app:
-
-volumes:
-  mariadb:
-
-name: template-flask-dev
-
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: template-flask-app-dev
-    container_name: template-flask-app
-    entrypoint: ['./boot.sh']
-    depends_on:
-      - mariadb
-    stop_signal: SIGINT
-    # to sync the ./api dir with the container only for development
+    container_name: template-flask-app-dev
     volumes:
       - ./app:/home/app/app
       - ./migrations:/home/app/migrations
-    env_file:
-      - template-app.env
-    healthcheck:
-      test: curl --fail http://localhost:5000 -H 'Host:localhost' || exit 1
-      interval: 10s
-      timeout: 10s
-      retries: 5
-      start_period: 5s
-    networks:
-      template_app:
-        aliases:
-          - template_flask_app
-    restart: unless-stopped
-
-  nginx:
-    build: nginx
-    ports:
-      - 5010:80
-    depends_on:
-      - app
-    networks:
-      template_app:
-    restart: unless-stopped
-
-  mariadb:
-    image: mariadb:11
-    env_file:
-      - template-app.env
-    volumes:
-      - mariadb:/var/lib/mysql
-    restart: unless-stopped
-    networks:
-      template_app:
+    environment:
+      - APP_SETTINGS=config.DevelopmentConfig
