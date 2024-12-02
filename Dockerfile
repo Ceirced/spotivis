@@ -1,7 +1,7 @@
 # pull official base image
 FROM python:3.12.6-slim-bookworm
 
-RUN apt-get update && apt-get -y install curl=7.88.1-10+deb12u7 --no-install-recommends \
+RUN apt-get update && apt-get -y install curl --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
