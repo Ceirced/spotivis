@@ -16,5 +16,7 @@
     ],
     "trailingComma": "es5",
     "semi": true,
-    "tabWidth": 4
+    "tabWidth": 4,
+    "singleQuote": false,
+    "singleAttributePerLine": true
 }
