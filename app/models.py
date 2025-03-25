@@ -2,6 +2,7 @@ from typing import Optional
 
 from sqlalchemy import (
     String,
+    select,
 )
 import sqlalchemy.orm as so
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -50,6 +51,18 @@ class User(UserMixin, db.Model):
             )
         ).first()
         return friendship is not None
+
+    @staticmethod
+    def new_user(username, email, password):
+        user = User(username=username, email=email)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        return user
+
+    @staticmethod
+    def get_user_by_name(username):
+        return db.session.scalar(select(User).where(User.username == username))
 
     @property
     def friends(self):

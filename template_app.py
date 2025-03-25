@@ -22,4 +22,7 @@ if __name__ != "__main__":
     app.logger.setLevel(gunicorn_logger.level)
 
 if __name__ == "__main__":
+    with app.app_context():
+        if not User.get_user_by_name("dev"):
+            User.new_user("dev", "dev@dev.at", "password")
     app.run(host="0.0.0.0", port=5000)
