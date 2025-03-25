@@ -2,7 +2,6 @@
 node_modules
 .prettierrc
 backups/
-mariadb.session.sql
 .flaskenv
 
 __pycache__/
@@ -14,3 +13,4 @@ backup.sh
 .venv/
 
 .mypy_cache/
+instance/template_app.sqlite
