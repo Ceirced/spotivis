@@ -1,23 +1,27 @@
-from typing import Optional
+from typing import TYPE_CHECKING
 
-from sqlalchemy import (
-    String,
-    select,
-)
+from sqlalchemy import select
 import sqlalchemy.orm as so
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import UserMixin
+from flask_security.models import fsqla_v3 as fsqla
 
 from app import db
-from app import login
+
+fsqla.FsModels.set_db_info(db)
 
 
-class User(UserMixin, db.Model):
-    id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    username: so.Mapped[str] = so.mapped_column(String(64), index=True, unique=True)
-    email: so.Mapped[str] = so.mapped_column(String(120), index=True, unique=True)
-    password_hash: so.Mapped[Optional[str]] = so.mapped_column(String(256))
+# fix, see here https://github.com/python/mypy/issues/8603
+if TYPE_CHECKING:
+    from flask_sqlalchemy.model import Model
+else:
+    Model = db.Model
 
+
+class Role(Model, fsqla.FsRoleMixin):
+    pass
+
+
+class User(Model, fsqla.FsUserMixin):
     payments: so.WriteOnlyMapped[list["Payment"]] = so.relationship(
         "Payment", back_populates="user"
     )
@@ -81,7 +85,7 @@ class User(UserMixin, db.Model):
         return User.query.filter(User.id.in_(friends_ids))
 
 
-class FriendRequest(db.Model):
+class FriendRequest(Model):
     request_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     sender_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     receiver_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
@@ -93,12 +97,7 @@ class FriendRequest(db.Model):
     db.UniqueConstraint("sender_id", "receiver_id")
 
 
-@login.user_loader
-def load_user(id):
-    return db.session.get(User, int(id))
-
-
-class Payment(db.Model):
+class Payment(Model):
     __tablename__ = "payments"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_email = db.Column(db.String(100), nullable=False)

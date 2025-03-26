@@ -21,10 +21,12 @@ flask-wtf = "^1.2.1"
 bleach = "^6.1.0"
 email-validator = "^2.2.0"
 gunicorn = "^23.0.0"
+flask-security = {extras = ["common", "fsqla"], version = "^5.6.1"}
+setuptools = "^78.1.0"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.6.8"
-black = "^24.8.0"
+ruff = "*"
+black = "*"
 mypy = "^1.11.2"
 types-flask = "^1.1.6"
 

@@ -1,21 +1,20 @@
+import os
+
 import logging
 from logging.handlers import RotatingFileHandler
 
 from flask import Flask, render_template, request
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-import os
-from flask_login import LoginManager
+from flask_migrate import Migrate  # type: ignore
 from werkzeug.middleware.proxy_fix import ProxyFix
 from posthog import Posthog
 import stripe
 
+from app.extensions import db
+from app.extensions.security import user_datastore, security
+
 
 # to set the app Settings in the docker compose
-db = SQLAlchemy()
 migrate = Migrate()
-login = LoginManager()
-login.login_view = "auth.login"
 
 posthog = Posthog(os.getenv("POSTHOG_API_KEY"), host="https://eu.i.posthog.com")
 
@@ -28,9 +27,9 @@ def create_app():
     app.config["MAINTENANCE_MODE"] = os.getenv("MAINTENANCE_MODE", "False") == "True"
     stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
+    security.init_app(app, user_datastore)
     db.init_app(app)
     migrate.init_app(app, db)
-    login.init_app(app)
 
     from app.public import bp as public_bp
 
