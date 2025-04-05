@@ -10,7 +10,7 @@ from posthog import Posthog
 import stripe
 
 from app.extensions import db
-from app.extensions.security import user_datastore, security
+from app.extensions.security import init_app as init_security
 
 
 # to set the app Settings in the docker compose
@@ -27,7 +27,7 @@ def create_app():
     app.config["MAINTENANCE_MODE"] = os.getenv("MAINTENANCE_MODE", "False") == "True"
     stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
-    security.init_app(app, user_datastore)
+    init_security(app)
     db.init_app(app)
     migrate.init_app(app, db)
 
