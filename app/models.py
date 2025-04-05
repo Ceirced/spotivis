@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from sqlalchemy import select
@@ -22,7 +23,7 @@ class Role(Model, fsqla.FsRoleMixin):
 
 
 class User(Model, fsqla.FsUserMixin):
-    payments: so.WriteOnlyMapped[list["Payment"]] = so.relationship(
+    payments: so.WriteOnlyMapped[list[Payment]] = so.relationship(
         "Payment", back_populates="user"
     )
     confirmed = db.Column(db.Boolean, default=False)
