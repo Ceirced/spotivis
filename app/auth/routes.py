@@ -1,15 +1,17 @@
 from urllib.parse import urlsplit
 
 from flask import render_template, redirect, url_for, flash, request
-from flask_login import current_user, login_user, logout_user
+from flask_login import current_user, logout_user  # type: ignore
 import sqlalchemy as sa
 from flask import current_app as app
+from flask_security import login_user
 
 from app import db
 from app.auth import bp
 from app.auth.forms import LoginForm
 from app.models import User
 from app.auth.forms import RegistrationForm
+from app.extensions.security import user_datastore
 
 
 @bp.route("/login", methods=["GET", "POST"])
@@ -47,13 +49,12 @@ def register():
         return redirect(url_for("main.index"))
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data.lower())
+        user = user_datastore.create_user(
+            username=form.username.data, email=form.email.data.lower()
+        )
         user.set_password(form.password.data)
-        db.session.add(user)
         db.session.commit()
         app.logger.info(f"User {user} registered")
-        user.confirmed = True
-        db.session.commit()
         login_user(user)
         return redirect(url_for("main.index"))
 
