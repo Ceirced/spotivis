@@ -1,21 +1,24 @@
 {% for row in search_results %}
-<tr class="transition-all border-b last:border-none dark:border-zinc-800 border-zinc-200">
-    <td class="p-2">
-        <div class="flex flex-row justify-between">
-            <a class="underline block" href="{{ row.url }}">
-                {{row.handle}}
-            </a>
-            {% if (add_button and not row['are_friends'] and not row['pending'] ) %}
-            <button
-                    hx-post="{{ url_for('users.send_friend_request') }}"
-                    hx-vals='{"receiver_id": {{ row.id }} }'
-                    hx-swap="delete">
-                <svg class="inline-block size-5 fill-none stroke-current">
-                    <use href="#add-contact" />
-                </svg>
-            </button>
-            {% endif %}
-        </div>
-    </td>
-</tr>
+    <tr class="border-b transition-all last:border-none">
+        <td class="p-2">
+            <div class="flex flex-row justify-between">
+                <a
+                    class="block underline"
+                    href="{{ row.url }}">
+                    {{ row.handle }}
+                </a>
+                {% if (add_button and not row['are_friends'] and not row['pending'] ) %}
+                    <button
+                        hx-post="{{ url_for('users.send_friend_request') }}"
+                        hx-vals='{"receiver_id": {{ row.id }} }'
+                        hx-swap="delete">
+                        <svg
+                            class="inline-block size-5 fill-none stroke-current">
+                            <use href="#add-contact" />
+                        </svg>
+                    </button>
+                {% endif %}
+            </div>
+        </td>
+    </tr>
 {% endfor %}
