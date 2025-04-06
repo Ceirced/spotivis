@@ -4,28 +4,65 @@
 
 {% block content %}
     {% include "security/_messages.html" %}
-    <h1>{{ _fsdomain('Login') }}</h1>
     <form
         action="{{ url_for_security('login') }}{{ prop_next() }}"
         method="post"
         name="login_user_form">
-        {{ login_user_form.hidden_tag() }}
-        {{ render_form_errors(login_user_form) }}
-        {% if login_user_form.email and "email" in identity_attributes %}
-            {{ render_field_with_errors(login_user_form.email) }}
-        {% endif %}
-        {% if login_user_form.username and "username" in identity_attributes %}
+        <fieldset
+            class="fieldset bg-base-200 border-base-300 rounded-box mx-auto mt-10 w-xs gap-5 border p-4">
+            <legend class="fieldset-legend">{{ _fsdomain('Login') }}</legend>
+
+            {{ login_user_form.hidden_tag() }}
+            {{ render_form_errors(login_user_form) }}
             {% if login_user_form.email and "email" in identity_attributes %}
-                <h3>{{ _fsdomain("or") }}</h3>
+                <label class="floating-label">
+                    <span>Email</span>
+                    {{ login_user_form.email(class='input', placeholder='Email') }}
+                </label>
+                {% if login_user_form.email.errors %}
+                    <ul>
+                        {% for error in login_user_form.email.errors %}
+                            <li class="text-error">{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
             {% endif %}
-            {{ render_field_with_errors(login_user_form.username) }}
-        {% endif %}
-        <div class="fs-gap">
-            {{ render_field_with_errors(login_user_form.password) }}
-        </div>
-        {{ render_field_with_errors(login_user_form.remember) }}
-        {{ render_field_errors(login_user_form.csrf_token) }}
-        {{ render_field(login_user_form.submit) }}
+
+            {% if login_user_form.username and "username" in identity_attributes %}
+                {% if login_user_form.email and "email" in identity_attributes %}
+                    <h3>{{ _fsdomain("or") }}</h3>
+                {% endif %}
+                {{ render_field_with_errors(login_user_form.username) }}
+            {% endif %}
+
+            <label class="floating-label">
+                <span>Password</span>
+                {{ login_user_form.password(class='input', placeholder='Password') }}
+            </label>
+
+            {% if login_user_form.password.errors %}
+                <ul>
+                    {% for error in login_user_form.password.errors %}
+                        <li class="text-error">{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <label class="fieldset-label">
+                {{ login_user_form.remember(class='checkbox') }} Remember me
+            </label>
+            {% if login_user_form.remember.errors %}
+                <ul>
+                    {% for error in login_user_form.remember.errors %}
+                        <li class="text-error">{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            {% if login_user_form.csrf_token.errors %}
+                {{ render_field_errors(login_user_form.csrf_token) }}
+            {% endif %}
+            {{ login_user_form.submit(class='btn btn-neutral') }}
+        </fieldset>
     </form>
     {% if security.webauthn %}
         <hr class="fs-gap" />
