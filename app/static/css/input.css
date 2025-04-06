@@ -1,16 +1,51 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 @plugin "daisyui";
 
+@plugin "daisyui/theme" {
+    name: "dark";
+    default: true;
+    prefersdark: true;
+    color-scheme: "dark";
+    --color-base-100: oklch(0% 0 0);
+    --color-base-200: oklch(26% 0 0);
+    --color-base-300: oklch(43% 0 0);
+    --color-base-content: oklch(96% 0.003 264.542);
+    --color-primary: oklch(62% 0.214 259.815);
+    --color-primary-content: oklch(100% 0 0);
+    --color-secondary: oklch(60% 0.25 292.717);
+    --color-secondary-content: oklch(27% 0.077 45.635);
+    --color-accent: oklch(62% 0.194 149.214);
+    --color-accent-content: oklch(26% 0.065 152.934);
+    --color-neutral: oklch(44% 0.03 256.802);
+    --color-neutral-content: oklch(98% 0.002 247.839);
+    --color-info: oklch(62% 0.214 259.815);
+    --color-info-content: oklch(100% 0 0);
+    --color-success: oklch(76% 0.177 163.223);
+    --color-success-content: oklch(26% 0.051 172.552);
+    --color-warning: oklch(82% 0.189 84.429);
+    --color-warning-content: oklch(27% 0.077 45.635);
+    --color-error: oklch(70% 0.191 22.216);
+    --color-error-content: oklch(25% 0.092 26.042);
+    --radius-selector: 0.4rem;
+    --radius-field: 0.5rem;
+    --radius-box: 0.5rem;
+    --size-selector: 0.21875rem;
+    --size-field: 0.25rem;
+    --border: 1px;
+    --depth: 0;
+    --noise: 0;
+}
+
 @theme {
-  --font-sans:
-    Inter var, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
-    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: Inter var, ui-sans-serif, system-ui, sans-serif,
+        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+        "Noto Color Emoji";
 
-  --color-background-light: #f4f4f5;
-  --color-background-dark: #000000;
+    --color-background-light: #f4f4f5;
+    --color-background-dark: #000000;
 
-  --color-text-light: #000000;
-  --color-text-dark: #ffffff;
+    --color-text-light: #000000;
+    --color-text-dark: #ffffff;
 }
 
 /*
@@ -22,31 +57,31 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
-  }
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentcolor);
+    }
 }
 
 @utility tile {
-  @apply rounded-lg dark:bg-zinc-900 bg-white  p-2 md:p-5;
+    @apply rounded-lg bg-white p-2 md:p-5 dark:bg-zinc-900;
 }
 
 @utility quote {
-  @apply rounded-md bg-slate-900 p-4 text-gray-400 shadow-md;
+    @apply rounded-md bg-slate-900 p-4 text-gray-400 shadow-md;
 }
 
 @utility auth-input {
-  @apply block w-full rounded-2xl border dark:border-gray-600 dark:bg-gray-700 p-2.5 py-2 text-center dark:text-text-dark dark:placeholder-gray-400 focus:border-blue-500 dark:focus:ring-blue-800 focus:ring-blue-400 focus:ring-2 sm:text-sm focus:outline-hidden;
+    @apply dark:text-text-dark block w-full rounded-2xl border p-2.5 py-2 text-center focus:border-blue-500 focus:ring-2 focus:ring-blue-400 focus:outline-hidden sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:placeholder-gray-400 dark:focus:ring-blue-800;
 }
 
 @utility auth-submit {
-  @apply w-full rounded-2xl bg-blue-600 px-5 py-2.5 text-center text-base font-medium text-white hover:bg-sky-900  focus:outline-hidden focus:ring-2 focus:ring-blue-800;
+    @apply w-full rounded-2xl bg-blue-600 px-5 py-2.5 text-center text-base font-medium text-white hover:bg-sky-900 focus:ring-2 focus:ring-blue-800 focus:outline-hidden;
 }
 
 @utility auth-heading {
-  @apply mx-auto text-center text-xl font-bold leading-tight tracking-tight text-white md:text-2xl;
+    @apply mx-auto text-center text-xl leading-tight font-bold tracking-tight text-white md:text-2xl;
 }
