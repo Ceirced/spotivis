@@ -23,7 +23,7 @@ class DevelopmentConfig(BaseConfig):
     DEBUG = True
     SECRET_KEY = os.getenv("SECRET_KEY")
     FLASK_ENV = "development"
-    SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///dev.db'
     SERVER_NAME = os.getenv("HOST_NAME")
 
 

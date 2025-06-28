@@ -82,7 +82,7 @@ def create_app():
     if not app.debug and not app.testing:
         root = logging.getLogger()
         root.setLevel(logging.INFO)
-        if app.config["LOG_TO_STDOUT"]:
+        if app.config.get("LOG_TO_STDOUT", False):
             stream_handler = logging.StreamHandler()
             stream_handler.setLevel(logging.INFO)
             app.logger.addHandler(stream_handler)
