@@ -8,7 +8,7 @@ start_server() {
         exec gunicorn --bind :5000 --access-logfile - --error-logfile - template_app:app --workers 4
     else
         echo "Starting Flask server in dev..."
-        python3 template_app.py
+        python3 app.py
     fi
 }
 
