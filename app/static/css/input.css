@@ -112,13 +112,13 @@
 }
 
 @utility auth-input {
-    @apply dark:text-text-dark block w-full rounded-2xl border p-2.5 py-2 text-center focus:border-blue-500 focus:ring-2 focus:ring-blue-400 focus:outline-hidden sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:placeholder-gray-400 dark:focus:ring-blue-800;
+    @apply dark:text-text-dark focus:outline-hidden block w-full rounded-2xl border p-2.5 py-2 text-center focus:border-blue-500 focus:ring-2 focus:ring-blue-400 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:placeholder-gray-400 dark:focus:ring-blue-800;
 }
 
 @utility auth-submit {
-    @apply w-full rounded-2xl bg-blue-600 px-5 py-2.5 text-center text-base font-medium text-white hover:bg-sky-900 focus:ring-2 focus:ring-blue-800 focus:outline-hidden;
+    @apply focus:outline-hidden w-full rounded-2xl bg-blue-600 px-5 py-2.5 text-center text-base font-medium text-white hover:bg-sky-900 focus:ring-2 focus:ring-blue-800;
 }
 
 @utility auth-heading {
-    @apply mx-auto text-center text-xl leading-tight font-bold tracking-tight text-white md:text-2xl;
+    @apply mx-auto text-center text-xl font-bold leading-tight tracking-tight text-white md:text-2xl;
 }

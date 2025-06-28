@@ -8,7 +8,7 @@
         method="post"
         name="login_user_form">
         <fieldset
-            class="fieldset bg-base-200 border-base-300 rounded-box mx-auto mt-10 w-xs gap-5 border p-4">
+            class="fieldset bg-base-200 border-base-300 rounded-box w-sm mx-auto mt-10 gap-5 border p-8">
             <legend class="fieldset-legend">{{ _fsdomain('Login') }}</legend>
 
             {{ login_user_form.hidden_tag() }}
@@ -88,6 +88,18 @@
             {{ login_user_form.submit(class='btn btn-primary') }}
         </fieldset>
     </form>
+
+    <div class="mt-4 text-center">
+        <p class="text-sm">
+            Don't have an account?
+            <a
+                href="{{ url_for_security('register') }}"
+                class="link link-primary"
+                >Sign up here</a
+            >
+        </p>
+    </div>
+
     {% if security.webauthn %}
         <hr class="fs-gap" />
         <h2>{{ _fsdomain("Use WebAuthn to Sign In") }}</h2>
@@ -131,5 +143,4 @@
             </div>
         {% endfor %}
     {% endif %}
-    {% include "security/_menu.html" %}
 {% endblock content %}
