@@ -28,7 +28,7 @@
                 </svg>
 
                 <span>Email</span>
-                {{ register_user_form.email(class='', placeholder='Email') | safe }}
+                {{ register_user_form.email(class='', placeholder='Email', autocomplete='username') | safe }}
             </label>
             {% if register_user_form.email.errors %}
                 <ul>
@@ -53,7 +53,7 @@
                     </svg>
 
                     <span>Username</span>
-                    {{ register_user_form.username(class='', placeholder='Username') | safe }}
+                    {{ register_user_form.username(class='', placeholder='Username', autocomplete='') | safe }}
                 </label>
                 {% if register_user_form.username.errors %}
                     <ul>
