@@ -1,7 +1,6 @@
 .env
 node_modules
 backups/
-.flaskenv
 
 __pycache__/
 .vscode/
