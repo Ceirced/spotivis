@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from sqlalchemy.orm import DeclarativeBase
+from flask_mailman import Mail  # type: ignore
 
 
 class Base(DeclarativeBase):
@@ -16,3 +17,4 @@ class Base(DeclarativeBase):
 
 
 db = SQLAlchemy(model_class=Base)
+mail = Mail()

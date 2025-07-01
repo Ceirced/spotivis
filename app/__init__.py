@@ -9,7 +9,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from posthog import Posthog
 import stripe
 
-from app.extensions import db
+from app.extensions import db, mail
 from app.extensions.security import init_app as init_security
 
 
@@ -27,8 +27,15 @@ def create_app():
     app.config["MAINTENANCE_MODE"] = os.getenv("MAINTENANCE_MODE", "False") == "True"
     stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
+    app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER", "smtp.ionos.com")
+    app.config["MAIL_PORT"] = int(os.getenv("MAIL_PORT", 587))
+    app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
+    app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
+    app.config["MAIL_USE_TLS"] = True
+
     init_security(app)
     db.init_app(app)
+    mail.init_app(app)
     migrate.init_app(app, db)
 
     from app.public import bp as public_bp

@@ -19,8 +19,10 @@ def init_app(app):
         SECURITY_PASSWORD_CONFIRM_REQUIRED=False,
         SECURITY_USE_REGISTER_V2=True,
         SECURITY_USERNAME_ENABLE=True,
-        SECURITY_SEND_REGISTER_EMAIL=False,
+        SECURITY_SEND_REGISTER_EMAIL=True,
+        SECURITY_CONFIRMABLE=True,
         SECURITY_USERNAME_REQUIRED=True,
+        SECURITY_EMAIL_SENDER="hi@aufsichtsr.at",
     )
 
     security.init_app(app, user_datastore)
