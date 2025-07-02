@@ -1,32 +1,58 @@
-{% extends 'base.html' %} {% block top_bar %}
-<div class="flex w-full items-center justify-between text-blue-600">
-    <a href="{{ url_for('main.index')}}">
-        <div class="flex items-center">
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                class="size-7 stroke-2">
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M15.75 19.5 8.25 12l7.5-7.5" />
-            </svg>
-            <span>first</span>
+{% extends 'base.html' %}
+{% block top_bar %}
+    <div class="flex w-full items-center justify-between text-blue-600">
+        <a href="{{ url_for('main.index') }}">
+            <div class="flex items-center">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    class="size-7 stroke-2">
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M15.75 19.5 8.25 12l7.5-7.5" />
+                </svg>
+                <span>first</span>
+            </div>
+        </a>
+    </div>
+{% endblock %}
+{% block content %}
+    <div class="mb-3"><span class="text-3xl font-bold">Settings</span></div>
+    <div class="mx-1 flex flex-col gap-6">
+        <div class="space-y-1">
+            <div
+                class="tile flex flex-row items-center justify-between rounded-lg bg-zinc-800 px-3 py-2">
+                <span>some switch</span>
+                <label
+                    class="inline-flex cursor-pointer items-center"
+                    hx-post="{{ url_for('users.toggle_discreet_mode') }}"
+                    hx-trigger="change"
+                    hx-swap="none">
+                    <input
+                        type="checkbox"
+                        value=""
+                        class="peer sr-only"
+                        {%
+                            if
+                            current_user.discreet_mode
+                        %}
+                            checked
+                        {% endif %} />
+                    <div
+                        class="peer relative h-7 w-14 rounded-full border-gray-600 bg-gray-200 bg-gray-700 peer-checked:bg-green-600 peer-focus:ring-4 peer-focus:ring-blue-300 peer-focus:ring-blue-800 peer-focus:outline-hidden after:absolute after:start-[4px] after:top-0.5 after:h-6 after:w-6 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white peer-checked:rtl:after:-translate-x-full"></div>
+                </label>
+            </div>
+            <div class="px-3 text-sm text-gray-500">description</div>
         </div>
-    </a>
-</div>
-{% endblock %} {% block content %}
-<div class="mb-3"><span class="text-3xl font-bold">Settings</span></div>
-<div class="mx-1 flex flex-col gap-6">
-    <div class="space-y-1">
         <div
-            class="tile flex flex-row items-center justify-between rounded-lg px-3 py-2 dark:bg-zinc-800">
+            class="tile flex flex-row items-center justify-between rounded-lg bg-zinc-800 px-3 py-2">
             <span>some switch</span>
             <label
                 class="inline-flex cursor-pointer items-center"
-                hx-post="{{ url_for('users.toggle_discreet_mode') }}"
+                hx-post="{{ url_for('users.toggle_track_spending') }}"
                 hx-trigger="change"
                 hx-swap="none">
                 <input
@@ -34,44 +60,20 @@
                     value=""
                     class="peer sr-only"
                     {%
-                    if
-                    current_user.discreet_mode
-                    %}checked{%
-                    endif
-                    %} />
+                        if
+                        current_user.tracks_spending
+                    %}
+                        checked
+                    {% endif %} />
                 <div
-                    class="peer relative h-7 w-14 rounded-full bg-gray-200 after:absolute after:start-[4px] after:top-0.5 after:h-6 after:w-6 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-green-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-hidden peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:rtl:after:-translate-x-full dark:border-gray-600 dark:bg-gray-700 dark:peer-focus:ring-blue-800"></div>
+                    class="peer relative h-7 w-14 rounded-full border-gray-600 bg-gray-200 bg-gray-700 peer-checked:bg-green-600 peer-focus:ring-4 peer-focus:ring-blue-300 peer-focus:ring-blue-800 peer-focus:outline-hidden after:absolute after:start-[4px] after:top-0.5 after:h-6 after:w-6 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white peer-checked:rtl:after:-translate-x-full"></div>
             </label>
         </div>
-        <div class="px-3 text-sm text-gray-500">description</div>
-    </div>
-    <div
-        class="tile flex flex-row items-center justify-between rounded-lg px-3 py-2 dark:bg-zinc-800">
-        <span>some switch</span>
-        <label
-            class="inline-flex cursor-pointer items-center"
-            hx-post="{{ url_for('users.toggle_track_spending') }}"
-            hx-trigger="change"
-            hx-swap="none">
-            <input
-                type="checkbox"
-                value=""
-                class="peer sr-only"
-                {%
-                if
-                current_user.tracks_spending
-                %}checked{%
-                endif
-                %} />
-            <div
-                class="peer relative h-7 w-14 rounded-full bg-gray-200 after:absolute after:start-[4px] after:top-0.5 after:h-6 after:w-6 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-green-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-hidden peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:rtl:after:-translate-x-full dark:border-gray-600 dark:bg-gray-700 dark:peer-focus:ring-blue-800"></div>
-        </label>
-    </div>
 
-    <div class="my-3 flex justify-center">
-        <a href="{{ url_for('auth.logout') }}"
-            ><button class="text-gray-600">Logout</button></a
-        >
+        <div class="my-3 flex justify-center">
+            <a href="{{ url_for('auth.logout') }}"
+                ><button class="text-gray-600">Logout</button></a
+            >
+        </div>
     </div>
-</div>
 {% endblock %}
