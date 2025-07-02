@@ -20,60 +20,23 @@
     </div>
 {% endblock %}
 {% block content %}
-    <div class="mb-3"><span class="text-3xl font-bold">Settings</span></div>
-    <div class="mx-1 flex flex-col gap-6">
-        <div class="space-y-1">
-            <div
-                class="tile flex flex-row items-center justify-between rounded-lg bg-zinc-800 px-3 py-2">
-                <span>some switch</span>
-                <label
-                    class="inline-flex cursor-pointer items-center"
-                    hx-post="{{ url_for('users.toggle_discreet_mode') }}"
-                    hx-trigger="change"
-                    hx-swap="none">
-                    <input
-                        type="checkbox"
-                        value=""
-                        class="peer sr-only"
-                        {%
-                            if
-                            current_user.discreet_mode
-                        %}
-                            checked
-                        {% endif %} />
-                    <div
-                        class="peer relative h-7 w-14 rounded-full border-gray-600 bg-gray-200 bg-gray-700 peer-checked:bg-green-600 peer-focus:ring-4 peer-focus:ring-blue-300 peer-focus:ring-blue-800 peer-focus:outline-hidden after:absolute after:start-[4px] after:top-0.5 after:h-6 after:w-6 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white peer-checked:rtl:after:-translate-x-full"></div>
-                </label>
-            </div>
-            <div class="px-3 text-sm text-gray-500">description</div>
-        </div>
-        <div
-            class="tile flex flex-row items-center justify-between rounded-lg bg-zinc-800 px-3 py-2">
-            <span>some switch</span>
-            <label
-                class="inline-flex cursor-pointer items-center"
-                hx-post="{{ url_for('users.toggle_track_spending') }}"
-                hx-trigger="change"
-                hx-swap="none">
-                <input
-                    type="checkbox"
-                    value=""
-                    class="peer sr-only"
-                    {%
-                        if
-                        current_user.tracks_spending
-                    %}
-                        checked
-                    {% endif %} />
-                <div
-                    class="peer relative h-7 w-14 rounded-full border-gray-600 bg-gray-200 bg-gray-700 peer-checked:bg-green-600 peer-focus:ring-4 peer-focus:ring-blue-300 peer-focus:ring-blue-800 peer-focus:outline-hidden after:absolute after:start-[4px] after:top-0.5 after:h-6 after:w-6 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white peer-checked:rtl:after:-translate-x-full"></div>
-            </label>
-        </div>
-
-        <div class="my-3 flex justify-center">
-            <a href="{{ url_for('security.logout') }}"
-                ><button class="text-gray-600">Logout</button></a
-            >
-        </div>
+    <div class="mb-3">
+        <span class="text-3xl font-bold">Settings</span>
     </div>
+    <ul class="menu bg-base-200 rounded-box flex w-full flex-col gap-2 p-2">
+        <li>
+            <a
+                href="{{ url_for('security.change_password') }}"
+                class="link link-hover link-info"
+                >Change Password</a
+            >
+        </li>
+        <li>
+            <a
+                href="{{ url_for('security.logout') }}"
+                class="link link-hover link-error"
+                >Logout</a
+            >
+        </li>
+    </ul>
 {% endblock %}
