@@ -28,6 +28,7 @@ def init_app(app):
         SECURITY_DEFAULT_REMEMBER_ME=True,
         SECURITY_CHANGEABLE=True,
         SECURITY_RETURN_GENERIC_RESPONSES=False,  # This can be set to true when the app has enough users.
+        SECURITY_CHANGE_EMAIL=True,
     )
 
     security.init_app(app, user_datastore, mail_util_cls=CeleryMailUtil)
