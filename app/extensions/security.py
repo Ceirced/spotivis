@@ -24,6 +24,7 @@ def init_app(app):
         SECURITY_CONFIRMABLE=True,
         SECURITY_USERNAME_REQUIRED=True,
         SECURITY_EMAIL_SENDER=f'"{app.config["APP_NAME"]}" <hi@aufsichtsr.at>',
+        SECURITY_RECOVERABLE=True,
     )
 
     security.init_app(app, user_datastore, mail_util_cls=CeleryMailUtil)
