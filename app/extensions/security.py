@@ -5,6 +5,7 @@ from flask_security import (
 
 from app.models import User, Role
 from app.extensions import db
+from app.extensions.celery import CeleryMailUtil
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 security = Security()
@@ -22,7 +23,7 @@ def init_app(app):
         SECURITY_SEND_REGISTER_EMAIL=True,
         SECURITY_CONFIRMABLE=True,
         SECURITY_USERNAME_REQUIRED=True,
-        SECURITY_EMAIL_SENDER="hi@aufsichtsr.at",
+        SECURITY_EMAIL_SENDER=f'"{app.config["APP_NAME"]}" <hi@aufsichtsr.at>',
     )
 
-    security.init_app(app, user_datastore)
+    security.init_app(app, user_datastore, mail_util_cls=CeleryMailUtil)

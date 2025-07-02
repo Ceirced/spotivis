@@ -23,8 +23,9 @@ class DevelopmentConfig(BaseConfig):
     DEBUG = True
     SECRET_KEY = os.getenv("SECRET_KEY")
     FLASK_ENV = "development"
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///dev.db'
+    SQLALCHEMY_DATABASE_URI = "sqlite:///dev.db"
     SERVER_NAME = os.getenv("HOST_NAME")
+    REDIS_URL = "redis://localhost"
 
 
 class TestingConfig(BaseConfig):
@@ -46,6 +47,7 @@ class ProductionConfig(BaseConfig):
     SERVER_NAME = os.getenv("HOST_NAME")
     PREFERRED_URL_SCHEME = "https"
     FLASK_ENV = "production"
+    REDIS_URL = os.getenv("REDIS_URL", "redis://localhost")
 
 
 class LocalConfig(BaseConfig):

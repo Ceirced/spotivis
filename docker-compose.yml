@@ -22,7 +22,7 @@ services:
       - ./migrations:/home/app/migrations
       - ./instance:/home/app/instance
     env_file:
-      - template-app.env
+      - .env
     environment:
       - APP_SETTINGS=config.ProductionConfig
     healthcheck:
@@ -31,6 +31,36 @@ services:
       timeout: 10s
       retries: 5
       start_period: 5s
+    networks:
+      template_app:
+        aliases:
+          - template_app
+    restart: unless-stopped
+
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: template-flask-app
+    container_name: celery
+    command: celery -A app.make_celery worker --loglevel INFO -E
+    
+    stop_signal: SIGINT
+    # to sync the ./api dir with the container only for development
+    volumes:
+      - ./logs/app:/home/app/logs
+      - ./migrations:/home/app/migrations
+      - ./instance:/home/app/instance
+    env_file:
+      - .env
+    environment:
+      - APP_SETTINGS=config.ProductionConfig
+    healthcheck:
+      test: celery -A app.make_celery inspect ping || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     networks:
       template_app:
         aliases:
@@ -53,3 +83,18 @@ services:
       template_app:
       default:
     restart: unless-stopped
+  
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: redis-cli ping || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      template_app:
+        aliases:
+          - redis
+          

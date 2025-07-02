@@ -6,3 +6,7 @@ services:
       - ./migrations:/home/app/migrations
     environment:
       - APP_SETTINGS=config.DevelopmentConfig
+  
+  redis:
+    ports:
+      - 6379:6379

@@ -11,6 +11,7 @@ import stripe
 
 from app.extensions import db, mail
 from app.extensions.security import init_app as init_security
+from app.extensions.celery import celery_init_app
 
 
 # to set the app Settings in the docker compose
@@ -22,6 +23,7 @@ posthog = Posthog(os.getenv("POSTHOG_API_KEY"), host="https://eu.i.posthog.com")
 def create_app():
     app = Flask(__name__)
 
+    app.config["APP_NAME"] = os.getenv("APP_NAME", "Flask App")
     app_settings = os.getenv("APP_SETTINGS")
     app.config.from_object(app_settings)
     app.config["MAINTENANCE_MODE"] = os.getenv("MAINTENANCE_MODE", "False") == "True"
@@ -33,10 +35,19 @@ def create_app():
     app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
     app.config["MAIL_USE_TLS"] = True
 
+    app.config.from_mapping(
+        CELERY=dict(
+            broker_url=app.config["REDIS_URL"],
+            result_backend=app.config["REDIS_URL"],
+            task_ignore_result=True,
+        )
+    )
+
     init_security(app)
     db.init_app(app)
     mail.init_app(app)
     migrate.init_app(app, db)
+    celery_init_app(app)
 
     from app.public import bp as public_bp
 
