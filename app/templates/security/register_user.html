@@ -9,7 +9,7 @@
         method="post"
         name="register_user_form">
         <fieldset
-            class="fieldset bg-base-200 border-base-300 rounded-box mx-auto mt-10 w-sm gap-5 border p-8">
+            class="fieldset bg-base-200 border-base-300 rounded-box mx-auto mt-10 w-xs gap-5 border p-8">
             <legend class="fieldset-legend">{{ _fsdomain('Register') }}</legend>
             {{ register_user_form.hidden_tag() }}
             {{ render_form_errors(register_user_form) }}
@@ -125,6 +125,7 @@
         <p class="text-sm">
             Already have an account?
             <a
+                hx-boost="true"
                 href="{{ url_for_security('login') }}"
                 class="link link-primary"
                 >Sign in here</a

@@ -8,7 +8,7 @@
         method="post"
         name="login_user_form">
         <fieldset
-            class="fieldset bg-base-200 border-base-300 rounded-box mx-auto mt-10 w-sm gap-5 border p-8">
+            class="fieldset bg-base-200 border-base-300 rounded-box mx-auto mt-10 w-xs gap-5 border p-8">
             <legend class="fieldset-legend">{{ _fsdomain('Login') }}</legend>
 
             {{ login_user_form.hidden_tag() }}
@@ -86,6 +86,7 @@
         <p class="text-sm">
             Don't have an account?
             <a
+                hx-boost="true"
                 href="{{ url_for_security('register') }}"
                 class="link link-primary"
                 >Sign up here</a
