@@ -29,6 +29,7 @@ def init_app(app):
         SECURITY_CHANGEABLE=True,
         SECURITY_RETURN_GENERIC_RESPONSES=False,  # This can be set to true when the app has enough users.
         SECURITY_CHANGE_EMAIL=True,
+        SECURITY_REQUIRES_CONFIRMATION_ERROR_VIEW="confirm",
     )
 
     security.init_app(app, user_datastore, mail_util_cls=CeleryMailUtil)
