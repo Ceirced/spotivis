@@ -13,18 +13,5 @@
         {% include 'partials/_flash-messages.html' %}
         {% block scripts %}
         {%- endblock scripts -%}
-        <script>
-            // Add fade-out effect to flashed messages after 5 seconds
-            setTimeout(() => {
-                const flashMessages =
-                    document.querySelectorAll(".flash-message");
-                if (flashMessages) {
-                    flashMessages.forEach((message) => {
-                        message.classList.remove("opacity-100");
-                        message.classList.add("opacity-0");
-                    });
-                }
-            }, 5000);
-        </script>
     </body>
 {%- endblock body -%}
