@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
 {% block top_bar %}
     <div class="flex w-full items-center justify-between text-blue-600">
-        <a href="{{ url_for('main.index') }}">
+        <a
+            hx-boost="true"
+            href="{{ url_for('main.index') }}">
             <div class="flex items-center">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
