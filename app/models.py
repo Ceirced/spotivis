@@ -29,11 +29,10 @@ class User(Model, fsqla.FsUserMixin):
     )
 
     def __repr__(self):
-        return "<User(id='%s', username='%s', email='%s', confirmed='%s')>" % (
+        return "<User(id='%s', username='%s', email='%s')>" % (
             self.id,
             self.username,
             self.email,
-            self.confirmed,
         )
 
     def is_friends_with(self, other_user_id):
