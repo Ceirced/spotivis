@@ -28,48 +28,50 @@
 </div>
 
 <script>
-    // Theme Toggle Component JavaScript
-    (function() {
+    (function () {
         let themeChangeHandler;
 
         // Function to initialize theme toggle state
         function initializeTheme() {
             // Load saved theme or default to 'ron' (light theme)
-            const savedTheme = localStorage.getItem('theme') || 'ron';
-            
+            const savedTheme = localStorage.getItem("theme") || "ron";
+
             // Find the theme controller
-            const themeController = document.querySelector('.theme-controller');
+            const themeController = document.querySelector(".theme-controller");
             if (themeController) {
                 // Set checkbox state based on saved theme
-                themeController.checked = savedTheme === 'forest';
-                
+                themeController.checked = savedTheme === "forest";
+
                 // Remove existing event listener if it exists
                 if (themeChangeHandler) {
-                    themeController.removeEventListener('change', themeChangeHandler);
+                    themeController.removeEventListener(
+                        "change",
+                        themeChangeHandler
+                    );
                 }
-                
+
                 // Create new handler
-                themeChangeHandler = function() {
-                    const newTheme = this.checked ? 'forest' : 'ron';
-                    localStorage.setItem('theme', newTheme);
+                themeChangeHandler = function () {
+                    const newTheme = this.checked ? "forest" : "ron";
+                    localStorage.setItem("theme", newTheme);
                     // DaisyUI handles the actual theme switching via the theme-controller class
                 };
-                
+
                 // Add event listener to save theme changes
-                themeController.addEventListener('change', themeChangeHandler);
-                
+                themeController.addEventListener("change", themeChangeHandler);
+
                 // Trigger change event to apply the saved theme
-                if (themeController.checked !== (savedTheme === 'forest')) {
-                    themeController.dispatchEvent(new Event('change'));
+                if (themeController.checked !== (savedTheme === "forest")) {
+                    themeController.dispatchEvent(new Event("change"));
                 }
             }
         }
 
         // Initialize on DOM ready
-        document.addEventListener('DOMContentLoaded', initializeTheme);
+        document.addEventListener("DOMContentLoaded", initializeTheme);
 
         // Re-initialize on HTMX page loads
-        document.addEventListener('htmx:afterSwap', initializeTheme);
-        document.addEventListener('htmx:afterSettle', initializeTheme);
+        document.addEventListener("htmx:afterSwap", initializeTheme);
+        document.addEventListener("htmx:afterSettle", initializeTheme);
     })();
 </script>
