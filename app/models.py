@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from decimal import Decimal
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, select, DECIMAL, DateTime, String, Integer
+from sqlalchemy import ForeignKey, select, DECIMAL, String
 import sqlalchemy.orm as so
 from flask_security.models import fsqla_v3 as fsqla
 
@@ -24,7 +24,7 @@ class Role(Model, fsqla.FsRoleMixin):
 
 
 class User(Model, fsqla.FsUserMixin):
-    payments: so.WriteOnlyMapped[list[Payment]] = so.relationship(
+    payments: so.Mapped[list[Payment]] = so.relationship(
         "Payment", back_populates="user"
     )
 

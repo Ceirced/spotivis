@@ -12,6 +12,7 @@ import stripe
 from app.extensions import db, mail
 from app.extensions.security import init_app as init_security
 from app.extensions.celery import init_celery
+from app.extensions.admin import init_admin
 
 
 # to set the app Settings in the docker compose
@@ -45,6 +46,7 @@ def create_app():
 
     init_security(app)
     init_celery(app)
+    init_admin(app)
     db.init_app(app)
     mail.init_app(app)
     migrate.init_app(app, db)
