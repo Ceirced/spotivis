@@ -1,7 +1,9 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
+from decimal import Decimal
+from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import ForeignKey, select, DECIMAL, DateTime, String, Integer
 import sqlalchemy.orm as so
 from flask_security.models import fsqla_v3 as fsqla
 
@@ -84,20 +86,28 @@ class FriendRequest(Model):
 
 class Payment(Model):
     __tablename__ = "payments"
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_email = db.Column(db.String(100), nullable=False)
-    amount = db.Column(db.DECIMAL(10, 2), nullable=False)
-    currency = db.Column(db.String(3), nullable=False)
-    created = db.Column(
+
+    id: so.Mapped[int] = so.mapped_column(primary_key=True, autoincrement=True)
+    user_email: so.Mapped[str] = so.mapped_column(String(100), nullable=False)
+    amount: so.Mapped[Decimal] = so.mapped_column(DECIMAL(10, 2), nullable=False)
+    currency: so.Mapped[str] = so.mapped_column(String(3), nullable=False)
+    created: so.Mapped[datetime] = so.mapped_column(
         db.DateTime, nullable=False, default=db.func.current_timestamp()
     )
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    user = db.relationship("User", back_populates="payments")
-    stripe_payment_id = db.Column(db.String(150), nullable=False, unique=True)
-    status = db.Column(db.String(50), nullable=False)
-    stripe_customer_email = db.Column(db.String(100))
-    stripe_customer_name = db.Column(db.String(100))
-    stripe_customer_address_country = db.Column(db.String(20))
+    user_id: so.Mapped[int | None] = so.mapped_column(
+        ForeignKey("user.id"), nullable=True
+    )
+    user: so.Mapped[User | None] = so.relationship("User", back_populates="payments")
+    stripe_payment_id: so.Mapped[str] = so.mapped_column(
+        String(150), nullable=False, unique=True
+    )
+    status: so.Mapped[str] = so.mapped_column(String(50), nullable=False)
+    stripe_customer_email: so.Mapped[str | None] = so.mapped_column(String(100))
+    stripe_customer_name: so.Mapped[str | None] = so.mapped_column(String(100))
+    stripe_customer_address_country: so.Mapped[str | None] = so.mapped_column(
+        String(20)
+    )
+
     __table_args__ = (db.UniqueConstraint("stripe_payment_id"),)
 
     def __repr__(self):
