@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import select
 import sqlalchemy.orm as so
-from werkzeug.security import generate_password_hash, check_password_hash
 from flask_security.models import fsqla_v3 as fsqla
 
 from app import db
@@ -26,7 +25,6 @@ class User(Model, fsqla.FsUserMixin):
     payments: so.WriteOnlyMapped[list[Payment]] = so.relationship(
         "Payment", back_populates="user"
     )
-    confirmed = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return "<User(id='%s', username='%s', email='%s', confirmed='%s')>" % (
@@ -35,12 +33,6 @@ class User(Model, fsqla.FsUserMixin):
             self.email,
             self.confirmed,
         )
-
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
 
     def is_friends_with(self, other_user_id):
         friendship = FriendRequest.query.filter(
@@ -56,14 +48,6 @@ class User(Model, fsqla.FsUserMixin):
             )
         ).first()
         return friendship is not None
-
-    @staticmethod
-    def new_user(username, email, password):
-        user = User(username=username, email=email)
-        user.set_password(password)
-        db.session.add(user)
-        db.session.commit()
-        return user
 
     @staticmethod
     def get_user_by_name(username):
