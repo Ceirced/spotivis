@@ -1,36 +1,38 @@
 {% if files %}
-<div class="card bg-base-100 shadow-sm">
-    <div class="card-body">
-        <h3 class="card-title">Uploaded Files</h3>
-        <div class="overflow-x-auto">
-            <table class="table table-zebra">
-                <thead>
-                    <tr>
-                        <th>File Name</th>
-                        <th>Size</th>
-                        <th>Upload Time</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for file in files %}
-                    <tr>
-                        <td>
-                            <div class="font-medium">{{ file.original_name }}</div>
-                        </td>
-                        <td>{{ file.size_mb }} MB</td>
-                        <td>{{ file.upload_time }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <div class="card bg-base-200 shadow-sm">
+        <div class="card-body">
+            <h3 class="card-title">Uploaded Files</h3>
+            <div class="overflow-x-auto">
+                <table class="table-zebra table">
+                    <thead>
+                        <tr>
+                            <th>File Name</th>
+                            <th>Size</th>
+                            <th>Upload Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for file in files %}
+                            <tr>
+                                <td>
+                                    <div class="font-medium">
+                                        {{ file.original_name }}
+                                    </div>
+                                </td>
+                                <td>{{ file.size_mb }} MB</td>
+                                <td>{{ file.upload_time }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
 {% else %}
-<div class="card bg-base-100 shadow-sm">
-    <div class="card-body">
-        <h3 class="card-title">Uploaded Files</h3>
-        <p class="text-base-content/70">No files uploaded yet.</p>
+    <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+            <h3 class="card-title">Uploaded Files</h3>
+            <p class="text-base-content/70">No files uploaded yet.</p>
+        </div>
     </div>
-</div>
 {% endif %}

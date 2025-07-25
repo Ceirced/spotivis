@@ -42,34 +42,32 @@
     prefersdark: false;
     color-scheme: "light";
     --color-base-100: oklch(100% 0 0);
-    --color-base-200: oklch(98.69% 0.0025 228.78);
-    --color-base-300: oklch(92% 0.004 286.32);
-    --color-base-content: oklch(32.44% 0.0229 264.18);
-
-    --color-primary: oklch(0.6888 0.187 148.92);
+    --color-base-200: oklch(98% 0.001 106.423);
+    --color-base-300: oklch(92% 0.006 264.531);
+    --color-base-content: oklch(32.44% 0.023 264.18);
+    --color-primary: oklch(68.88% 0.187 148.92);
     --color-primary-content: oklch(100% 0 0);
-    --color-secondary: oklch(69% 0.17 162.48);
-    --color-secondary-content: oklch(97% 0.021 166.113);
+    --color-secondary: oklch(43% 0.078 188.216);
+    --color-secondary-content: oklch(95% 0.051 180.801);
     --color-accent: oklch(79% 0.184 86.047);
     --color-accent-content: oklch(98% 0.026 102.212);
-    --color-neutral: oklch(45.23% 0.0352 264.13);
+    --color-neutral: oklch(37% 0.01 67.558);
     --color-neutral-content: oklch(98% 0 0);
-    --color-info: oklch(0.707 0.022 261.325);
-    --color-info-content: oklch(97% 0.014 254.604);
-    --color-success: oklch(76.83% 0.0749 131.06);
-    --color-success-content: oklch(98% 0.031 120.757);
-    --color-warning: oklch(68% 0.162 75.834);
-    --color-warning-content: oklch(98% 0.026 102.212);
-    --color-error: oklch(60.61% 0.1206 15.34);
-    --color-error-content: oklch(97% 0.014 343.198);
-
-    --radius-selector: 2rem;
-    --radius-field: 2rem;
+    --color-info: oklch(58% 0.158 241.966);
+    --color-info-content: oklch(90% 0.058 230.902);
+    --color-success: oklch(64% 0.2 131.684);
+    --color-success-content: oklch(96% 0.067 122.328);
+    --color-warning: oklch(76% 0.188 70.08);
+    --color-warning-content: oklch(96% 0.059 95.617);
+    --color-error: oklch(57% 0.245 27.325);
+    --color-error-content: oklch(88% 0.062 18.334);
+    --radius-selector: 1rem;
+    --radius-field: 0.5rem;
     --radius-box: 0.5rem;
     --size-selector: 0.25rem;
     --size-field: 0.25rem;
     --border: 1.5px;
-    --depth: 1;
+    --depth: 0;
     --noise: 0;
 }
 

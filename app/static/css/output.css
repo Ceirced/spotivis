@@ -1040,21 +1040,6 @@
       inset-inline-end: 0.75em;
     }
   }
-  .indicator {
-    position: relative;
-    display: inline-flex;
-    width: max-content;
-    :where(.indicator-item) {
-      z-index: 1;
-      position: absolute;
-      white-space: nowrap;
-      top: var(--indicator-t, 0);
-      bottom: var(--indicator-b, auto);
-      left: var(--indicator-s, auto);
-      right: var(--indicator-e, 0);
-      translate: var(--indicator-x, 50%) var(--indicator-y, -50%);
-    }
-  }
   .table {
     font-size: 0.875rem;
     position: relative;
@@ -2038,9 +2023,6 @@
   .mt-4 {
     margin-top: calc(var(--spacing) * 4);
   }
-  .mt-6 {
-    margin-top: calc(var(--spacing) * 6);
-  }
   .mt-8 {
     margin-top: calc(var(--spacing) * 8);
   }
@@ -2065,9 +2047,6 @@
     padding-block: calc(0.25rem * 2);
     color: var(--color-base-content);
     font-weight: 600;
-  }
-  .mb-2 {
-    margin-bottom: calc(var(--spacing) * 2);
   }
   .mb-3 {
     margin-bottom: calc(var(--spacing) * 3);
@@ -2649,15 +2628,6 @@
   .p-8 {
     padding: calc(var(--spacing) * 8);
   }
-  .table-xs {
-    :not(thead, tfoot) tr {
-      font-size: 0.6875rem;
-    }
-    :where(th, td) {
-      padding-inline: calc(0.25rem * 2);
-      padding-block: calc(0.25rem * 1);
-    }
-  }
   .px-2 {
     padding-inline: calc(var(--spacing) * 2);
   }
@@ -2951,6 +2921,10 @@
   .badge-success {
     --badge-color: var(--color-success);
     --badge-fg: var(--color-success-content);
+  }
+  .btn-neutral {
+    --btn-color: var(--color-neutral);
+    --btn-fg: var(--color-neutral-content);
   }
   .btn-primary {
     --btn-color: var(--color-primary);
@@ -3391,32 +3365,32 @@
   :where(:root),:root:has(input.theme-controller[value=ron]:checked),[data-theme="ron"] {
     color-scheme: light;
     --color-base-100: oklch(100% 0 0);
-    --color-base-200: oklch(98.69% 0.0025 228.78);
+    --color-base-200: oklch(98.69% 0.003 228.78);
     --color-base-300: oklch(92% 0.004 286.32);
-    --color-base-content: oklch(32.44% 0.0229 264.18);
-    --color-primary: oklch(0.6888 0.187 148.92);
+    --color-base-content: oklch(32.44% 0.023 264.18);
+    --color-primary: oklch(68.88% 0.187 148.92);
     --color-primary-content: oklch(100% 0 0);
-    --color-secondary: oklch(69% 0.17 162.48);
-    --color-secondary-content: oklch(97% 0.021 166.113);
+    --color-secondary: oklch(43% 0.078 188.216);
+    --color-secondary-content: oklch(95% 0.051 180.801);
     --color-accent: oklch(79% 0.184 86.047);
     --color-accent-content: oklch(98% 0.026 102.212);
-    --color-neutral: oklch(45.23% 0.0352 264.13);
+    --color-neutral: oklch(45.23% 0.035 264.13);
     --color-neutral-content: oklch(98% 0 0);
-    --color-info: oklch(0.707 0.022 261.325);
-    --color-info-content: oklch(97% 0.014 254.604);
-    --color-success: oklch(76.83% 0.0749 131.06);
-    --color-success-content: oklch(98% 0.031 120.757);
-    --color-warning: oklch(68% 0.162 75.834);
-    --color-warning-content: oklch(98% 0.026 102.212);
-    --color-error: oklch(60.61% 0.1206 15.34);
-    --color-error-content: oklch(97% 0.014 343.198);
-    --radius-selector: 2rem;
-    --radius-field: 2rem;
+    --color-info: oklch(58% 0.158 241.966);
+    --color-info-content: oklch(90% 0.058 230.902);
+    --color-success: oklch(64% 0.2 131.684);
+    --color-success-content: oklch(96% 0.067 122.328);
+    --color-warning: oklch(76% 0.188 70.08);
+    --color-warning-content: oklch(96% 0.059 95.617);
+    --color-error: oklch(57% 0.245 27.325);
+    --color-error-content: oklch(88% 0.062 18.334);
+    --radius-selector: 1rem;
+    --radius-field: 0.5rem;
     --radius-box: 0.5rem;
     --size-selector: 0.25rem;
     --size-field: 0.25rem;
     --border: 1.5px;
-    --depth: 1;
+    --depth: 0;
     --noise: 0;
   }
 }
