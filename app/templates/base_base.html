@@ -122,12 +122,19 @@
         <script
             defer
             src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+        
+        <!-- Global theme initialization - runs immediately to prevent flash -->
+        <script>
+            (function() {
+                // Apply saved theme immediately to prevent flash
+                const savedTheme = localStorage.getItem("theme") || "light";
+                document.documentElement.setAttribute("data-theme", savedTheme);
+            })();
+        </script>
+        
         {% block head %}
         {% endblock %}
     </head>
     {% block body %}
     {% endblock %}
-
-    <!-- Theme Toggle Component -->
-    {% include 'components/theme_toggle.html' %}
 </html>

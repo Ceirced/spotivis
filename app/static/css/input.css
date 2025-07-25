@@ -3,7 +3,7 @@
 
 @plugin "daisyui/theme" {
     name: "forest";
-    default: false;
+    default: true;
     prefersdark: true;
     color-scheme: "dark";
     --color-base-100: oklch(20.84% 0.008 17.911);
@@ -37,9 +37,8 @@
 }
 
 @plugin "daisyui/theme" {
-    name: "ron";
+    name: "light";
     default: true;
-    prefersdark: false;
     color-scheme: "light";
     --color-base-100: oklch(100% 0 0);
     --color-base-200: oklch(98% 0.001 106.423);
