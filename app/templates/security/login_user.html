@@ -77,7 +77,7 @@
             {% if login_user_form.csrf_token.errors %}
                 {{ render_field_errors(login_user_form.csrf_token) }}
             {% endif %}
-            {{ login_user_form.submit(class='btn btn-primary') }}
+            {{ login_user_form.submit(class='btn btn-primary shadow') }}
         </fieldset>
     </form>
     {% include 'security/partials/_no_account.html' %}
