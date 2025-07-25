@@ -1,15 +1,12 @@
 {% extends 'base_base.html' %}
-{% block head %}
-    <script src="{{ url_for('static', filename='js/d3/d3.v5.min.js') }}"></script>
-{% endblock %}
 {% block body %}
     <body class="container mx-auto font-sans">
         <header class="flex justify-end p-6">
             <div class="flex items-center">
                 <a
                     href="{{ url_for('security.login') }}"
-                    class="text-lg font-medium text-blue-500"
-                    >Login
+                    class="flex items-center gap-2 text-lg font-medium text-blue-500">
+                    Login
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
@@ -23,7 +20,6 @@
                             d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25" />
                     </svg>
                 </a>
-                {% include 'components/theme_toggle_inline.html' %}
             </div>
         </header>
         <main class="mt-16 flex min-h-screen flex-col gap-40">
