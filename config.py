@@ -9,6 +9,7 @@ class BaseConfig:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     LOG_TO_STDOUT = os.environ.get("LOG_TO_STDOUT")
+    APP_NAME = "Template App"
 
 
 class MigrateConfig(BaseConfig):
