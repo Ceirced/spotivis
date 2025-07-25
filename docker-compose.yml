@@ -1,5 +1,5 @@
 networks:
-  spotivis:
+  app_network:
   default:
     external: true
     name: proxy
@@ -12,8 +12,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: spotivis
-    container_name: app-prod
+    image: flask-app
     entrypoint: [ './boot.sh' ]
     stop_signal: SIGINT
     # to sync the ./api dir with the container only for development
@@ -32,17 +31,16 @@ services:
       retries: 5
       start_period: 5s
     networks:
-      spotivis:
+      app_network:
         aliases:
-          - spotivis
+          - app
     restart: unless-stopped
 
   celery:
     build:
       context: .
       dockerfile: Dockerfile
-    image: spotivis
-    container_name: celery
+    image: flask-app
     command: celery -A app.make_celery worker --loglevel INFO -E
     
     stop_signal: SIGINT
@@ -62,7 +60,7 @@ services:
       retries: 3
       start_period: 40s
     networks:
-      spotivis:
+      app_network:
         aliases:
           - celery
     restart: unless-stopped
@@ -81,7 +79,7 @@ services:
       retries: 3
       start_period: 10s
     networks:
-      spotivis:
+      app_network:
         aliases:
           - nginx
       default:
@@ -98,7 +96,7 @@ services:
       retries: 3
       start_period: 10s
     networks:
-      spotivis:
+      app_network:
         aliases:
           - redis
           
