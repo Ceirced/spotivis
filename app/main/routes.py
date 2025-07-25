@@ -1,8 +1,8 @@
 from urllib.parse import urljoin
 
-from flask import render_template, url_for, redirect, abort, request
-from flask_login import login_required, current_user  # type: ignore
 import stripe
+from flask import abort, redirect, render_template, request, url_for
+from flask_security import current_user, login_required  # type: ignore
 from flask_wtf import FlaskForm  # type: ignore
 
 from app.main import bp

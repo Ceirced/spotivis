@@ -1,11 +1,11 @@
 from flask import abort, redirect, request, url_for  # type: ignore
-from flask_security import current_user  # type: ignore
 from flask_admin import Admin, AdminIndexView  # type: ignore
 from flask_admin.contrib.sqla import ModelView  # type: ignore
 from flask_admin.theme import Bootstrap4Theme  # type: ignore
+from flask_security import current_user  # type: ignore
 
 from app import db
-from app.models import User, Role
+from app.models import Role, User
 
 
 class AdminAccessMixin:

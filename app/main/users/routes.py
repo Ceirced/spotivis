@@ -1,15 +1,11 @@
-from bleach import clean
-
-from flask import render_template, request, url_for, make_response, jsonify
-from flask_login import current_user
 import sqlalchemy as sa
+from bleach import clean
+from flask import jsonify, make_response, render_template, request, url_for
+from flask_security import current_user
 
-from app.main.users import bp
 from app import db, htmx
-from app.models import (
-    FriendRequest,
-    User,
-)
+from app.main.users import bp
+from app.models import FriendRequest, User
 
 
 @bp.route("/", methods=["GET"])

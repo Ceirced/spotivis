@@ -1,11 +1,12 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
-from decimal import Decimal
-from datetime import datetime
 
-from sqlalchemy import ForeignKey, select, DECIMAL, String
+from datetime import datetime
+from decimal import Decimal
+from typing import TYPE_CHECKING
+
 import sqlalchemy.orm as so
 from flask_security.models import fsqla_v3 as fsqla
+from sqlalchemy import DECIMAL, ForeignKey, String, select
 
 from app import db
 
