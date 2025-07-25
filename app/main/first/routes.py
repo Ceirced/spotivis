@@ -1,5 +1,5 @@
-import os
 from datetime import datetime
+from pathlib import Path
 from flask import render_template, request, current_app
 from werkzeug.utils import secure_filename
 import pyarrow.parquet as pq
@@ -42,40 +42,39 @@ def index():
 @bp.route("/files", methods=["GET"])
 def list_files():
     """List all uploaded files."""
-    upload_folder = os.path.join(current_app.root_path, '..', 'uploads')
+    upload_folder = Path(current_app.root_path).parent / 'uploads'
     files = []
     
-    if os.path.exists(upload_folder):
-        for filename in os.listdir(upload_folder):
-            if filename.endswith('.parquet'):
-                file_path = os.path.join(upload_folder, filename)
-                file_stat = os.stat(file_path)
-                
-                # Extract original filename and timestamp
-                # Expected format: YYYYMMDD_HHMMSS_original_filename.parquet
-                parts = filename.split('_')
-                if len(parts) >= 3:
-                    try:
-                        # Reconstruct timestamp from first two parts
-                        timestamp_str = f"{parts[0]}_{parts[1]}"
-                        upload_time = datetime.strptime(timestamp_str, '%Y%m%d_%H%M%S')
-                        formatted_time = upload_time.strftime('%Y-%m-%d %H:%M:%S')
-                        # Original name is everything after the timestamp
-                        original_name = '_'.join(parts[2:])
-                    except (ValueError, IndexError):
-                        formatted_time = 'Unknown'
-                        original_name = filename
-                else:
-                    original_name = filename
+    if upload_folder.exists():
+        for file_path in upload_folder.glob('*.parquet'):
+            filename = file_path.name
+            file_stat = file_path.stat()
+            
+            # Extract original filename and timestamp
+            # Expected format: YYYYMMDD_HHMMSS_original_filename.parquet
+            parts = filename.split('_')
+            if len(parts) >= 3:
+                try:
+                    # Reconstruct timestamp from first two parts
+                    timestamp_str = f"{parts[0]}_{parts[1]}"
+                    upload_time = datetime.strptime(timestamp_str, '%Y%m%d_%H%M%S')
+                    formatted_time = upload_time.strftime('%Y-%m-%d %H:%M:%S')
+                    # Original name is everything after the timestamp
+                    original_name = '_'.join(parts[2:])
+                except (ValueError, IndexError):
                     formatted_time = 'Unknown'
-                
-                files.append({
-                    'filename': filename,
-                    'original_name': original_name,
-                    'size': file_stat.st_size,
-                    'upload_time': formatted_time,
-                    'size_mb': round(file_stat.st_size / (1024 * 1024), 2)
-                })
+                    original_name = filename
+            else:
+                original_name = filename
+                formatted_time = 'Unknown'
+            
+            files.append({
+                'filename': filename,
+                'original_name': original_name,
+                'size': file_stat.st_size,
+                'upload_time': formatted_time,
+                'size_mb': round(file_stat.st_size / (1024 * 1024), 2)
+            })
     
     # Sort by most recent first
     files.sort(key=lambda x: x['filename'], reverse=True)
@@ -113,7 +112,7 @@ def upload_file():
         )
 
     # Check file size
-    file.seek(0, os.SEEK_END)
+    file.seek(0, 2)  # Seek to end (SEEK_END = 2)
     file_length = file.tell()
     file.seek(0)
 
@@ -127,22 +126,22 @@ def upload_file():
         )
 
     # Create upload directory if it doesn't exist
-    upload_folder = os.path.join(current_app.root_path, '..', 'uploads')
-    os.makedirs(upload_folder, exist_ok=True)
+    upload_folder = Path(current_app.root_path).parent / 'uploads'
+    upload_folder.mkdir(exist_ok=True)
 
     filename = secure_filename(file.filename)
     # Add timestamp to avoid collisions
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     filename = f"{timestamp}_{filename}"
 
-    file_path = os.path.join(upload_folder, filename)
+    file_path = upload_folder / filename
 
     try:
-        file.save(file_path)
+        file.save(str(file_path))
 
         # Validate that it's a valid parquet file
-        if not validate_parquet_file(file_path):
-            os.remove(file_path)
+        if not validate_parquet_file(str(file_path)):
+            file_path.unlink()
             return (
                 render_template(
                     "./first/partials/_upload_error.html",
@@ -162,8 +161,8 @@ def upload_file():
         )
 
     except Exception as e:
-        if os.path.exists(file_path):
-            os.remove(file_path)
+        if file_path.exists():
+            file_path.unlink()
         return (
             render_template(
                 "./first/partials/_upload_error.html",
