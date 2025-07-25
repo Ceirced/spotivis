@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "flask-webapp-template"
+name = "spotivis"
 version = "0.1.0"
 description = ""
 authors = ["Cederic Demoulin <cdemoulin@protonmail.com>"]
