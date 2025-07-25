@@ -56,10 +56,16 @@
             </a>
         </li>
         <li class="flex-1">
+            <input
+                id="users"
+                type="radio"
+                class="peer hidden"
+                name="nav" />
             <a
                 href="{{ url_for('users.index') }}"
-                class="flex flex-col items-center"
-                id="users">
+                hx-target="#content"
+                class="peer-checked:text-primary flex flex-col items-center"
+                onclick="document.getElementById('users').checked = true;">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"

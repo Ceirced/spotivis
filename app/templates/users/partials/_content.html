@@ -1,0 +1,92 @@
+<title>{{ title }}</title>
+<div class="mb-3"><span class="text-3xl font-bold">{{ title }}</span></div>
+<svg
+    style="display: none"
+    version="2.0">
+    <defs>
+        <symbol
+            id="add-contact"
+            viewBox="0 0 24 24"
+            stroke-width="1.5">
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
+        </symbol>
+        <symbol
+            id="check"
+            viewBox="0 0 24 24"
+            stroke-width="1.5">
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="m4.5 12.75 6 6 9-13.5" />
+        </symbol>
+        <symbol
+            id="cross"
+            viewBox="0 0 24 24"
+            stroke-width="1.5">
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M6 18 18 6M6 6l12 12" />
+        </symbol>
+    </defs>
+</svg>
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-4">
+    <div
+        class="p-6"
+        id="friends"
+        hx-get="{{ url_for('users.friends') }}"
+        hx-trigger="friends_update from:body">
+        {% include "users/partials/_friends.html" %}
+    </div>
+    <div
+        class="col-span-1 p-6"
+        id="friend-requests"
+        hx-get="{{ url_for('users.friend_requests') }}"
+        hx-trigger="friends_update from:body">
+        {% include "users/partials/_friend-requests.html" %}
+    </div>
+    <div class="p-6 sm:col-span-1 lg:col-span-1">
+        <div class="container rounded-lg">
+            <label class="input">
+                <svg
+                    class="h-[1em] opacity-50"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24">
+                    <g
+                        stroke-linejoin="round"
+                        stroke-linecap="round"
+                        stroke-width="2.5"
+                        fill="none"
+                        stroke="currentColor">
+                        <circle
+                            cx="11"
+                            cy="11"
+                            r="8"></circle>
+                        <path d="m21 21-4.3-4.3"></path>
+                    </g>
+                </svg>
+                <input
+                    type="search"
+                    required
+                    placeholder="Search Users"
+                    name="search"
+                    autofocus
+                    autocomplete="off"
+                    hx-post="{{ url_for('users.search_users') }}"
+                    hx-trigger="contact-added from:body, input changed delay:100ms"
+                    hx-target="#search-results" />
+            </label>
+            <div class="overflow-x-auto">
+                <table class="table-zebra table">
+                    <tbody id="search-results"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div
+    id="top-bar"
+    hx-swap-oob="innerHTML"></div>
