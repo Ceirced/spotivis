@@ -2456,6 +2456,9 @@
   .h-10 {
     height: calc(var(--spacing) * 10);
   }
+  .h-\[1em\] {
+    height: 1em;
+  }
   .h-\[calc\(env\(safe-area-inset-top\)\+40px\)\] {
     height: calc(env(safe-area-inset-top) + 40px);
   }
@@ -2639,6 +2642,9 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  .overflow-x-auto {
+    overflow-x: auto;
+  }
   .scroll-smooth {
     scroll-behavior: smooth;
   }
@@ -2701,6 +2707,27 @@
   }
   .border-base-300 {
     border-color: var(--color-base-300);
+  }
+  .table-zebra {
+    tbody {
+      tr {
+        &:where(:nth-child(even)) {
+          background-color: var(--color-base-200);
+          :where(.table-pin-cols tr th) {
+            background-color: var(--color-base-200);
+          }
+        }
+        &.row-hover {
+          &, &:where(:nth-child(even)) {
+            &:hover {
+              @media (hover: hover) {
+                background-color: var(--color-base-300);
+              }
+            }
+          }
+        }
+      }
+    }
   }
   .bg-base-200 {
     background-color: var(--color-base-200);
