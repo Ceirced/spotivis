@@ -5,6 +5,7 @@ from logging.handlers import RotatingFileHandler
 
 from flask import Flask, render_template, request
 from flask_migrate import Migrate  # type: ignore
+from flask_htmx import HTMX  # type: ignore
 from werkzeug.middleware.proxy_fix import ProxyFix
 from posthog import Posthog
 import stripe
@@ -17,6 +18,7 @@ from app.extensions.admin import init_admin
 
 # to set the app Settings in the docker compose
 migrate = Migrate()
+htmx = HTMX()
 
 posthog = Posthog(os.getenv("POSTHOG_API_KEY"), host="https://eu.i.posthog.com")
 
@@ -48,6 +50,7 @@ def create_app():
     init_celery(app)
     init_admin(app)
     db.init_app(app)
+    htmx.init_app(app)
     mail.init_app(app)
     migrate.init_app(app, db)
 
