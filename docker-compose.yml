@@ -67,7 +67,6 @@ services:
 
   nginx:
     build: nginx
-    container_name: nginx
     ports:
       - 5026:80
     depends_on:
@@ -87,7 +86,6 @@ services:
   
   redis:
     image: redis:8-alpine
-    container_name: redis
     restart: unless-stopped
     healthcheck:
       test: redis-cli ping || exit 1
