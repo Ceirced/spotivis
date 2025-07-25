@@ -126,9 +126,29 @@
         <!-- Global theme initialization - runs immediately to prevent flash -->
         <script>
             (function() {
-                // Apply saved theme immediately to prevent flash
-                const savedTheme = localStorage.getItem("theme") || "light";
-                document.documentElement.setAttribute("data-theme", savedTheme);
+                // Function to get the actual theme based on user preference
+                function getActualTheme(preference) {
+                    if (preference === "system") {
+                        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "forest" : "light";
+                    }
+                    return preference;
+                }
+
+                // Apply saved theme preference immediately to prevent flash
+                const savedPreference = localStorage.getItem("themePreference") || "system";
+                const actualTheme = getActualTheme(savedPreference);
+                document.documentElement.setAttribute("data-theme", actualTheme);
+
+                // Listen for system theme changes when preference is 'system'
+                const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+                function handleSystemThemeChange() {
+                    const currentPreference = localStorage.getItem("themePreference") || "system";
+                    if (currentPreference === "system") {
+                        const newActualTheme = getActualTheme("system");
+                        document.documentElement.setAttribute("data-theme", newActualTheme);
+                    }
+                }
+                mediaQuery.addEventListener("change", handleSystemThemeChange);
             })();
         </script>
         

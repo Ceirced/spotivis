@@ -1,0 +1,93 @@
+<!-- Three-way Theme Selector Component -->
+<select class="theme-selector select select-sm select-bordered ml-4">
+    <option value="system">System</option>
+    <option value="light">Light</option>
+    <option value="forest">Dark</option>
+</select>
+
+<script>
+    (function () {
+        let themeChangeHandler;
+
+        // Function to get the actual theme based on user preference
+        function getActualTheme(preference) {
+            if (preference === "system") {
+                return window.matchMedia("(prefers-color-scheme: dark)").matches
+                    ? "forest"
+                    : "light";
+            }
+            return preference;
+        }
+
+        // Function to initialize theme selector state
+        function initializeTheme() {
+            // Load saved theme preference or default to 'system'
+            const savedPreference =
+                localStorage.getItem("themePreference") || "system";
+            const actualTheme = getActualTheme(savedPreference);
+
+            // Find the theme selector
+            const themeSelector = document.querySelector(".theme-selector");
+            if (themeSelector) {
+                // Set selector value to saved preference
+                themeSelector.value = savedPreference;
+
+                // Remove existing event listener if it exists
+                if (themeChangeHandler) {
+                    themeSelector.removeEventListener(
+                        "change",
+                        themeChangeHandler
+                    );
+                }
+
+                // Create new handler
+                themeChangeHandler = function () {
+                    const newPreference = this.value;
+                    const newActualTheme = getActualTheme(newPreference);
+
+                    localStorage.setItem("themePreference", newPreference);
+                    document.documentElement.setAttribute(
+                        "data-theme",
+                        newActualTheme
+                    );
+                };
+
+                // Add event listener to handle theme changes
+                themeSelector.addEventListener("change", themeChangeHandler);
+
+                // Apply current theme immediately
+                document.documentElement.setAttribute(
+                    "data-theme",
+                    actualTheme
+                );
+            }
+
+            // Listen for system theme changes when preference is 'system'
+            const mediaQuery = window.matchMedia(
+                "(prefers-color-scheme: dark)"
+            );
+            function handleSystemThemeChange() {
+                const currentPreference =
+                    localStorage.getItem("themePreference") || "system";
+                if (currentPreference === "system") {
+                    const newActualTheme = getActualTheme("system");
+                    document.documentElement.setAttribute(
+                        "data-theme",
+                        newActualTheme
+                    );
+                }
+            }
+
+            // Remove existing listener and add new one
+            mediaQuery.removeEventListener("change", handleSystemThemeChange);
+            mediaQuery.addEventListener("change", handleSystemThemeChange);
+        }
+
+        // Initialize on DOM ready
+        document.addEventListener("DOMContentLoaded", initializeTheme);
+
+        // Re-initialize on HTMX page loads
+        document.addEventListener("htmx:afterSwap", initializeTheme);
+        document.addEventListener("htmx:afterSettle", initializeTheme);
+    })();
+</script>
