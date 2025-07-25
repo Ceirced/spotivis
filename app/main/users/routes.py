@@ -1,5 +1,5 @@
 import sqlalchemy as sa
-from bleach import clean
+from sqlalchemy import select
 from flask import jsonify, make_response, render_template, request, url_for
 from flask_security import current_user
 
@@ -11,15 +11,15 @@ from app.models import FriendRequest, User
 @bp.route("/", methods=["GET"])
 def index():
     # get incoming friend requests
-    incoming_requests = (
-        db.session.query(FriendRequest, User)
+    incoming_requests = db.session.execute(
+        select(FriendRequest, User)
         .join(User, User.id == FriendRequest.sender_id)
         .filter(
             FriendRequest.receiver_id == current_user.id,
             FriendRequest.status == "pending",
         )
-        .all()
-    )
+    ).all()
+
     title = "Users"
     if htmx.boosted:
         return render_template(
@@ -39,9 +39,7 @@ def index():
 @bp.route("/search_users", methods=["POST"])
 def search_users():
     # get the search term from the form with the name search and return table rows with results
-    search_term = request.form.get("search")
-    # sanitize input
-    search_term = clean(search_term)
+    search_term = request.form.get("search", type=str, default="").strip()
 
     if search_term == "":
         return render_template(
@@ -50,13 +48,11 @@ def search_users():
             color="gray",
         )
 
-    # replace underscore for sql query
-    search_term = search_term.replace("_", "\_")
-
-    query = User.query.filter(
-        User.username.ilike(f"%{search_term}%"), User.id != current_user.id
-    ).limit(5)
-    users = db.session.scalars(query).all()
+    users = db.session.scalars(
+        select(User)
+        .where(User.username.ilike(f"%{search_term}%"), User.id != current_user.id)
+        .limit(5)
+    ).all()
 
     search_results = []
     for user in users:
