@@ -5,7 +5,7 @@ from flask_login import current_user
 import sqlalchemy as sa
 
 from app.main.users import bp
-from app import db
+from app import db, htmx
 from app.models import (
     FriendRequest,
     User,
@@ -24,9 +24,17 @@ def index():
         )
         .all()
     )
+    title = "Users"
+    if htmx.boosted:
+        return render_template(
+            "users/partials/_content.html",
+            title=title,
+            incoming_requests=incoming_requests,
+            friends=current_user.friends,
+        )
     return render_template(
         "users/index.html",
-        title="users",
+        title=title,
         incoming_requests=incoming_requests,
         friends=current_user.friends,
     )
@@ -192,7 +200,10 @@ def friend_requests():
 
 @bp.route("/settings", methods=["GET"])
 def settings():
-    return render_template("users/settings.html", title="Settings")
+    title = "Settings"
+    if htmx.boosted:
+        return render_template("users/partials/_settings_content.html", title=title)
+    return render_template("users/settings.html", title=title)
 
 
 @bp.route("/toggle-track-spending", methods=["POST"])
