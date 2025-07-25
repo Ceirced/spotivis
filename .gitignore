@@ -13,3 +13,4 @@ backup.sh
 .mypy_cache/
 .DS_Store
 instance/
+uploads/

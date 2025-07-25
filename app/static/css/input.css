@@ -46,7 +46,7 @@
     --color-base-300: oklch(92% 0.004 286.32);
     --color-base-content: oklch(32.44% 0.0229 264.18);
 
-    --color-primary: oklch(75.25% 0.0988 237.71);
+    --color-primary: oklch(0.6888 0.187 148.92);
     --color-primary-content: oklch(100% 0 0);
     --color-secondary: oklch(69% 0.17 162.48);
     --color-secondary-content: oklch(97% 0.021 166.113);
@@ -74,9 +74,9 @@
 }
 
 @theme {
-    --font-sans: Inter var, ui-sans-serif, system-ui, sans-serif,
-        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
-        "Noto Color Emoji";
+    --font-sans:
+        Inter var, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+        "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
     --color-background-light: #f4f4f5;
     --color-background-dark: #000000;

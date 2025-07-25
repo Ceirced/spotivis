@@ -6,7 +6,54 @@
         {% include "./first/partials/_top_bar.html" %}
     </div>
 {% endif -%}
-<h1 class="text-3xl font-bold">{{ title }}</h1>
+<h1 class="mb-8 text-3xl font-bold">Spotify Data Visualizer</h1>
+
+<div class="card bg-base-200 shadow-sm">
+    <div class="card-body">
+        <h2 class="card-title">Upload Your Spotify Data</h2>
+        <p class="mb-4">
+            Upload your Spotify data export in Parquet format to visualize your
+            listening habits.
+        </p>
+
+        <form
+            id="upload-form"
+            hx-post="/first/upload"
+            hx-encoding="multipart/form-data"
+            hx-trigger="submit"
+            hx-indicator="#upload-progress"
+            hx-target="#upload-result"
+            hx-swap="innerHTML">
+            <fieldset class="fieldset">
+                <legend class="fieldset-legend">Pick a Parquet file</legend>
+                <input
+                    type="file"
+                    name="file"
+                    accept=".parquet"
+                    class="file-input file-input-primary w-full max-w-sm"
+                    required />
+                <label class="label">Max size {{ max_file_size_mb }}MB</label>
+            </fieldset>
+
+            <div class="mt-4">
+                <button
+                    type="submit"
+                    class="btn btn-primary">
+                    Upload File
+                    <span
+                        id="upload-progress"
+                        class="htmx-indicator loading loading-spinner loading-sm ml-2"></span>
+                </button>
+            </div>
+        </form>
+
+        <div
+            id="upload-result"
+            class="mt-4"></div>
+    </div>
+</div>
+
+
 {% if config['FLASK_ENV'] == 'production' %}
     <script>
         posthog.identify(
