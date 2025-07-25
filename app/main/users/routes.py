@@ -45,7 +45,6 @@ def search_users():
         return render_template(
             "./partials/_search_table_rows.html",
             search_results=[],
-            color="gray",
         )
 
     users = db.session.scalars(
@@ -54,32 +53,13 @@ def search_users():
         .limit(5)
     ).all()
 
-    search_results = []
-    for user in users:
-        # check if current user has a pending friend request with the user
-        friend_request = FriendRequest.query.filter_by(
-            sender_id=current_user.id, receiver_id=user.id
-        ).first()
-        if friend_request and friend_request.status == "pending":
-            search_results.append(
-                {
-                    "url": url_for("users.profile", username=user.username),
-                    "handle": user.username,
-                    "are_friends": False,
-                    "id": user.id,
-                    "pending": True,
-                }
-            )
-        else:
-            search_results.append(
-                {
-                    "url": url_for("users.profile", username=user.username),
-                    "handle": user.username,
-                    "are_friends": current_user.is_friends_with(user.id),
-                    "id": user.id,
-                    "pending": False,
-                }
-            )
+    search_results = [
+        {
+            "url": url_for("users.profile", username=user.username),
+            "handle": user.username,
+        }
+        for user in users
+    ]
 
     response = render_template(
         "./partials/_search_table_rows.html",
@@ -94,10 +74,22 @@ def search_users():
 def profile(username):
     user = db.first_or_404(sa.select(User).where(User.username == username))
     is_friend = current_user.is_friends_with(user.id)
+
+    # Check if there's a pending friend request
+    pending_request = False
+    if current_user.is_authenticated and current_user.id != user.id:
+        friend_request = FriendRequest.query.filter_by(
+            sender_id=current_user.id, receiver_id=user.id
+        ).first()
+        if friend_request and friend_request.status == "pending":
+            pending_request = True
+
     return render_template(
         "users/profile.html",
         user=user,
         is_friend=is_friend,
+        title=user.username,
+        pending_request=pending_request,
     )
 
 
