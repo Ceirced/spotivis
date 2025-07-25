@@ -56,6 +56,14 @@
                     </svg>
                     <span>Password</span>
                     {{ login_user_form.password(placeholder='Password') }}
+                    {% if security.recoverable %}
+                        <a
+                            hx-boost="true"
+                            class="link link-primary no-underline transition-colors duration-200"
+                            href="{{ url_for_security('forgot_password') }}"
+                            >{{ _fsdomain('Forgot?') }}</a
+                        >
+                    {% endif %}
                 </label>
                 {% if login_user_form.password.errors %}
                     <ul>
@@ -63,14 +71,6 @@
                             <li class="text-error">{{ error }}</li>
                         {% endfor %}
                     </ul>
-                {% endif %}
-                {% if security.recoverable %}
-                    <a
-                        hx-boost="true"
-                        class="link link-hover"
-                        href="{{ url_for_security('forgot_password') }}"
-                        >{{ _fsdomain('Forgot password?') }}</a
-                    >
                 {% endif %}
             </div>
 
@@ -90,18 +90,7 @@
             {{ login_user_form.submit(class='btn btn-primary') }}
         </fieldset>
     </form>
-
-    <div class="mt-4 text-center">
-        <p class="text-sm">
-            Don't have an account?
-            <a
-                hx-boost="true"
-                href="{{ url_for_security('register') }}"
-                class="link link-primary"
-                >Sign up here</a
-            >
-        </p>
-    </div>
+    {% include 'security/partials/_no_account.html' %}
 
     {% if security.webauthn %}
         <hr class="fs-gap" />
