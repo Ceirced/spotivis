@@ -1,20 +1,18 @@
-import os
-
 import logging
+import os
 from logging.handlers import RotatingFileHandler
 
-from flask import Flask, render_template, request
-from flask_migrate import Migrate  # type: ignore
-from flask_htmx import HTMX  # type: ignore
-from werkzeug.middleware.proxy_fix import ProxyFix
-from posthog import Posthog
 import stripe
+from flask import Flask, render_template, request
+from flask_htmx import HTMX  # type: ignore
+from flask_migrate import Migrate  # type: ignore
+from posthog import Posthog
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from app.extensions import db, mail
-from app.extensions.security import init_app as init_security
-from app.extensions.celery import init_celery
 from app.extensions.admin import init_admin
-
+from app.extensions.celery import init_celery
+from app.extensions.security import init_app as init_security
 
 # to set the app Settings in the docker compose
 migrate = Migrate()

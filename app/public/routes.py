@@ -1,14 +1,13 @@
 import os
 from datetime import datetime
 
-from flask import render_template, redirect, url_for, request, abort
-from flask_login import current_user
 import stripe
-
+from flask import abort, redirect, render_template, request, url_for
+from flask_security import current_user
 
 from app import db
-from app.public import bp
 from app.models import Payment
+from app.public import bp
 
 
 @bp.route("/")
@@ -28,7 +27,7 @@ def new_event():
         event = stripe.Webhook.construct_event(
             payload, signature, os.environ["STRIPE_WEBHOOK_SECRET"]
         )
-    except Exception as e:
+    except Exception:
         # the payload could not be verified
         abort(400)
 

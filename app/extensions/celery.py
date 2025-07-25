@@ -1,8 +1,9 @@
 from celery import Celery, Task, shared_task  # type: ignore
 from flask import Flask
-from app.extensions import mail  # type: ignore
 from flask_mailman import EmailMultiAlternatives  # type: ignore
 from flask_security import MailUtil
+
+from app.extensions import mail  # type: ignore
 
 
 def init_celery(app: Flask) -> Celery:

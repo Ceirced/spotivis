@@ -1,5 +1,6 @@
-from flask import abort
 from functools import wraps
+
+from flask import abort
 
 
 def disable_route():
