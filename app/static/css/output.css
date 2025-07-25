@@ -3096,6 +3096,17 @@
       stroke: var(--color-white);
     }
   }
+  .peer-checked\:text-primary {
+    &:is(:where(.peer):checked ~ *) {
+      color: var(--color-primary);
+    }
+  }
+  .peer-checked\:btn-primary {
+    &:is(:where(.peer):checked ~ *) {
+      --btn-color: var(--color-primary);
+      --btn-fg: var(--color-primary-content);
+    }
+  }
   .placeholder\:text-gray-500 {
     &::placeholder {
       color: var(--color-gray-500);
@@ -3105,6 +3116,11 @@
     &:last-child {
       --tw-border-style: none;
       border-style: none;
+    }
+  }
+  .checked\:text-primary {
+    &:checked {
+      color: var(--color-primary);
     }
   }
   .hover\:bg-blue-600 {

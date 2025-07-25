@@ -4,11 +4,16 @@
         hx-boost="true"
         class="flex w-full max-w-md flex-row items-center justify-around px-4 text-xs">
         <li class="flex-1">
+            <input
+                id="second"
+                type="radio"
+                class="peer hidden"
+                name="nav" />
             <a
                 href="{{ url_for('second_page.index') }}"
                 hx-target="#content"
-                class="flex flex-col items-center"
-                id="second">
+                class="peer-checked:text-primary flex flex-col items-center"
+                onclick="document.getElementById('second').checked = true;">
                 <svg
                     viewBox="0 0 24 24"
                     stroke-width="1.5"
@@ -26,11 +31,16 @@
             </a>
         </li>
         <li class="flex-1">
+            <input
+                id="first"
+                type="radio"
+                class="peer hidden"
+                name="nav" />
             <a
                 href="{{ url_for('first.index') }}"
                 hx-target="#content"
-                class="flex flex-col items-center"
-                id="first">
+                class="peer-checked:text-primary flex flex-col items-center"
+                onclick="document.getElementById('first').checked = true;">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -66,12 +76,3 @@
         </li>
     </ul>
 </nav>
-<script>
-    let title = document.title;
-    // color the svg icon of the current page
-    let currentPage = document.getElementById(title);
-
-    if (currentPage) {
-        currentPage.classList.add("text-blue-500");
-    }
-</script>
