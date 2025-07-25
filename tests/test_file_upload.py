@@ -99,3 +99,62 @@ class TestFileUploadAPI:
         finally:
             # Restore original MAX_FILE_SIZE
             routes.MAX_FILE_SIZE = original_max_size
+
+    def test_files_endpoint_exists(self, authenticated_client):
+        """Test files endpoint responds correctly."""
+        response = authenticated_client.get('/first/files')
+        assert response.status_code == 200
+        assert b'Uploaded Files' in response.data
+
+    def test_files_endpoint_with_files(self, authenticated_client, sample_parquet_file):
+        """Test files endpoint after uploading a file."""
+        # First upload a file
+        with open(sample_parquet_file, 'rb') as f:
+            data = {'file': (f, 'test_data.parquet', 'application/octet-stream')}
+            upload_response = authenticated_client.post(
+                '/first/upload', data=data, content_type='multipart/form-data'
+            )
+        assert upload_response.status_code == 200
+        
+        # Then check files endpoint
+        response = authenticated_client.get('/first/files')
+        assert response.status_code == 200
+        assert b'Uploaded Files' in response.data
+        assert b'test_data.parquet' in response.data
+
+    def test_upload_time_parsing(self, authenticated_client, sample_parquet_file):
+        """Test that upload time is correctly parsed and displayed."""
+        from datetime import datetime
+        
+        # Upload a file
+        with open(sample_parquet_file, 'rb') as f:
+            data = {'file': (f, 'test_upload_time.parquet', 'application/octet-stream')}
+            upload_response = authenticated_client.post(
+                '/first/upload', data=data, content_type='multipart/form-data'
+            )
+        assert upload_response.status_code == 200
+        
+        # Check files endpoint shows proper time
+        response = authenticated_client.get('/first/files')
+        assert response.status_code == 200
+        
+        # The upload time should not be "Unknown"
+        assert b'Unknown' not in response.data or response.data.count(b'Unknown') < response.data.count(b'<tr>')
+        
+        # Check that we have a proper timestamp format (YYYY-MM-DD HH:MM:SS)
+        response_text = response.data.decode()
+        import re
+        timestamp_pattern = r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}'
+        timestamps = re.findall(timestamp_pattern, response_text)
+        
+        # Should have at least one properly formatted timestamp
+        assert len(timestamps) > 0, f"No proper timestamps found in response: {response_text[:500]}..."
+        
+        # The timestamp should be recent (within last few minutes)
+        latest_timestamp = timestamps[0]  # First one should be the most recent
+        parsed_time = datetime.strptime(latest_timestamp, '%Y-%m-%d %H:%M:%S')
+        current_time = datetime.now()
+        time_diff = (current_time - parsed_time).total_seconds()
+        
+        # Should be uploaded within the last 60 seconds
+        assert time_diff < 60, f"Upload time {latest_timestamp} is not recent enough (diff: {time_diff}s)"

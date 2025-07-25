@@ -53,6 +53,14 @@
     </div>
 </div>
 
+<div
+    id="file-list"
+    class="mt-8"
+    hx-get="/first/files"
+    hx-trigger="load, refresh"
+    hx-swap="innerHTML">
+    <!-- File list will be loaded here -->
+</div>
 
 {% if config['FLASK_ENV'] == 'production' %}
     <script>

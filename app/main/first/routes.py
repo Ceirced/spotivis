@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from flask import render_template, request, current_app
 from werkzeug.utils import secure_filename
 import pyarrow.parquet as pq
@@ -36,6 +37,50 @@ def index():
     return render_template(
         "./first/index.html", title=title, max_file_size_mb=max_file_size_mb
     )
+
+
+@bp.route("/files", methods=["GET"])
+def list_files():
+    """List all uploaded files."""
+    upload_folder = os.path.join(current_app.root_path, '..', 'uploads')
+    files = []
+    
+    if os.path.exists(upload_folder):
+        for filename in os.listdir(upload_folder):
+            if filename.endswith('.parquet'):
+                file_path = os.path.join(upload_folder, filename)
+                file_stat = os.stat(file_path)
+                
+                # Extract original filename and timestamp
+                # Expected format: YYYYMMDD_HHMMSS_original_filename.parquet
+                parts = filename.split('_')
+                if len(parts) >= 3:
+                    try:
+                        # Reconstruct timestamp from first two parts
+                        timestamp_str = f"{parts[0]}_{parts[1]}"
+                        upload_time = datetime.strptime(timestamp_str, '%Y%m%d_%H%M%S')
+                        formatted_time = upload_time.strftime('%Y-%m-%d %H:%M:%S')
+                        # Original name is everything after the timestamp
+                        original_name = '_'.join(parts[2:])
+                    except (ValueError, IndexError):
+                        formatted_time = 'Unknown'
+                        original_name = filename
+                else:
+                    original_name = filename
+                    formatted_time = 'Unknown'
+                
+                files.append({
+                    'filename': filename,
+                    'original_name': original_name,
+                    'size': file_stat.st_size,
+                    'upload_time': formatted_time,
+                    'size_mb': round(file_stat.st_size / (1024 * 1024), 2)
+                })
+    
+    # Sort by most recent first
+    files.sort(key=lambda x: x['filename'], reverse=True)
+    
+    return render_template("./first/partials/_file_list.html", files=files)
 
 
 @bp.route("/upload", methods=["POST"])
@@ -87,8 +132,6 @@ def upload_file():
 
     filename = secure_filename(file.filename)
     # Add timestamp to avoid collisions
-    from datetime import datetime
-
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     filename = f"{timestamp}_{filename}"
 

@@ -2041,6 +2041,9 @@
   .mt-6 {
     margin-top: calc(var(--spacing) * 6);
   }
+  .mt-8 {
+    margin-top: calc(var(--spacing) * 8);
+  }
   .mt-10 {
     margin-top: calc(var(--spacing) * 10);
   }
@@ -2558,6 +2561,9 @@
         }
       }
     }
+  }
+  .bg-base-100 {
+    background-color: var(--color-base-100);
   }
   .bg-base-200 {
     background-color: var(--color-base-200);
