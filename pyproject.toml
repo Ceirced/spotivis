@@ -29,6 +29,8 @@ flask-admin = {extras = ["sqlalchemy"], version = "^2.0.0a4"}
 flask-htmx = "^0.4.0"
 isort = "^6.0.1"
 pyarrow = "^21.0.0"
+pytest = "^8.4.1"
+pyarrow-stubs = "^20.0.0.20250716"
 
 
 [tool.poetry.group.dev.dependencies]

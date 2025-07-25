@@ -18,7 +18,7 @@ from app.extensions.security import init_app as init_security
 migrate = Migrate()
 htmx = HTMX()
 
-posthog = Posthog(os.getenv("POSTHOG_API_KEY"), host="https://eu.i.posthog.com")
+posthog = Posthog(os.getenv("POSTHOG_API_KEY", ''), host="https://eu.i.posthog.com")
 
 
 def create_app():

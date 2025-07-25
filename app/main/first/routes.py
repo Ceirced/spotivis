@@ -28,24 +28,42 @@ def index():
     title = "First"
     max_file_size_mb = MAX_FILE_SIZE // (1024 * 1024)
     if htmx.boosted:
-        return render_template("./first/partials/_content.html", title=title, max_file_size_mb=max_file_size_mb)
-    return render_template("./first/index.html", title=title, max_file_size_mb=max_file_size_mb)
+        return render_template(
+            "./first/partials/_content.html",
+            title=title,
+            max_file_size_mb=max_file_size_mb,
+        )
+    return render_template(
+        "./first/index.html", title=title, max_file_size_mb=max_file_size_mb
+    )
 
 
 @bp.route("/upload", methods=["POST"])
 def upload_file():
     if 'file' not in request.files:
-        return render_template("./first/partials/_upload_error.html", error="No file part"), 400
+        return (
+            render_template(
+                "./first/partials/_upload_error.html", error="No file part"
+            ),
+            400,
+        )
 
     file = request.files['file']
 
     if file.filename == '':
-        return render_template("./first/partials/_upload_error.html", error="No selected file"), 400
+        return (
+            render_template(
+                "./first/partials/_upload_error.html", error="No selected file"
+            ),
+            400,
+        )
 
     if not allowed_file(file.filename):
         return (
-            render_template("./first/partials/_upload_error.html", 
-                          error="Invalid file type. Only .parquet files are allowed"),
+            render_template(
+                "./first/partials/_upload_error.html",
+                error="Invalid file type. Only .parquet files are allowed",
+            ),
             400,
         )
 
@@ -56,8 +74,10 @@ def upload_file():
 
     if file_length > MAX_FILE_SIZE:
         return (
-            render_template("./first/partials/_upload_error.html",
-                          error=f"File too large. Maximum size is {MAX_FILE_SIZE // (1024*1024)}MB"),
+            render_template(
+                "./first/partials/_upload_error.html",
+                error=f"File too large. Maximum size is {MAX_FILE_SIZE // (1024*1024)}MB",
+            ),
             400,
         )
 
@@ -80,16 +100,31 @@ def upload_file():
         # Validate that it's a valid parquet file
         if not validate_parquet_file(file_path):
             os.remove(file_path)
-            return render_template("./first/partials/_upload_error.html", 
-                                 error="Invalid parquet file format"), 400
+            return (
+                render_template(
+                    "./first/partials/_upload_error.html",
+                    error="Invalid parquet file format",
+                ),
+                400,
+            )
 
-        return render_template("./first/partials/_upload_success.html",
-                             filename=filename,
-                             size=file_length,
-                             message="File uploaded successfully"), 200
+        return (
+            render_template(
+                "./first/partials/_upload_success.html",
+                filename=filename,
+                size=file_length,
+                message="File uploaded successfully",
+            ),
+            200,
+        )
 
     except Exception as e:
         if os.path.exists(file_path):
             os.remove(file_path)
-        return render_template("./first/partials/_upload_error.html",
-                             error=f"Failed to save file: {str(e)}"), 500
+        return (
+            render_template(
+                "./first/partials/_upload_error.html",
+                error=f"Failed to save file: {str(e)}",
+            ),
+            500,
+        )

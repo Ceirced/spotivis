@@ -1,0 +1,12 @@
+{
+    "permissions": {
+        "allow": [
+            "Bash(find:*)",
+            "Bash(mkdir:*)",
+            "Bash(python -m pytest tests/test_file_upload.py::TestFileUploadAPI::test_upload_large_file -v)",
+            "Bash(python -m pytest tests/test_file_upload.py::TestFileUploadAPI::test_upload_large_file -v -s)",
+            "Bash(python -m pytest tests/test_file_upload.py::TestFileUploadAPI -v)"
+        ],
+        "deny": []
+    }
+}

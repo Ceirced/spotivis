@@ -34,8 +34,9 @@ class TestingConfig(BaseConfig):
     TESTING = True
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = "sqlite:///"
-    SECRET_KEY = os.getenv("SECRET_KEY")
+    SECRET_KEY = os.getenv("SECRET_KEY", "test-secret-key")
     FLASK_ENV = "testing"
+    REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 
 
 class ProductionConfig(BaseConfig):
