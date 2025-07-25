@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "flask-webapp-template"
+version = "0.1.0"
+description = ""
+authors = ["Cederic Demoulin <cdemoulin@protonmail.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+sqlalchemy = "^2.0.35"
+flask = "^3.0.3"
+flask-sqlalchemy = "^3.1.1"
+flask-migrate = "^4.0.7"
+flask-login = "^0.6.3"
+posthog = "^3.6.6"
+stripe = "^11.0.0"
+python-dotenv = "^1.0.1"
+pymysql = "^1.1.1"
+flask-wtf = "^1.2.1"
+bleach = "^6.1.0"
+email-validator = "^2.2.0"
+gunicorn = "^23.0.0"
+flask-security = {extras = ["common", "fsqla"], version = "^5.6.1"}
+setuptools = "^78.1.0"
+celery = "^5.5.3"
+redis = "^6.2.0"
+flask-admin = {extras = ["sqlalchemy"], version = "^2.0.0a4"}
+
+[tool.poetry.group.dev.dependencies]
+ruff = "*"
+black = "*"
+mypy = "^1.11.2"
+types-flask = "^1.1.6"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

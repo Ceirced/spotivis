@@ -1,0 +1,149 @@
+{% set title = title|default(_fsdomain('Login')) %}
+{% extends "security/base.html" %}
+{% from "security/_macros.html" import render_field_with_errors, render_field, render_field_errors, render_form_errors, prop_next %}
+
+{% block content %}
+    <form
+        action="{{ url_for_security('login') }}{{ prop_next() }}"
+        method="post"
+        name="login_user_form">
+        <fieldset
+            class="fieldset bg-base-200 border-base-300 rounded-box mx-auto mt-10 w-xs gap-5 border p-8 sm:w-sm">
+            <legend class="fieldset-legend">{{ _fsdomain('Login') }}</legend>
+
+            {{ login_user_form.hidden_tag() }}
+            {{ render_form_errors(login_user_form) }}
+            {% if login_user_form.email and "email" in identity_attributes %}
+                <label class="floating-label input validator">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="size-5 opacity-50">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M16.5 12a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Zm0 0c0 1.657 1.007 3 2.25 3S21 13.657 21 12a9 9 0 1 0-2.636 6.364M16.5 12V8.25" />
+                    </svg>
+
+                    <span>Email</span>
+                    {{ login_user_form.email(class='', placeholder='Email') | safe }}
+                </label>
+                {% if login_user_form.email.errors %}
+                    <ul>
+                        {% for error in login_user_form.email.errors %}
+                            <li class="text-error">{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endif %}
+
+            <div class="flex flex-col items-center gap-2">
+                <label class="floating-label input">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="size-5 opacity-50">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
+                    </svg>
+                    <span>Password</span>
+                    {{ login_user_form.password(placeholder='Password') }}
+                </label>
+                {% if login_user_form.password.errors %}
+                    <ul>
+                        {% for error in login_user_form.password.errors %}
+                            <li class="text-error">{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                {% if security.recoverable %}
+                    <a
+                        hx-boost="true"
+                        class="link link-hover"
+                        href="{{ url_for_security('forgot_password') }}"
+                        >{{ _fsdomain('Forgot password?') }}</a
+                    >
+                {% endif %}
+            </div>
+
+            <label class="fieldset-label">
+                {{ login_user_form.remember(class='checkbox') }} Remember me
+            </label>
+            {% if login_user_form.remember.errors %}
+                <ul>
+                    {% for error in login_user_form.remember.errors %}
+                        <li class="text-error">{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            {% if login_user_form.csrf_token.errors %}
+                {{ render_field_errors(login_user_form.csrf_token) }}
+            {% endif %}
+            {{ login_user_form.submit(class='btn btn-primary') }}
+        </fieldset>
+    </form>
+
+    <div class="mt-4 text-center">
+        <p class="text-sm">
+            Don't have an account?
+            <a
+                hx-boost="true"
+                href="{{ url_for_security('register') }}"
+                class="link link-primary"
+                >Sign up here</a
+            >
+        </p>
+    </div>
+
+    {% if security.webauthn %}
+        <hr class="fs-gap" />
+        <h2>{{ _fsdomain("Use WebAuthn to Sign In") }}</h2>
+        <div>
+            <form
+                method="get"
+                id="wan_signin_form"
+                name="wan_signin_form">
+                <input
+                    id="wan_signin"
+                    name="wan_signin"
+                    type="submit"
+                    value="{{ _fsdomain('Sign in with WebAuthn') }}"
+                    formaction="{{ url_for_security('wan_signin') }}{{ prop_next() }}" />
+            </form>
+        </div>
+    {% endif %}
+    {% if security.oauthglue %}
+        <hr class="fs-gap" />
+        <h2>{{ _fsdomain("Use Social Oauth to Sign In") }}</h2>
+        {% for provider in security.oauthglue.provider_names %}
+            <div class="fs-gap">
+                <form
+                    method="post"
+                    id="{{ provider }}_form"
+                    name="{{ provider }}_form">
+                    <input
+                        id="{{ provider }}"
+                        name="{{ provider }}"
+                        type="submit"
+                        value="{{ _fsdomain('Sign in with %(provider)s', provider=provider) }}"
+                        formaction="{{ url_for_security('oauthstart', name=provider) }}{{ prop_next() }}" />
+                    {% if csrf_token is defined %}
+                        <input
+                            id="{{ provider }}_csrf_token"
+                            name="{{ provider }}_csrf_token"
+                            type="hidden"
+                            value="{{ csrf_token() }}" />
+                    {% endif %}
+                </form>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endblock content %}

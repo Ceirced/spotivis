@@ -1,0 +1,17 @@
+{# djlint:off H030,H031 #}
+{% extends "base_base.html" %}
+{%- block head -%}
+    {%- block head_scripts -%}
+    {%- endblock head_scripts -%}
+{%- endblock head -%}
+{%- block body -%}
+    <body>
+        {% block navbar %}
+        {%- endblock navbar -%}
+        {%- block content -%}
+        {%- endblock content -%}
+        {% include 'partials/_flash-messages.html' %}
+        {% block scripts %}
+        {%- endblock scripts -%}
+    </body>
+{%- endblock body -%}

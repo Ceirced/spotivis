@@ -1,0 +1,66 @@
+{% set title = title|default(_fsdomain("Resend confirmation instructions")) %}
+{% extends "security/base.html" %}
+{% from "security/_macros.html" import render_field_with_errors, render_field %}
+
+{% block content %}
+    <form
+        action="{{ url_for_security('send_confirmation') }}"
+        method="post"
+        name="send_confirmation_form">
+        <fieldset
+            class="fieldset bg-base-200 border-base-300 rounded-box mx-auto mt-10 w-xs gap-5 border p-8 sm:w-sm">
+            <legend class="fieldset-legend">
+                {{ _fsdomain('Resend confirmation instructions') }}
+            </legend>
+
+            {{ send_confirmation_form.hidden_tag() }}
+            <label class="floating-label input validator">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="size-5 opacity-50">
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M16.5 12a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Zm0 0c0 1.657 1.007 3 2.25 3S21 13.657 21 12a9 9 0 1 0-2.636 6.364M16.5 12V8.25" />
+                </svg>
+
+                <span>Email</span>
+                {{ send_confirmation_form.email(class='', placeholder='Email') | safe }}
+            </label>
+            {% if send_confirmation_form.email.errors %}
+                <ul>
+                    {% for error in send_confirmation_form.email.errors %}
+                        <li class="text-error">{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            {{ send_confirmation_form.submit(class='btn btn-primary', hx_boost='true') }}
+        </fieldset>
+    </form>
+
+    <div class="mt-4 flex flex-col items-center gap-2 text-center">
+        <p class="text-sm">
+            Don't have an account?
+            <a
+                hx-boost="true"
+                href="{{ url_for_security('register') }}"
+                class="link link-primary"
+                >Sign up here</a
+            >
+        </p>
+        <p class="text-sm">
+            Already confirmed?
+            <a
+                hx-boost="true"
+                href="{{ url_for_security('login') }}"
+                class="link link-primary"
+                >Sign in here</a
+            >
+        </p>
+    </div>
+{% endblock content %}

@@ -1,0 +1,19 @@
+{% from "partials/_flash_message.html" import flash_message %}
+
+<div
+    id="flash-message-container"
+    hx-get="{{ url_for('main.flash_messages') }}"
+    hx-swap="afterbegin"
+    hx-target="#flash-messages"
+    hx-select="#flash-messages > *"
+    hx-trigger="flash-update from:body">
+    {%- with messages = get_flashed_messages(with_categories=true) -%}
+        <div
+            id="flash-messages"
+            class="fixed top-[calc(env(safe-area-inset-top)+4px)] left-1/2 z-50 flex w-full -translate-x-1/2 flex-col items-center gap-2 px-2 text-black">
+            {%- for category, message in messages -%}
+                {{ flash_message(message, category) }}
+            {% endfor %}
+        </div>
+    {%- endwith -%}
+</div>

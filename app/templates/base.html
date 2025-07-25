@@ -1,0 +1,69 @@
+{% extends 'base_base.html' %}
+{% block head %}
+    <style>
+        .loading-bar {
+            background: linear-gradient(
+                90deg,
+                transparent,
+                #000,
+                transparent,
+                #000,
+                transparent
+            );
+        }
+
+        .htmx-request.loading-bar {
+            opacity: 1;
+            animation:
+                fadeIn 0.3s linear forwards,
+                slide 0.8s ease-in-out infinite;
+        }
+
+        @keyframes slide {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+    </style>
+{% endblock %}
+{% block body %}
+    <body
+        class="h-screen touch-pan-y touch-manipulation scroll-smooth pt-[env(safe-area-inset-top)] font-sans text-base"
+        hx-indicator=".loading-bar">
+        <div
+            class="fixed top-0 left-1/2 z-20 container flex h-[calc(env(safe-area-inset-top)+40px)] -translate-x-1/2 items-center px-1 pt-[env(safe-area-inset-top)] text-gray-500 backdrop-blur-md">
+            {% block top_bar %}{% endblock %}
+        </div>
+        <div
+            id="body-container"
+            class="container mx-auto px-4 pt-12 pb-[calc(env(safe-area-inset-bottom)+56px)] lg:pt-12">
+            <div id="content">
+                {% block content %}
+                {% endblock %}
+            </div>
+        </div>
+        {% include 'partials/_flash-messages.html' %}
+        {%
+            include
+            'partials/_bottom_nav.html'
+        %}
+    </body>
+{% endblock %}

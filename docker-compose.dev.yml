@@ -1,0 +1,12 @@
+services:
+  app:
+    container_name: template-flask-app-dev
+    volumes:
+      - ./app:/home/app/app
+      - ./migrations:/home/app/migrations
+    environment:
+      - APP_SETTINGS=config.DevelopmentConfig
+  
+  redis:
+    ports:
+      - 6379:6379

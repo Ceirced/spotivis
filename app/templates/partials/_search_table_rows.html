@@ -1,0 +1,24 @@
+{% for row in search_results %}
+    <tr class="border-b transition-all last:border-none">
+        <td class="p-2">
+            <div class="flex flex-row justify-between">
+                <a
+                    class="block underline"
+                    href="{{ row.url }}">
+                    {{ row.handle }}
+                </a>
+                {% if (add_button and not row['are_friends'] and not row['pending'] ) %}
+                    <button
+                        hx-post="{{ url_for('users.send_friend_request') }}"
+                        hx-vals='{"receiver_id": {{ row.id }} }'
+                        hx-swap="delete">
+                        <svg
+                            class="inline-block size-5 fill-none stroke-current">
+                            <use href="#add-contact" />
+                        </svg>
+                    </button>
+                {% endif %}
+            </div>
+        </td>
+    </tr>
+{% endfor %}

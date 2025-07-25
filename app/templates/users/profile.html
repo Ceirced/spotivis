@@ -1,0 +1,10 @@
+{% extends 'base.html' %} {% block head %}
+<script src="{{ url_for('static', filename='js/d3/d3.v5.min.js') }}"></script>
+{% endblock %} {% block content %}
+<div class="gap-grid-gap lg:gap-grid-gap-lg grid grid-cols-1 lg:grid-cols-4">
+    <div class="tile">
+        <h1>{{ user.username }}</h1>
+        <div>{% if is_friend %} you are friends {% endif %}</div>
+    </div>
+</div>
+{% endblock %}

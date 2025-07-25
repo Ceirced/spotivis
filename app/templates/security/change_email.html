@@ -1,0 +1,55 @@
+{% set title = title|default(_fsdomain('Change Email')) %}
+{% extends "security/base.html" %}
+{% from "security/_macros.html" import render_field_with_errors, render_field, render_field_errors, render_form_errors %}
+
+{% block content %}
+    <form
+        action="{{ url_for_security('change_email') }}"
+        method="post"
+        name="change_email_form">
+        <fieldset
+            class="fieldset bg-base-200 border-base-300 rounded-box mx-auto mt-10 w-xs gap-5 border p-8 sm:w-sm">
+            <legend class="fieldset-legend">
+                {{ _fsdomain('Change Email') }}
+            </legend>
+            <h3>
+                {{ _fsdomain('Once submitted, an email confirmation will be sent to this new email address.') }}
+            </h3>
+            {{ change_email_form.hidden_tag() }}
+            {{ render_form_errors(change_email_form) }}
+            <label class="floating-label input validator">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="size-5 opacity-50">
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M16.5 12a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Zm0 0c0 1.657 1.007 3 2.25 3S21 13.657 21 12a9 9 0 1 0-2.636 6.364M16.5 12V8.25" />
+                </svg>
+
+                <span>Email</span>
+                {{ change_email_form.email(class='', placeholder='Email', autocomplete='username') | safe }}
+            </label>
+            {% if change_email_form.email.errors %}
+                <ul>
+                    {% for error in change_email_form.email.errors %}
+                        <li class="text-error">{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            {% if change_email_form.csrf_token.errors %}
+                <ul>
+                    {% for error in change_email_form.csrf_token.errors %}
+                        <li class="text-error">{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            {{ change_email_form.submit(class='btn btn-primary') }}
+        </fieldset>
+    </form>
+{% endblock content %}

@@ -1,0 +1,22 @@
+{
+    "overrides": [
+        {
+            "files": [
+                "*.html"
+            ],
+            "options": {
+                "parser": "jinja-template"
+            }
+        }
+    ],
+    "bracketSameLine": true,
+    "plugins": [
+        "prettier-plugin-tailwindcss",
+        "prettier-plugin-jinja-template"
+    ],
+    "trailingComma": "es5",
+    "semi": true,
+    "tabWidth": 4,
+    "singleQuote": false,
+    "singleAttributePerLine": true
+}

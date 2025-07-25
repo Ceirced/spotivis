@@ -1,0 +1,15 @@
+<h2 class="text-xl font-bold">Friends</h2>
+{% if not friends %}
+<p class="text-xl">No friends yet</p>
+{% endif %}
+<div class="flex flex-col gap-1">
+	{% for friend in friends %}
+	<div class="flex flex-row-reverse justify-between">
+		<a
+		   class="flex flex-1 flex-row items-center justify-center grow-0 underline"
+		   href="{{ url_for('users.profile', username = friend.username) }}">
+			{{ friend.username}}
+		</a>
+	</div>
+	{% endfor %}
+</div>
