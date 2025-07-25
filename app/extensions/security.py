@@ -5,7 +5,7 @@ from app.extensions.celery import CeleryMailUtil
 from app.models import Role, User
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-security = Security()
+security = Security(mail_util_cls=CeleryMailUtil)
 
 
 def init_app(app):
@@ -29,4 +29,4 @@ def init_app(app):
         SECURITY_REQUIRES_CONFIRMATION_ERROR_VIEW="confirm",
     )
 
-    security.init_app(app, user_datastore, mail_util_cls=CeleryMailUtil)
+    security.init_app(app, user_datastore)
