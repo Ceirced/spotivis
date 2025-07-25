@@ -6,6 +6,7 @@ services:
       - ./migrations:/home/app/migrations
     environment:
       - APP_SETTINGS=config.DevelopmentConfig
+      - IN_CONTAINER=true
   
   redis:
     ports:
