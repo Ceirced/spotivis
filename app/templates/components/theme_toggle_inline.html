@@ -1,5 +1,5 @@
 <!-- Inline Theme Toggle Component -->
-<label class="swap swap-rotate ml-4">
+<label class="swap swap-rotate btn btn-ghost btn-circle ml-4">
     <!-- this hidden checkbox controls the state -->
     <input
         type="checkbox"
@@ -54,7 +54,10 @@
                     const newTheme = this.checked ? "forest" : "light";
                     localStorage.setItem("theme", newTheme);
                     // Apply theme immediately to HTML data-theme attribute
-                    document.documentElement.setAttribute("data-theme", newTheme);
+                    document.documentElement.setAttribute(
+                        "data-theme",
+                        newTheme
+                    );
                 };
 
                 // Add event listener to save theme changes
