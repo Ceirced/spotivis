@@ -1,10 +1,11 @@
 from datetime import datetime
 from pathlib import Path
-from flask import render_template, request, current_app
+from flask import render_template, request, current_app, make_response
 from werkzeug.utils import secure_filename
 import pyarrow.parquet as pq
 
 from app import htmx, cache
+from app.helpers.app_helpers import make_cache_key_with_htmx
 from app.main.first import bp
 
 
@@ -24,7 +25,17 @@ def validate_parquet_file(file_path):
         return False
 
 
+def add_cache_headers(response, max_age=300, private=True):
+    """Add client-side cache headers to response."""
+    if private:
+        response.headers["Cache-Control"] = f"private, max-age={max_age}"
+    else:
+        response.headers["Cache-Control"] = f"public, max-age={max_age}"
+    return response
+
+
 @bp.route("/", methods=["GET"])
+@cache.cached(timeout=60, make_cache_key=make_cache_key_with_htmx)
 def index():
     title = "First"
     max_file_size_mb = MAX_FILE_SIZE // (1024 * 1024)
@@ -40,6 +51,9 @@ def index():
 
 
 @bp.route("/preview/<filename>", methods=["GET"])
+@cache.cached(
+    timeout=300, make_cache_key=make_cache_key_with_htmx
+)  # Cache for 5 minutes
 def preview_file(filename):
     """Show file preview page with metadata and data preview."""
     upload_folder = Path(current_app.root_path).parent / "uploads"
@@ -96,12 +110,15 @@ def preview_data(filename):
         columns = preview_df.columns.tolist()
         rows = preview_df.values.tolist()
 
-        return render_template(
-            "./first/partials/_preview_data.html",
-            columns=columns,
-            rows=rows,
-            total_rows=len(df),
+        response = make_response(
+            render_template(
+                "./first/partials/_preview_data.html",
+                columns=columns,
+                rows=rows,
+                total_rows=len(df),
+            )
         )
+        return add_cache_headers(response, max_age=300)  # Cache for 5 minutes
     except Exception as e:
         return (
             render_template(
