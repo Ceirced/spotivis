@@ -55,7 +55,7 @@
                         (e.init = function (i, s, a) {
                             function g(t, e) {
                                 var o = e.split(".");
-                                2 == o.length && ((t = t[o[0]]), (e = o[1])),
+                                (2 == o.length && ((t = t[o[0]]), (e = o[1])),
                                     (t[e] = function () {
                                         t.push(
                                             [e].concat(
@@ -65,16 +65,16 @@
                                                 )
                                             )
                                         );
-                                    });
+                                    }));
                             }
-                            ((p = t.createElement("script")).type =
+                            (((p = t.createElement("script")).type =
                                 "text/javascript"),
                                 (p.async = !0),
                                 (p.src = s.api_host + "/static/array.js"),
                                 (r =
                                     t.getElementsByTagName(
                                         "script"
-                                    )[0]).parentNode.insertBefore(p, r);
+                                    )[0]).parentNode.insertBefore(p, r));
                             var u = e;
                             for (
                                 void 0 !== a
@@ -122,36 +122,16 @@
         <script
             defer
             src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
-        
+
         <!-- Global theme initialization - runs immediately to prevent flash -->
         <script>
-            (function() {
-                // Function to get the actual theme based on user preference
-                function getActualTheme(preference) {
-                    if (preference === "system") {
-                        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "forest" : "light";
-                    }
-                    return preference;
-                }
-
-                // Apply saved theme preference immediately to prevent flash
-                const savedPreference = localStorage.getItem("themePreference") || "system";
-                const actualTheme = getActualTheme(savedPreference);
-                document.documentElement.setAttribute("data-theme", actualTheme);
-
-                // Listen for system theme changes when preference is 'system'
-                const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-                function handleSystemThemeChange() {
-                    const currentPreference = localStorage.getItem("themePreference") || "system";
-                    if (currentPreference === "system") {
-                        const newActualTheme = getActualTheme("system");
-                        document.documentElement.setAttribute("data-theme", newActualTheme);
-                    }
-                }
-                mediaQuery.addEventListener("change", handleSystemThemeChange);
+            (function () {
+                // Apply saved theme immediately to prevent flash
+                const savedTheme = localStorage.getItem("theme") || "light";
+                document.documentElement.setAttribute("data-theme", savedTheme);
             })();
         </script>
-        
+
         {% block head %}
         {% endblock %}
     </head>

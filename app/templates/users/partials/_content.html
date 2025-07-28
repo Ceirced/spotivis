@@ -64,7 +64,6 @@
                     required
                     placeholder="Search Users"
                     name="search"
-                    autofocus
                     autocomplete="off"
                     hx-post="{{ url_for('users.search_users') }}"
                     hx-trigger="contact-added from:body, input changed delay:100ms"

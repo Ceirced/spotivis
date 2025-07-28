@@ -1,12 +1,12 @@
 {% extends 'base_base.html' %}
 {% block body %}
-    <body class="container mx-auto font-sans">
-        <header class="flex justify-end p-6">
+    <body class="container mx-auto pt-[env(safe-area-inset-top)] font-sans">
+        <header class="flex justify-end p-4">
             <div class="flex items-center">
                 <a
                     href="{{ url_for('security.login') }}"
-                    class="flex items-center gap-2 text-lg font-medium text-blue-500">
-                    Login
+                    class="text-primary btn btn-ghost text-lg font-medium"
+                    >Login
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
@@ -20,80 +20,23 @@
                             d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25" />
                     </svg>
                 </a>
+                {% include 'components/theme_toggle_inline.html' %}
             </div>
         </header>
-        <main class="mt-16 flex min-h-screen flex-col gap-40">
-            <hgroup class="m-4 text-center">
+        <main class="mt-16 flex flex-col gap-40">
+            <hgroup class="m-4 flex flex-col items-center gap-8 text-center">
                 <h2
-                    class="mb-4 bg-linear-to-b from-white from-zinc-400 to-black to-zinc-500 bg-clip-text text-2xl font-medium text-transparent sm:text-3xl">
+                    class="bg-linear-to-b from-zinc-400 to-zinc-500 bg-clip-text text-2xl font-medium text-transparent sm:text-3xl">
                     {{ config['APP_NAME'] }}
                 </h2>
                 <h1
-                    class="mb-4 bg-linear-to-b from-white from-zinc-400 to-black to-zinc-400 bg-clip-text text-4xl leading-normal font-semibold text-transparent sm:text-5xl sm:leading-normal">
+                    class="bg-linear-to-b from-zinc-400 to-zinc-500 bg-clip-text text-4xl leading-normal font-semibold text-transparent sm:text-5xl sm:leading-normal">
                     dream big, start small
                 </h1>
+                <a href="{{ url_for('security.register') }}">
+                    <button class="btn btn-primary btn-lg">Get Started</button>
+                </a>
             </hgroup>
-            <section>
-                <div class="flex-row items-center md:flex">
-                    <div class="m-12 flex-1 text-center">
-                        <h3
-                            class="mb-4 text-2xl font-bold text-gray-400 text-zinc-500">
-                            Visualize your social network
-                        </h3>
-                        <p
-                            class="text-l mb-4 font-medium text-gray-300 text-zinc-400">
-                            Explore Your social network in a graph. <br />
-                            See who knows whom and how they are connected.
-                        </p>
-                    </div>
-                </div>
-            </section>
-            <section
-                id="quotes"
-                class="my-14 grid gap-4 md:grid-cols-2">
-                <div
-                    class="mx-4 max-w-96 justify-self-center md:justify-self-end">
-                    <div
-                        class="rounded-md bg-white bg-zinc-900 p-4 text-gray-400 text-gray-500 shadow-md">
-                        <div class="italic">
-                            "Measurement is the first step that leads to control
-                            and eventually to improvement. If you can't measure
-                            something, you can't understand it. If you can't
-                            understand it, you can't control it. If you can't
-                            control it, you can't improve it."
-                        </div>
-                        <span class="mt-2 inline-block w-full text-right">
-                            - H. James Harrington
-                        </span>
-                    </div>
-                </div>
-                <div></div>
-                <div></div>
-                <div
-                    class="mx-4 max-w-96 justify-self-center md:w-96 md:justify-self-start">
-                    <div
-                        class="w-full rounded-md bg-white bg-zinc-900 p-4 text-gray-400 text-gray-500 shadow-md">
-                        <div class="italic">"What you measure moves"</div>
-                        <span class="mt-2 inline-block w-full text-right">
-                            - Peter F. Drucker
-                        </span>
-                    </div>
-                </div>
-            </section>
-            <section class="my-14 flex items-center justify-center">
-                <div class="mx-4 text-center">
-                    <p class="mb-8 text-xl text-gray-400">
-                        Join hundreds of daily user who are already using this
-                        app.
-                    </p>
-                    <a href="{{ url_for('security.register') }}">
-                        <button
-                            class="rounded-full bg-blue-500 px-6 py-3 font-medium text-white hover:bg-blue-600 active:bg-blue-700">
-                            Start now
-                        </button>
-                    </a>
-                </div>
-            </section>
         </main>
     </body>
 {% endblock %}

@@ -1,15 +1,16 @@
 {% extends 'base_base.html' %}
 {% block body %}
     <body
+        hx-swap="show:none"
         class="h-screen touch-pan-y touch-manipulation scroll-smooth pt-[env(safe-area-inset-top)] font-sans text-base">
         <div
             id="top-bar"
-            class="fixed top-0 left-1/2 z-20 container flex h-[calc(env(safe-area-inset-top)+40px)] -translate-x-1/2 items-center px-4 pt-[env(safe-area-inset-top)] text-gray-500 backdrop-blur-md lg:pt-8">
+            class="fixed top-0 z-20 flex h-[calc(env(safe-area-inset-top)+40px)] w-full items-center justify-center px-4 pt-[env(safe-area-inset-top)] text-gray-500 backdrop-blur-md md:h-[calc(env(safe-area-inset-top)+52px)]">
             {% block top_bar %}{% endblock %}
         </div>
         <div
             id="body-container"
-            class="container mx-auto px-4 pt-12 pb-[calc(env(safe-area-inset-bottom)+56px)] lg:pt-20">
+            class="container mx-auto px-4 pt-12 pb-[calc(env(safe-area-inset-bottom)+56px)] md:pt-16">
             <div id="content">
                 {% block content %}
                 {% endblock %}

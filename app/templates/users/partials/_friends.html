@@ -2,10 +2,10 @@
 {% if not friends %}
     <p class="text-xl">No friends yet</p>
 {% endif %}
-<ul class="list">
+<ul class="list mt-3">
     {% for friend in friends %}
         <li
-            class="group list-row relative rounded-md py-0 transition-colors duration-200 hover:bg-gray-100">
+            class="group list-row hover:bg-base-200 relative rounded-md py-0 transition-colors duration-200">
             <a
                 hx-boost="true"
                 hx-target="#content"
