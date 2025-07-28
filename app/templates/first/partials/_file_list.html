@@ -1,5 +1,5 @@
 {% if files %}
-    <div class="card bg-base-200 shadow-sm">
+    <div class="card bg-base-100 shadow-sm">
         <div class="card-body">
             <h3 class="card-title">Uploaded Files</h3>
             <div class="overflow-x-auto">
@@ -13,11 +13,16 @@
                     </thead>
                     <tbody>
                         {% for file in files %}
-                            <tr>
-                                <td>
-                                    <div class="font-medium">
-                                        {{ file.original_name }}
-                                    </div>
+                            <tr
+                                class="hover:bg-base-300 relative transition-colors duration-500 ease-out">
+                                <td class="font-medium">
+                                    <a
+                                        hx-boost="true"
+                                        class="hover absolute inset-0 cursor-pointer"
+                                        href="/first/preview/{{ file.filename }}"
+                                        hx-target="#content">
+                                    </a>
+                                    {{ file.original_name }}
                                 </td>
                                 <td>{{ file.size_mb }} MB</td>
                                 <td>{{ file.upload_time }}</td>
@@ -29,7 +34,7 @@
         </div>
     </div>
 {% else %}
-    <div class="card bg-base-100 shadow-sm">
+    <div class="card bg-base-200 shadow-sm">
         <div class="card-body">
             <h3 class="card-title">Uploaded Files</h3>
             <p class="text-base-content/70">No files uploaded yet.</p>

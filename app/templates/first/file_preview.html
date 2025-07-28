@@ -1,0 +1,75 @@
+{% macro content() %}
+    <div class="card bg-base-200 mb-8 shadow-sm">
+        <div class="card-body">
+            <h2 class="card-title">File Information</h2>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                    <p class="text-base-content/70 text-sm">Original Name</p>
+                    <p class="font-medium">{{ file.original_name }}</p>
+                </div>
+                <div>
+                    <p class="text-base-content/70 text-sm">File Size</p>
+                    <p class="font-medium">{{ file.size_mb }} MB</p>
+                </div>
+                <div>
+                    <p class="text-base-content/70 text-sm">Upload Time</p>
+                    <p class="font-medium">{{ file.upload_time }}</p>
+                </div>
+                <div>
+                    <p class="text-base-content/70 text-sm">Full Filename</p>
+                    <p class="text-xs font-medium">{{ file.filename }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+            <h2 class="card-title">Data Preview (First 10 rows)</h2>
+            <div
+                id="preview-data"
+                hx-get="/first/preview-data/{{ file.filename }}"
+                hx-trigger="load"
+                hx-swap="innerHTML">
+                <div class="skeleton h-96 w-full"></div>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{{ htmx.boosted }}
+{% if htmx.boosted %}
+    <title>{{ title }}</title>
+
+    <div
+        id="top-bar"
+        hx-swap-oob="innerHTML">
+        {% block top_bar %}
+            <div class="container flex w-full items-center justify-between">
+                <a
+                    hx-boost="true"
+                    hx-target="#content"
+                    href="{{ url_for('first.index') }}"
+                    class="group hover:text-primary flex items-center gap-1 transition-colors">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        class="size-4 stroke-current stroke-2 transition-transform duration-300 ease-out group-hover:-translate-x-1">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                    </svg>
+                    <span>first</span>
+                </a>
+            </div>
+        {% endblock %}
+    </div>
+    {{ content() }}
+{% else %}
+    {% extends 'base.html' %}
+    {% block content %}
+        {{ content() }}
+    {% endblock %}
+{% endif %}
