@@ -3,9 +3,8 @@ from pathlib import Path
 from flask import render_template, request, current_app
 from werkzeug.utils import secure_filename
 import pyarrow.parquet as pq
-import pandas as pd
 
-from app import htmx
+from app import htmx, cache
 from app.main.first import bp
 
 
@@ -79,6 +78,7 @@ def preview_file(filename):
 
 
 @bp.route("/preview-data/<filename>", methods=["GET"])
+@cache.cached(timeout=300)  # Cache for 5 minutes
 def preview_data(filename):
     """Load and return the actual parquet file data preview."""
     upload_folder = Path(current_app.root_path).parent / "uploads"

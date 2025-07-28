@@ -4,6 +4,7 @@ from logging.handlers import RotatingFileHandler
 
 import stripe
 from flask import Flask, render_template, request
+from flask_caching import Cache
 from flask_htmx import HTMX  # type: ignore
 from flask_migrate import Migrate  # type: ignore
 from posthog import Posthog
@@ -17,8 +18,9 @@ from app.extensions.security import init_app as init_security
 # to set the app Settings in the docker compose
 migrate = Migrate()
 htmx = HTMX()
+cache = Cache(config={"CACHE_TYPE": "SimpleCache"})
 
-posthog = Posthog(os.getenv("POSTHOG_API_KEY", ''), host="https://eu.i.posthog.com")
+posthog = Posthog(os.getenv("POSTHOG_API_KEY", ""), host="https://eu.i.posthog.com")
 
 
 def create_app():
@@ -49,6 +51,7 @@ def create_app():
     init_admin(app)
     db.init_app(app)
     htmx.init_app(app)
+    cache.init_app(app)
     mail.init_app(app)
     migrate.init_app(app, db)
 

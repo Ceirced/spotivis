@@ -1,29 +1,34 @@
 {% macro content() %}
-    <div class="card bg-base-200 mb-8 shadow-sm">
+    <div class="card bg-secondary text-secondary-content mb-8 shadow-sm">
         <div class="card-body">
-            <h2 class="card-title">File Information</h2>
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                    <p class="text-base-content/70 text-sm">Original Name</p>
-                    <p class="font-medium">{{ file.original_name }}</p>
+                    <p class="text-sm">Original Name</p>
+                    <p class="text-xl font-medium text-white">
+                        {{ file.original_name }}
+                    </p>
                 </div>
                 <div>
-                    <p class="text-base-content/70 text-sm">File Size</p>
-                    <p class="font-medium">{{ file.size_mb }} MB</p>
+                    <p class="text-sm">File Size</p>
+                    <p class="text-xl font-medium text-white">
+                        {{ file.size_mb }} MB
+                    </p>
                 </div>
                 <div>
-                    <p class="text-base-content/70 text-sm">Upload Time</p>
-                    <p class="font-medium">{{ file.upload_time }}</p>
+                    <p class="text-sm">Upload Time</p>
+                    <p class="font-medium text-white">{{ file.upload_time }}</p>
                 </div>
                 <div>
-                    <p class="text-base-content/70 text-sm">Full Filename</p>
-                    <p class="text-xs font-medium">{{ file.filename }}</p>
+                    <p class="text-sm">Full Filename</p>
+                    <p class="text-xs font-medium text-white">
+                        {{ file.filename }}
+                    </p>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="card bg-base-100 shadow-sm">
+    <div class="card bg-base-200 shadow-sm">
         <div class="card-body">
             <h2 class="card-title">Data Preview (First 10 rows)</h2>
             <div
@@ -37,7 +42,6 @@
     </div>
 {% endmacro %}
 
-{{ htmx.boosted }}
 {% if htmx.boosted %}
     <title>{{ title }}</title>
 
