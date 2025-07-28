@@ -22,8 +22,7 @@
             hx-encoding="multipart/form-data"
             hx-trigger="submit"
             hx-indicator="#upload-progress"
-            hx-target="#upload-result"
-            hx-swap="innerHTML">
+            hx-target="#upload-result">
             <fieldset class="fieldset">
                 <legend class="fieldset-legend">Pick a Parquet file</legend>
                 <input
@@ -57,8 +56,7 @@
     id="file-list"
     class="mt-8"
     hx-get="/first/files"
-    hx-trigger="load, refresh"
-    hx-swap="innerHTML">
+    hx-trigger="load, refresh">
     <!-- File list will be loaded here -->
 </div>
 
