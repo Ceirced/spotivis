@@ -19,10 +19,22 @@ def allowed_file(filename):
 
 def validate_parquet_file(file_path):
     try:
-        pq.ParquetFile(file_path)
-        return True
-    except Exception:
-        return False
+        parquet_file = pq.ParquetFile(file_path)
+        schema = parquet_file.schema_arrow
+        column_names = [field.name for field in schema]
+
+        required_columns = {"isrc", "playlist_id", "thu_date"}
+        missing_columns = required_columns - set(column_names)
+
+        if missing_columns:
+            return (
+                False,
+                f"Missing required columns: {', '.join(sorted(missing_columns))}",
+            )
+
+        return True, None
+    except Exception as e:
+        return False, f"Invalid parquet file: {str(e)}"
 
 
 def add_cache_headers(response, max_age=300, private=True):
@@ -181,7 +193,7 @@ def upload_file():
             render_template(
                 "./first/partials/_upload_error.html", error="No file part"
             ),
-            400,
+            422,
         )
 
     file = request.files["file"]
@@ -191,7 +203,7 @@ def upload_file():
             render_template(
                 "./first/partials/_upload_error.html", error="No selected file"
             ),
-            400,
+            422,
         )
 
     if not allowed_file(file.filename):
@@ -200,7 +212,7 @@ def upload_file():
                 "./first/partials/_upload_error.html",
                 error="Invalid file type. Only .parquet files are allowed",
             ),
-            400,
+            422,
         )
 
     # Check file size
@@ -214,7 +226,7 @@ def upload_file():
                 "./first/partials/_upload_error.html",
                 error=f"File too large. Maximum size is {MAX_FILE_SIZE // (1024*1024)}MB",
             ),
-            400,
+            422,
         )
 
     # Create upload directory if it doesn't exist
@@ -232,14 +244,15 @@ def upload_file():
         file.save(str(file_path))
 
         # Validate that it's a valid parquet file
-        if not validate_parquet_file(str(file_path)):
+        is_valid, error_message = validate_parquet_file(str(file_path))
+        if not is_valid:
             file_path.unlink()
             return (
                 render_template(
                     "./first/partials/_upload_error.html",
-                    error="Invalid parquet file format",
+                    error=error_message,
                 ),
-                400,
+                422,
             )
 
         return (
@@ -260,5 +273,5 @@ def upload_file():
                 "./first/partials/_upload_error.html",
                 error=f"Failed to save file: {str(e)}",
             ),
-            500,
+            422,
         )
