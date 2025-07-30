@@ -19,7 +19,7 @@ if [ "$1" = 'dev' ]; then
 elif [ "$1" = 'local' ]; then
     echo "Starting Redis and Celery only for local development..."
     echo "Redis will be available on localhost:6379"
-    docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d redis celery
+    docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build redis celery
     echo ""
     echo "Redis and Celery are running. Now start Flask with:"
     echo "  flask run"
