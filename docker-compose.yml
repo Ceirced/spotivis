@@ -49,6 +49,8 @@ services:
       - ./logs/app:/home/app/logs
       - ./migrations:/home/app/migrations
       - ./instance:/home/app/instance
+      - ./uploads:/home/app/uploads
+      - ./clean_data:/home/app/clean_data
     env_file:
       - .env
     environment:
