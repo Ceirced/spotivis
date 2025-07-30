@@ -1,0 +1,66 @@
+{% if task_state == "SUCCESS" %}
+    <div class="space-y-4">
+        <div class="flex items-center justify-between">
+            <span class="text-success font-medium">✓ Processing Complete!</span>
+            <span>100%</span>
+        </div>
+        <progress
+            class="progress progress-success w-full"
+            value="100"
+            max="100"></progress>
+
+        {% if result %}
+            <div class="bg-base-200 mt-4 rounded-lg p-4">
+                <h4 class="mb-2 font-semibold">Results:</h4>
+                <div class="space-y-1 text-sm">
+                    <p>
+                        ✓ Nodes: {{ result.statistics.final_nodes }} (from
+                        {{ result.statistics.initial_nodes }})
+                    </p>
+                    <p>
+                        ✓ Edges: {{ result.statistics.final_edges }} (from
+                        {{ result.statistics.initial_edges }})
+                    </p>
+                    <p>✓ Output files created in clean_data/</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    <script>
+        // Stop polling on failure add the hx-disable attribute to the #progress-container
+        document
+            .getElementById("progress-container")
+            .setAttribute("hx-disable", "true");
+    </script>
+{% elif task_state == "FAILURE" %}
+    <div class="space-y-4">
+        <div class="flex items-center justify-between">
+            <span class="text-error font-medium">✗ Processing Failed</span>
+            <span>{{ percent }}%</span>
+        </div>
+        <progress
+            class="progress progress-error w-full"
+            value="{{ percent }}"
+            max="100"></progress>
+        <div class="alert alert-error mt-2">
+            <span>{{ status }}</span>
+        </div>
+    </div>
+    <script>
+        // Stop polling on failure add the hx-disable attribute to the #progress-container
+        document
+            .getElementById("progress-container")
+            .setAttribute("hx-disable", "true");
+    </script>
+{% else %}
+    <div class="space-y-4">
+        <div class="flex items-center justify-between">
+            <span>{{ status }}</span>
+            <span>{{ percent }}%</span>
+        </div>
+        <progress
+            class="progress progress-primary w-full"
+            value="{{ percent }}"
+            max="100"></progress>
+    </div>
+{% endif %}

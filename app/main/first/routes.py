@@ -1,12 +1,13 @@
 from datetime import datetime
 from pathlib import Path
-from flask import render_template, request, current_app, make_response
+from flask import render_template, request, current_app, make_response, jsonify
 from werkzeug.utils import secure_filename
 import pyarrow.parquet as pq
 
 from app import htmx, cache
 from app.helpers.app_helpers import make_cache_key_with_htmx
 from app.main.first import bp
+from app.tasks.preprocessing import preprocess_spotify_data_original
 
 
 ALLOWED_EXTENSIONS = {"parquet"}
@@ -275,3 +276,79 @@ def upload_file():
             ),
             422,
         )
+
+
+@bp.route("/preprocess/<filename>", methods=["POST"])
+def start_preprocessing(filename):
+    """Start preprocessing task for uploaded parquet file."""
+    upload_folder = Path(current_app.root_path).parent / "uploads"
+    file_path = upload_folder / filename
+
+    if not file_path.exists() or not file_path.suffix == ".parquet":
+        return (
+            render_template(
+                "./first/partials/_preprocess_error.html", error="File not found"
+            ),
+            404,
+        )
+
+    # Start the Celery task
+    task = preprocess_spotify_data_original.delay(filename)
+
+    return render_template(
+        "./first/partials/_preprocess_started.html", task_id=task.id, filename=filename
+    )
+
+
+@bp.route("/task-status/<task_id>", methods=["GET"])
+def task_status(task_id):
+    """Check the status of a preprocessing task."""
+    task = preprocess_spotify_data_original.AsyncResult(task_id)
+
+    if task.state == "PENDING":
+        response = {
+            "state": task.state,
+            "current": 0,
+            "total": 100,
+            "status": "Task pending...",
+            "percent": 0,
+        }
+    elif task.state == "PROGRESS":
+        response = {
+            "state": task.state,
+            "current": task.info.get("current", 0),
+            "total": task.info.get("total", 100),
+            "status": task.info.get("status", ""),
+            "percent": task.info.get("percent", 0),
+        }
+    elif task.state == "SUCCESS":
+        response = {
+            "state": task.state,
+            "current": 100,
+            "total": 100,
+            "status": "Complete!",
+            "percent": 100,
+            "result": task.info.get("result", task.result),
+        }
+    else:  # FAILURE
+        response = {
+            "state": task.state,
+            "current": 0,
+            "total": 100,
+            "status": str(task.info),
+            "percent": 0,
+        }
+
+    if request.headers.get("HX-Request"):
+        # Return HTML partial for HTMX
+        return render_template(
+            "./first/partials/_task_progress.html",
+            task_id=task_id,
+            task_state=response["state"],
+            percent=response["percent"],
+            status=response["status"],
+            result=response.get("result"),
+        )
+    else:
+        # Return JSON for other requests
+        return jsonify(response)

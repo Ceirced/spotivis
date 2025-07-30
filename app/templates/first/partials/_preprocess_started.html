@@ -1,0 +1,12 @@
+<div class="card bg-base-100 shadow-sm">
+    <div class="card-body">
+        <h3 class="card-title">Processing {{ filename }}</h3>
+        <div
+            id="progress-container"
+            hx-get="/first/task-status/{{ task_id }}"
+            hx-trigger="load, every 2s"
+            hx-swap="innerHTML">
+            <div class="skeleton h-20 w-full"></div>
+        </div>
+    </div>
+</div>
