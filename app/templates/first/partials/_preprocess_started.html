@@ -3,10 +3,13 @@
         <h3 class="card-title">Processing {{ filename }}</h3>
         <div
             id="progress-container"
-            hx-get="/first/task-status/{{ task_id }}"
-            hx-trigger="load, every 2s"
-            hx-swap="innerHTML">
+            hx-get="{{ url_for('first.task_status', task_id=task_id) }}"
+            hx-trigger="load, every 2s">
             <div class="skeleton h-20 w-full"></div>
         </div>
     </div>
 </div>
+
+<script>
+    htmx.trigger("#file-preprocessing-history", "refresh");
+</script>

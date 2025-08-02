@@ -53,15 +53,16 @@
         id="preprocessing-container"
         class="mb-4"></div>
 
-    {% if preprocessing_jobs %}
-        <div class="card bg-base-200 mb-4 shadow-sm">
-            <div class="card-body">
-                {% with jobs=preprocessing_jobs, hide_file_column=true %}
-                    {% include './first/partials/_preprocessing_history.html' %}
-                {% endwith %}
+    <div class="card bg-base-200 mb-4 shadow-sm">
+        <div class="card-body">
+            <div
+                id="file-preprocessing-history"
+                hx-get="{{ url_for('first.preprocessing_history', filename=file.filename) }}"
+                hx-trigger="load, refresh">
+                <div class="skeleton h-32 w-full"></div>
             </div>
         </div>
-    {% endif %}
+    </div>
 
     <div class="card bg-base-200 shadow-sm">
         <div class="card-body">

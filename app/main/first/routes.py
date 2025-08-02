@@ -105,26 +105,9 @@ def preview_file(filename):
         "upload_time": formatted_time,
     }
 
-    # Get preprocessing jobs for this file
-    stmt = select(UploadedFile).where(UploadedFile.filename == filename)
-    uploaded_file = db.session.scalar(stmt)
-
-    preprocessing_jobs = []
-    if uploaded_file:
-        preprocessing_jobs = uploaded_file.preprocessing_jobs
-    logger.info(f"Preprocessing jobs for {filename}: {preprocessing_jobs}")
-    logger.info(f"uploaded_file: {uploaded_file}")
-
-    if htmx.boosted:
-        return render_template(
-            "./first/file_preview.html",
-            file=file_info,
-            preprocessing_jobs=preprocessing_jobs,
-        )
     return render_template(
         "./first/file_preview.html",
         file=file_info,
-        preprocessing_jobs=preprocessing_jobs,
     )
 
 
@@ -341,19 +324,8 @@ def start_preprocessing(filename):
             404,
         )
 
-    # Create preprocessing job record first to avoid race condition
-    preprocessing_job = PreprocessingJob(
-        task_id="pending", uploaded_file_id=uploaded_file.id, status="pending"
-    )
-    db.session.add(preprocessing_job)
-    db.session.commit()
-
-    # Start the Celery task with the job UUID
-    task = preprocess_spotify_data_original.delay(filename, preprocessing_job.uuid)
-
-    # Update the job with the actual task ID
-    preprocessing_job.task_id = task.id
-    db.session.commit()
+    # Start the Celery task - it will create the job record internally
+    task = preprocess_spotify_data_original.delay(filename)
 
     return render_template(
         "./first/partials/_preprocess_started.html", task_id=task.id, filename=filename
@@ -415,19 +387,31 @@ def task_status(task_id):
 
 
 @bp.route("/preprocessing-history", methods=["GET"])
-def preprocessing_history():
+@bp.route("/preprocessing-history/<filename>", methods=["GET"])
+def preprocessing_history(filename=None):
     """Display preprocessing history for uploaded files."""
-    # Get all preprocessing jobs with their related uploaded files for current user
+    # Base query for user's jobs
     stmt = (
         select(PreprocessingJob)
         .join(UploadedFile)
         .where(UploadedFile.user_id == current_user.id)
-        .order_by(PreprocessingJob.started_at.desc())
     )
-
+    
+    # If filename is provided, filter by that specific file
+    if filename:
+        stmt = stmt.where(UploadedFile.filename == filename)
+    
+    stmt = stmt.order_by(PreprocessingJob.started_at.desc())
     jobs = db.session.scalars(stmt).all()
 
-    return render_template("./first/partials/_preprocessing_history.html", jobs=jobs)
+    # Set hide_file_column flag when showing jobs for a specific file
+    hide_file_column = filename is not None
+
+    return render_template(
+        "./first/partials/_preprocessing_history.html", 
+        jobs=jobs, 
+        hide_file_column=hide_file_column
+    )
 
 
 @bp.route("/graph-preview/<uuid:job_id>", methods=["GET"])

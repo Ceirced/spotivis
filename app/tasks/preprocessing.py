@@ -161,28 +161,31 @@ def save_graph(
 
 
 @shared_task(bind=True)
-def preprocess_spotify_data_original(self, filename: str, job_uuid: str):
+def preprocess_spotify_data_original(self, filename: str):
     """
     Celery task using the exact same algorithm as create_data.py.
     """
 
     try:
+        # Get the uploaded file record to create job
+        from app.models import UploadedFile
+        stmt = select(UploadedFile).where(UploadedFile.filename == filename)
+        uploaded_file = db.session.scalar(stmt)
+        
+        if not uploaded_file:
+            logger.error(f"No uploaded file found for filename: {filename}")
+            return {"status": "error", "error": f"File {filename} not found in database"}
 
-        # Get the preprocessing job record using the provided job_uuid
-        stmt = select(PreprocessingJob).where(
-            PreprocessingJob.uuid == job_uuid
+        # Create preprocessing job record
+        job = PreprocessingJob(
+            task_id=self.request.id,
+            uploaded_file_id=uploaded_file.id,
+            status="processing"
         )
-        job = db.session.scalar(stmt)
+        db.session.add(job)
+        db.session.commit()
 
-        logger.info(f"Found job: {job} for job_uuid: {job_uuid}")
-
-        if job:
-            logger.info(f"Updating job {job.uuid} status to processing")
-            job.status = "processing"
-            db.session.commit()
-            logger.info(f"Job {job.uuid} status updated to processing")
-        else:
-            logger.warning(f"No job found for job_uuid: {job_uuid}")
+        logger.info(f"Created and started processing job {job.uuid} for file {filename}")
         # Set up paths
         upload_folder = Path("/home/app/uploads")
         clean_data_dir = Path("/home/app/clean_data")
@@ -307,17 +310,18 @@ def preprocess_spotify_data_original(self, filename: str, job_uuid: str):
         logger.error(traceback.format_exc())
 
         # Update job record with error
-        if job:
-            logger.info(f"Updating job {job.uuid} status to failed")
-            job.status = "failed"
-            job.error_message = str(e)
-            job.completed_at = datetime.now(timezone.utc)
-            db.session.commit()
-            logger.info(f"Job {job.uuid} status updated to failed: {str(e)}")
-        else:
-            logger.warning(
-                f"No job found to update error status for job_uuid: {job_uuid}"
-            )
+        try:
+            if 'job' in locals() and job:
+                logger.info(f"Updating job {job.uuid} status to failed")
+                job.status = "failed"
+                job.error_message = str(e)
+                job.completed_at = datetime.now(timezone.utc)
+                db.session.commit()
+                logger.info(f"Job {job.uuid} status updated to failed: {str(e)}")
+            else:
+                logger.warning(f"No job record available to update error status for task: {self.request.id}")
+        except Exception as commit_error:
+            logger.error(f"Failed to update job status to failed: {commit_error}")
 
         return {
             "status": "error",
