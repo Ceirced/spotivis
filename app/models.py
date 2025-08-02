@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
@@ -142,7 +143,9 @@ class UploadedFile(Model):
 class PreprocessingJob(Model):
     __tablename__ = "preprocessing_jobs"
 
-    id: so.Mapped[int] = so.mapped_column(primary_key=True, autoincrement=True)
+    uuid: so.Mapped[str] = so.mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
     task_id: so.Mapped[str] = so.mapped_column(String(255), nullable=False, unique=True)
     uploaded_file_id: so.Mapped[int] = so.mapped_column(
         ForeignKey("uploaded_files.id"), nullable=False
@@ -173,4 +176,4 @@ class PreprocessingJob(Model):
     error_message: so.Mapped[str | None] = so.mapped_column(db.Text, nullable=True)
 
     def __repr__(self):
-        return f"<PreprocessingJob {self.id} - {self.status}>"
+        return f"<PreprocessingJob {self.uuid} - {self.status}>"

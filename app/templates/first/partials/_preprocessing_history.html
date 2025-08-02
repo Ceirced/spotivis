@@ -53,7 +53,7 @@
                             {% if job.status == 'completed' %}
                                 <a
                                     hx-boost="true"
-                                    href="{{ url_for('first.graph_preview', job_id=job.id) }}"
+                                    href="{{ url_for('first.graph_preview', job_id=job.uuid) }}"
                                     class="btn btn-sm btn-primary"
                                     hx-target="#content">
                                     Preview

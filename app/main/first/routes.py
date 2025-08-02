@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from pathlib import Path
 
@@ -340,14 +341,18 @@ def start_preprocessing(filename):
             404,
         )
 
-    # Start the Celery task
-    task = preprocess_spotify_data_original.delay(filename)
-
-    # Create preprocessing job record
+    # Create preprocessing job record first to avoid race condition
     preprocessing_job = PreprocessingJob(
-        task_id=task.id, uploaded_file_id=uploaded_file.id, status="pending"
+        task_id="pending", uploaded_file_id=uploaded_file.id, status="pending"
     )
     db.session.add(preprocessing_job)
+    db.session.commit()
+
+    # Start the Celery task with the job UUID
+    task = preprocess_spotify_data_original.delay(filename, preprocessing_job.uuid)
+
+    # Update the job with the actual task ID
+    preprocessing_job.task_id = task.id
     db.session.commit()
 
     return render_template(
@@ -425,16 +430,19 @@ def preprocessing_history():
     return render_template("./first/partials/_preprocessing_history.html", jobs=jobs)
 
 
-@bp.route("/graph-preview/<int:job_id>", methods=["GET"])
-def graph_preview(job_id):
+@bp.route("/graph-preview/<uuid:job_id>", methods=["GET"])
+def graph_preview(job_id: uuid.UUID):
     """Preview processed graph data."""
+    logger.debug(f"Fetching graph preview for job_id: {job_id}")
     stmt = (
         select(PreprocessingJob)
         .join(UploadedFile)
-        .where(PreprocessingJob.id == job_id, UploadedFile.user_id == current_user.id)
+        .where(
+            PreprocessingJob.uuid == str(job_id),
+            UploadedFile.user_id == current_user.id,
+        )
     )
     job = db.session.scalar(stmt)
-
     if not job or job.status != "completed":
         return (
             render_template(

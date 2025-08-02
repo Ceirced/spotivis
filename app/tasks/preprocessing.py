@@ -161,28 +161,28 @@ def save_graph(
 
 
 @shared_task(bind=True)
-def preprocess_spotify_data_original(self, filename: str):
+def preprocess_spotify_data_original(self, filename: str, job_uuid: str):
     """
     Celery task using the exact same algorithm as create_data.py.
     """
 
     try:
 
-        # Get the preprocessing job record
+        # Get the preprocessing job record using the provided job_uuid
         stmt = select(PreprocessingJob).where(
-            PreprocessingJob.task_id == self.request.id
+            PreprocessingJob.uuid == job_uuid
         )
         job = db.session.scalar(stmt)
 
-        logger.info(f"Found job: {job} for task_id: {self.request.id}")
+        logger.info(f"Found job: {job} for job_uuid: {job_uuid}")
 
         if job:
-            logger.info(f"Updating job {job.id} status to processing")
+            logger.info(f"Updating job {job.uuid} status to processing")
             job.status = "processing"
             db.session.commit()
-            logger.info(f"Job {job.id} status updated to processing")
+            logger.info(f"Job {job.uuid} status updated to processing")
         else:
-            logger.warning(f"No job found for task_id: {self.request.id}")
+            logger.warning(f"No job found for job_uuid: {job_uuid}")
         # Set up paths
         upload_folder = Path("/home/app/uploads")
         clean_data_dir = Path("/home/app/clean_data")
@@ -253,7 +253,7 @@ def preprocess_spotify_data_original(self, filename: str):
 
         # Update job record with results
         if job:
-            logger.info(f"Updating job {job.id} status to completed")
+            logger.info(f"Updating job {job.uuid} status to completed")
             job.status = "completed"
             job.completed_at = datetime.now(timezone.utc)
             job.edges_file = edges_file
@@ -263,7 +263,7 @@ def preprocess_spotify_data_original(self, filename: str):
             job.time_periods = len(time_period)
             db.session.commit()
             logger.info(
-                f"Job {job.id} status updated to completed with {job.final_nodes} nodes and {job.final_edges} edges"
+                f"Job {job.uuid} status updated to completed with {job.final_nodes} nodes and {job.final_edges} edges"
             )
 
         # Final statistics
@@ -308,15 +308,15 @@ def preprocess_spotify_data_original(self, filename: str):
 
         # Update job record with error
         if job:
-            logger.info(f"Updating job {job.id} status to failed")
+            logger.info(f"Updating job {job.uuid} status to failed")
             job.status = "failed"
             job.error_message = str(e)
             job.completed_at = datetime.now(timezone.utc)
             db.session.commit()
-            logger.info(f"Job {job.id} status updated to failed: {str(e)}")
+            logger.info(f"Job {job.uuid} status updated to failed: {str(e)}")
         else:
             logger.warning(
-                f"No job found to update error status for task_id: {self.request.id}"
+                f"No job found to update error status for job_uuid: {job_uuid}"
             )
 
         return {
