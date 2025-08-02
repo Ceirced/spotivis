@@ -1,12 +1,15 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import List, Tuple
-import gc
 
 import networkx as nx
 import pandas as pd
 from celery import shared_task
 from loguru import logger
+from sqlalchemy import select
+
+from app import db
+from app.models import PreprocessingJob
 
 MIN_EDGE_WEIGHT = 40
 MIN_COMPONENT_SIZE = 3
@@ -121,10 +124,6 @@ def build_playlist_network(
             },
         )
 
-        # Clean up memory periodically
-        if i % 10 == 0:
-            gc.collect()
-
     return G
 
 
@@ -166,7 +165,24 @@ def preprocess_spotify_data_original(self, filename: str):
     """
     Celery task using the exact same algorithm as create_data.py.
     """
+
     try:
+
+        # Get the preprocessing job record
+        stmt = select(PreprocessingJob).where(
+            PreprocessingJob.task_id == self.request.id
+        )
+        job = db.session.scalar(stmt)
+
+        logger.info(f"Found job: {job} for task_id: {self.request.id}")
+
+        if job:
+            logger.info(f"Updating job {job.id} status to processing")
+            job.status = "processing"
+            db.session.commit()
+            logger.info(f"Job {job.id} status updated to processing")
+        else:
+            logger.warning(f"No job found for task_id: {self.request.id}")
         # Set up paths
         upload_folder = Path("/home/app/uploads")
         clean_data_dir = Path("/home/app/clean_data")
@@ -175,6 +191,11 @@ def preprocess_spotify_data_original(self, filename: str):
         input_filepath = upload_folder / filename
 
         if not input_filepath.exists():
+            if job:
+                job.status = "failed"
+                job.error_message = f"File {filename} not found"
+                job.completed_at = datetime.now(timezone.utc)
+                db.session.commit()
             return {"status": "error", "error": f"File {filename} not found"}
 
         logger.info(f"Starting original algorithm preprocessing of {filename}")
@@ -230,6 +251,21 @@ def preprocess_spotify_data_original(self, filename: str):
         # Save pruned graph (exact same as original)
         edges_file, nodes_file = save_graph(G, "pruned_graph", clean_data_dir)
 
+        # Update job record with results
+        if job:
+            logger.info(f"Updating job {job.id} status to completed")
+            job.status = "completed"
+            job.completed_at = datetime.now(timezone.utc)
+            job.edges_file = edges_file
+            job.nodes_file = nodes_file
+            job.final_nodes = G.number_of_nodes()
+            job.final_edges = G.number_of_edges()
+            job.time_periods = len(time_period)
+            db.session.commit()
+            logger.info(
+                f"Job {job.id} status updated to completed with {job.final_nodes} nodes and {job.final_edges} edges"
+            )
+
         # Final statistics
         result = {
             "status": "success",
@@ -269,6 +305,20 @@ def preprocess_spotify_data_original(self, filename: str):
         import traceback
 
         logger.error(traceback.format_exc())
+
+        # Update job record with error
+        if job:
+            logger.info(f"Updating job {job.id} status to failed")
+            job.status = "failed"
+            job.error_message = str(e)
+            job.completed_at = datetime.now(timezone.utc)
+            db.session.commit()
+            logger.info(f"Job {job.id} status updated to failed: {str(e)}")
+        else:
+            logger.warning(
+                f"No job found to update error status for task_id: {self.request.id}"
+            )
+
         return {
             "status": "error",
             "error": str(e),

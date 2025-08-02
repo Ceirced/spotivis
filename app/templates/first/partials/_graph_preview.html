@@ -1,0 +1,126 @@
+{% macro content() %}
+    <div class="space-y-6">
+        <div class="bg-secondary text-secondary-content rounded-lg p-4">
+            <h3 class="mb-2 text-xl font-bold">
+                Graph Preview: {{ job.uploaded_file.original_filename }}
+            </h3>
+            <div class="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
+                <div>
+                    <span class="badge badge-success">{{ job.status }}</span>
+                </div>
+                <div>
+                    <span class="font-semibold">{{ job.final_nodes }}</span>
+                    Nodes
+                </div>
+                <div>
+                    <span class="font-semibold"> {{ job.final_edges }} </span>
+                    <span class="">edges</span>
+                </div>
+                <div>
+                    <span class="font-semibold">{{ job.time_periods }}</span>
+                    Time Periods
+                </div>
+            </div>
+        </div>
+
+        {% if edges_preview %}
+            <div>
+                <h4 class="mb-2 text-lg font-semibold">
+                    Edge Preview (First 20)
+                </h4>
+                <div class="overflow-x-auto">
+                    <table class="table-sm table-zebra table">
+                        <thead>
+                            <tr>
+                                <th>Source Playlist</th>
+                                <th>Target Playlist</th>
+                                <th>Weight</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for edge in edges_preview %}
+                                <tr>
+                                    <td class="font-mono text-xs">
+                                        {{ edge['playlist_id_1'] }}
+                                    </td>
+                                    <td class="font-mono text-xs">
+                                        {{ edge['playlist_id_2'] }}
+                                    </td>
+                                    <td>{{ edge['weight'] }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if nodes_preview %}
+            <div>
+                <h4 class="mb-2 text-lg font-semibold">
+                    Node Preview (First 20)
+                </h4>
+                <div class="overflow-x-auto">
+                    <table class="table-sm table-zebra table">
+                        <thead>
+                            <tr>
+                                <th>Playlist ID</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for node in nodes_preview %}
+                                <tr>
+                                    <td class="font-mono text-xs">
+                                        {{ node['playlist_id'] }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="mt-4 flex gap-2">
+            <button
+                class="btn btn-sm btn-primary"
+                disabled>
+                Visualize Full Graph (Coming Soon)
+            </button>
+        </div>
+    </div>
+{% endmacro %}
+
+{% if htmx.boosted %}
+    <title>{{ title }}</title>
+
+    <div
+        id="top-bar"
+        hx-swap-oob="innerHTML">
+        {% block top_bar %}
+            <div class="container flex w-full items-center justify-between">
+                <a
+                    href="javascript:history.back()"
+                    class="group hover:text-primary flex items-center gap-1 transition-colors">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        class="size-4 stroke-current stroke-2 transition-transform duration-300 ease-out group-hover:-translate-x-1">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                    </svg>
+                    <span>back</span>
+                </a>
+            </div>
+        {% endblock %}
+    </div>
+    {{ content() }}
+{% else %}
+    {% extends 'base.html' %}
+    {% block content %}
+        {{ content() }}
+    {% endblock %}
+{% endif %}

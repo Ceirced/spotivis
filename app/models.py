@@ -112,3 +112,65 @@ class Payment(Model):
 
     def __repr__(self):
         return f"<Payment {self.id} - {self.amount} {self.currency}>"
+
+
+class UploadedFile(Model):
+    __tablename__ = "uploaded_files"
+
+    id: so.Mapped[int] = so.mapped_column(primary_key=True, autoincrement=True)
+    filename: so.Mapped[str] = so.mapped_column(
+        String(255), nullable=False, unique=True
+    )
+    original_filename: so.Mapped[str] = so.mapped_column(String(255), nullable=False)
+    file_size: so.Mapped[int] = so.mapped_column(db.BigInteger, nullable=False)
+    uploaded_at: so.Mapped[datetime] = so.mapped_column(
+        db.DateTime, nullable=False, default=db.func.current_timestamp()
+    )
+    user_id: so.Mapped[int | None] = so.mapped_column(
+        ForeignKey("user.id"), nullable=True
+    )
+    user: so.Mapped[User | None] = so.relationship("User", backref="uploaded_files")
+
+    preprocessing_jobs: so.Mapped[list[PreprocessingJob]] = so.relationship(
+        "PreprocessingJob", back_populates="uploaded_file", cascade="all, delete-orphan"
+    )
+
+    def __repr__(self):
+        return f"<UploadedFile {self.id} - {self.original_filename}>"
+
+
+class PreprocessingJob(Model):
+    __tablename__ = "preprocessing_jobs"
+
+    id: so.Mapped[int] = so.mapped_column(primary_key=True, autoincrement=True)
+    task_id: so.Mapped[str] = so.mapped_column(String(255), nullable=False, unique=True)
+    uploaded_file_id: so.Mapped[int] = so.mapped_column(
+        ForeignKey("uploaded_files.id"), nullable=False
+    )
+    uploaded_file: so.Mapped[UploadedFile] = so.relationship(
+        "UploadedFile", back_populates="preprocessing_jobs"
+    )
+
+    status: so.Mapped[str] = so.mapped_column(
+        String(50), nullable=False, default="pending"
+    )
+    started_at: so.Mapped[datetime] = so.mapped_column(
+        db.DateTime, nullable=False, default=db.func.current_timestamp()
+    )
+    completed_at: so.Mapped[datetime | None] = so.mapped_column(
+        db.DateTime, nullable=True
+    )
+
+    # File paths for the generated graph data
+    edges_file: so.Mapped[str | None] = so.mapped_column(String(500), nullable=True)
+    nodes_file: so.Mapped[str | None] = so.mapped_column(String(500), nullable=True)
+
+    final_nodes: so.Mapped[int | None] = so.mapped_column(db.Integer, nullable=True)
+    final_edges: so.Mapped[int | None] = so.mapped_column(db.Integer, nullable=True)
+    time_periods: so.Mapped[int | None] = so.mapped_column(db.Integer, nullable=True)
+
+    # Error tracking
+    error_message: so.Mapped[str | None] = so.mapped_column(db.Text, nullable=True)
+
+    def __repr__(self):
+        return f"<PreprocessingJob {self.id} - {self.status}>"

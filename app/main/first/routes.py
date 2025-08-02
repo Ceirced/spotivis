@@ -1,14 +1,19 @@
 from datetime import datetime
 from pathlib import Path
-from flask import render_template, request, current_app, make_response, jsonify
-from werkzeug.utils import secure_filename
-import pyarrow.parquet as pq
 
-from app import htmx, cache
+import pandas as pd
+import pyarrow.parquet as pq
+from flask import current_app, jsonify, make_response, render_template, request
+from flask_login import current_user  # type: ignore
+from loguru import logger
+from sqlalchemy import select
+from werkzeug.utils import secure_filename
+
+from app import cache, db, htmx
 from app.helpers.app_helpers import make_cache_key_with_htmx
 from app.main.first import bp
+from app.models import PreprocessingJob, UploadedFile
 from app.tasks.preprocessing import preprocess_spotify_data_original
-
 
 ALLOWED_EXTENSIONS = {"parquet"}
 MAX_FILE_SIZE = 500 * 1024 * 1024  # 500MB
@@ -48,16 +53,14 @@ def add_cache_headers(response, max_age=300, private=True):
 
 
 @bp.route("/", methods=["GET"])
-@cache.cached(timeout=60, make_cache_key=make_cache_key_with_htmx)
+@cache.cached(
+    timeout=60,
+    make_cache_key=make_cache_key_with_htmx,
+    unless=lambda: current_app.config.get("DEBUG", False),
+)
 def index():
     title = "First"
     max_file_size_mb = MAX_FILE_SIZE // (1024 * 1024)
-    if htmx.boosted:
-        return render_template(
-            "./first/partials/_content.html",
-            title=title,
-            max_file_size_mb=max_file_size_mb,
-        )
     return render_template(
         "./first/index.html", title=title, max_file_size_mb=max_file_size_mb
     )
@@ -65,7 +68,9 @@ def index():
 
 @bp.route("/preview/<filename>", methods=["GET"])
 @cache.cached(
-    timeout=300, make_cache_key=make_cache_key_with_htmx
+    timeout=300,
+    make_cache_key=make_cache_key_with_htmx,
+    unless=lambda: current_app.config.get("DEBUG", False),
 )  # Cache for 5 minutes
 def preview_file(filename):
     """Show file preview page with metadata and data preview."""
@@ -99,13 +104,34 @@ def preview_file(filename):
         "upload_time": formatted_time,
     }
 
+    # Get preprocessing jobs for this file
+    stmt = select(UploadedFile).where(UploadedFile.filename == filename)
+    uploaded_file = db.session.scalar(stmt)
+
+    preprocessing_jobs = []
+    if uploaded_file:
+        preprocessing_jobs = uploaded_file.preprocessing_jobs
+    logger.info(f"Preprocessing jobs for {filename}: {preprocessing_jobs}")
+    logger.info(f"uploaded_file: {uploaded_file}")
+
     if htmx.boosted:
-        return render_template("./first/file_preview.html", file=file_info)
-    return render_template("./first/file_preview.html", file=file_info)
+        return render_template(
+            "./first/file_preview.html",
+            file=file_info,
+            preprocessing_jobs=preprocessing_jobs,
+        )
+    return render_template(
+        "./first/file_preview.html",
+        file=file_info,
+        preprocessing_jobs=preprocessing_jobs,
+    )
 
 
 @bp.route("/preview-data/<filename>", methods=["GET"])
-@cache.cached(timeout=300)  # Cache for 5 minutes
+@cache.cached(
+    timeout=300,
+    unless=lambda: current_app.config.get("DEBUG", False),
+)  # Cache for 5 minutes
 def preview_data(filename):
     """Load and return the actual parquet file data preview."""
     upload_folder = Path(current_app.root_path).parent / "uploads"
@@ -183,7 +209,6 @@ def list_files():
 
     # Sort by most recent first
     files.sort(key=lambda x: x["filename"], reverse=True)
-
     return render_template("./first/partials/_file_list.html", files=files)
 
 
@@ -256,6 +281,16 @@ def upload_file():
                 422,
             )
 
+        # Save file metadata to database
+        uploaded_file = UploadedFile(
+            filename=filename,
+            original_filename=file.filename,
+            file_size=file_length,
+            user_id=current_user.id if current_user.is_authenticated else None,
+        )
+        db.session.add(uploaded_file)
+        db.session.commit()
+
         return (
             render_template(
                 "./first/partials/_upload_success.html",
@@ -292,8 +327,28 @@ def start_preprocessing(filename):
             404,
         )
 
+    # Get the uploaded file record using SQLAlchemy 2.0 style
+    stmt = select(UploadedFile).where(UploadedFile.filename == filename)
+    uploaded_file = db.session.scalar(stmt)
+
+    if not uploaded_file:
+        return (
+            render_template(
+                "./first/partials/_preprocess_error.html",
+                error="File record not found in database",
+            ),
+            404,
+        )
+
     # Start the Celery task
     task = preprocess_spotify_data_original.delay(filename)
+
+    # Create preprocessing job record
+    preprocessing_job = PreprocessingJob(
+        task_id=task.id, uploaded_file_id=uploaded_file.id, status="pending"
+    )
+    db.session.add(preprocessing_job)
+    db.session.commit()
 
     return render_template(
         "./first/partials/_preprocess_started.html", task_id=task.id, filename=filename
@@ -352,3 +407,60 @@ def task_status(task_id):
     else:
         # Return JSON for other requests
         return jsonify(response)
+
+
+@bp.route("/preprocessing-history", methods=["GET"])
+def preprocessing_history():
+    """Display preprocessing history for uploaded files."""
+    # Get all preprocessing jobs with their related uploaded files for current user
+    stmt = (
+        select(PreprocessingJob)
+        .join(UploadedFile)
+        .where(UploadedFile.user_id == current_user.id)
+        .order_by(PreprocessingJob.started_at.desc())
+    )
+
+    jobs = db.session.scalars(stmt).all()
+
+    return render_template("./first/partials/_preprocessing_history.html", jobs=jobs)
+
+
+@bp.route("/graph-preview/<int:job_id>", methods=["GET"])
+def graph_preview(job_id):
+    """Preview processed graph data."""
+    stmt = (
+        select(PreprocessingJob)
+        .join(UploadedFile)
+        .where(PreprocessingJob.id == job_id, UploadedFile.user_id == current_user.id)
+    )
+    job = db.session.scalar(stmt)
+
+    if not job or job.status != "completed":
+        return (
+            render_template(
+                "error.html", error="Preprocessing job not found or not completed"
+            ),
+            404,
+        )
+
+    # Read sample of edges data
+    edges_preview = []
+    nodes_preview = []
+
+    try:
+        if job.edges_file and Path(job.edges_file).exists():
+            df_edges = pd.read_csv(job.edges_file, nrows=20)
+            edges_preview = df_edges.to_dict("records")
+
+        if job.nodes_file and Path(job.nodes_file).exists():
+            df_nodes = pd.read_csv(job.nodes_file, nrows=20)
+            nodes_preview = df_nodes.to_dict("records")
+    except Exception as e:
+        logger.error(f"Error reading graph files: {e}")
+
+    return render_template(
+        "./first/partials/_graph_preview.html",
+        job=job,
+        edges_preview=edges_preview,
+        nodes_preview=nodes_preview,
+    )
