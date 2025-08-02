@@ -10,7 +10,7 @@ from loguru import logger
 from sqlalchemy import select
 from werkzeug.utils import secure_filename
 
-from app import cache, db, htmx
+from app import cache, db
 from app.helpers.app_helpers import make_cache_key_with_htmx
 from app.main.first import bp
 from app.models import PreprocessingJob, UploadedFile
@@ -396,11 +396,11 @@ def preprocessing_history(filename=None):
         .join(UploadedFile)
         .where(UploadedFile.user_id == current_user.id)
     )
-    
+
     # If filename is provided, filter by that specific file
     if filename:
         stmt = stmt.where(UploadedFile.filename == filename)
-    
+
     stmt = stmt.order_by(PreprocessingJob.started_at.desc())
     jobs = db.session.scalars(stmt).all()
 
@@ -408,9 +408,9 @@ def preprocessing_history(filename=None):
     hide_file_column = filename is not None
 
     return render_template(
-        "./first/partials/_preprocessing_history.html", 
-        jobs=jobs, 
-        hide_file_column=hide_file_column
+        "./first/partials/_preprocessing_history.html",
+        jobs=jobs,
+        hide_file_column=hide_file_column,
     )
 
 
@@ -451,7 +451,7 @@ def graph_preview(job_id: uuid.UUID):
         logger.error(f"Error reading graph files: {e}")
 
     return render_template(
-        "./first/partials/_graph_preview.html",
+        "./first/graph_preview.html",
         job=job,
         edges_preview=edges_preview,
         nodes_preview=nodes_preview,
