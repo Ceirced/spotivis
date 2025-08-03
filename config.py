@@ -11,6 +11,9 @@ class BaseConfig:
 
     LOG_TO_STDOUT = os.environ.get("LOG_TO_STDOUT")
     APP_NAME = "Spotivis"
+    
+    # Preprocessed data directory path (relative to static folder)
+    PREPROCESSED_DATA_DIR = "preprocessed"
 
 
 class MigrateConfig(BaseConfig):

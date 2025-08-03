@@ -51,6 +51,7 @@ services:
       - ./instance:/home/app/instance
       - ./uploads:/home/app/uploads
       - ./clean_data:/home/app/clean_data
+      - ./app/static/preprocessed:/home/app/app/static/preprocessed
     env_file:
       - .env
     environment:

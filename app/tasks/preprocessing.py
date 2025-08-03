@@ -9,7 +9,7 @@ from loguru import logger
 from sqlalchemy import select
 
 from app import db
-from app.models import PreprocessingJob
+from app.models import PreprocessingJob, UploadedFile
 
 MIN_EDGE_WEIGHT = 40
 MIN_COMPONENT_SIZE = 3
@@ -168,28 +168,39 @@ def preprocess_spotify_data_original(self, filename: str):
 
     try:
         # Get the uploaded file record to create job
-        from app.models import UploadedFile
         stmt = select(UploadedFile).where(UploadedFile.filename == filename)
         uploaded_file = db.session.scalar(stmt)
-        
+
         if not uploaded_file:
             logger.error(f"No uploaded file found for filename: {filename}")
-            return {"status": "error", "error": f"File {filename} not found in database"}
+            return {
+                "status": "error",
+                "error": f"File {filename} not found in database",
+            }
 
         # Create preprocessing job record
         job = PreprocessingJob(
             task_id=self.request.id,
             uploaded_file_id=uploaded_file.id,
-            status="processing"
-        )
+            status="processing",
+        )  # type: ignore
         db.session.add(job)
         db.session.commit()
 
-        logger.info(f"Created and started processing job {job.uuid} for file {filename}")
-        # Set up paths
-        upload_folder = Path("/home/app/uploads")
-        clean_data_dir = Path("/home/app/clean_data")
-        clean_data_dir.mkdir(exist_ok=True)
+        logger.info(
+            f"Created and started processing job {job.uuid} for file {filename}"
+        )
+        # Set up paths using Flask app configuration
+        from flask import current_app
+
+        upload_folder = Path(current_app.root_path).parent / "uploads"
+        preprocessed_data_dir = current_app.config.get(
+            "PREPROCESSED_DATA_DIR", "preprocessed"
+        )
+        preprocessed_data_directory = (
+            Path(current_app.static_folder) / preprocessed_data_dir  # type: ignore
+        )
+        preprocessed_data_directory.mkdir(exist_ok=True)
 
         input_filepath = upload_folder / filename
 
@@ -252,15 +263,18 @@ def preprocess_spotify_data_original(self, filename: str):
         G = prune_small_components(G)
 
         # Save pruned graph (exact same as original)
-        edges_file, nodes_file = save_graph(G, "pruned_graph", clean_data_dir)
+        edges_file, nodes_file = save_graph(
+            G, "pruned_graph", preprocessed_data_directory
+        )
 
         # Update job record with results
         if job:
             logger.info(f"Updating job {job.uuid} status to completed")
             job.status = "completed"
             job.completed_at = datetime.now(timezone.utc)
-            job.edges_file = edges_file
-            job.nodes_file = nodes_file
+            # Store relative paths from static directory
+            job.edges_file = f"{Path(edges_file).name}"
+            job.nodes_file = f"{Path(nodes_file).name}"
             job.final_nodes = G.number_of_nodes()
             job.final_edges = G.number_of_edges()
             job.time_periods = len(time_period)
@@ -311,7 +325,7 @@ def preprocess_spotify_data_original(self, filename: str):
 
         # Update job record with error
         try:
-            if 'job' in locals() and job:
+            if "job" in locals() and job:
                 logger.info(f"Updating job {job.uuid} status to failed")
                 job.status = "failed"
                 job.error_message = str(e)
@@ -319,7 +333,9 @@ def preprocess_spotify_data_original(self, filename: str):
                 db.session.commit()
                 logger.info(f"Job {job.uuid} status updated to failed: {str(e)}")
             else:
-                logger.warning(f"No job record available to update error status for task: {self.request.id}")
+                logger.warning(
+                    f"No job record available to update error status for task: {self.request.id}"
+                )
         except Exception as commit_error:
             logger.error(f"Failed to update job status to failed: {commit_error}")
 

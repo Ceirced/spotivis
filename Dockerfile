@@ -23,12 +23,11 @@ WORKDIR /home/app
 RUN addgroup --system --gid 1000 app && adduser --system --uid 1000 --group app
 
 COPY poetry.lock pyproject.toml flask_app.py config.py boot.sh ./
+COPY app app
+COPY migrations migrations
 RUN chmod a+x boot.sh && chown -R app:app /home/app
 
 RUN poetry install --without dev
 
 USER app
 
-# this gets synced in the docker compose but not when building the image alone
-COPY app app
-COPY migrations migrations

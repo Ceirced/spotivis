@@ -122,7 +122,7 @@ def preview_data(filename):
     file_path = upload_folder / filename
 
     if not file_path.exists() or not file_path.suffix == ".parquet":
-        return render_template("error.html", error="File not found"), 404
+        return render_template("error.html", error="File not found"), 422
 
     try:
         # Read first 10 rows of the parquet file
@@ -308,7 +308,7 @@ def start_preprocessing(filename):
             render_template(
                 "./first/partials/_preprocess_error.html", error="File not found"
             ),
-            404,
+            422,
         )
 
     # Get the uploaded file record using SQLAlchemy 2.0 style
@@ -321,7 +321,7 @@ def start_preprocessing(filename):
                 "./first/partials/_preprocess_error.html",
                 error="File record not found in database",
             ),
-            404,
+            422,
         )
 
     # Start the Celery task - it will create the job record internally
@@ -432,27 +432,99 @@ def graph_preview(job_id: uuid.UUID):
             render_template(
                 "error.html", error="Preprocessing job not found or not completed"
             ),
-            404,
+            422,
         )
-
-    # Read sample of edges data
-    edges_preview = []
-    nodes_preview = []
-
-    try:
-        if job.edges_file and Path(job.edges_file).exists():
-            df_edges = pd.read_csv(job.edges_file, nrows=20)
-            edges_preview = df_edges.to_dict("records")
-
-        if job.nodes_file and Path(job.nodes_file).exists():
-            df_nodes = pd.read_csv(job.nodes_file, nrows=20)
-            nodes_preview = df_nodes.to_dict("records")
-    except Exception as e:
-        logger.error(f"Error reading graph files: {e}")
 
     return render_template(
         "./first/graph_preview.html",
         job=job,
-        edges_preview=edges_preview,
-        nodes_preview=nodes_preview,
     )
+
+
+@bp.route("/graph-data/<uuid:job_id>/nodes", methods=["GET"])
+def graph_nodes_data(job_id: uuid.UUID):
+    """Serve nodes data for graph visualization."""
+    stmt = (
+        select(PreprocessingJob)
+        .join(UploadedFile)
+        .where(
+            PreprocessingJob.uuid == str(job_id),
+            UploadedFile.user_id == current_user.id,
+        )
+    )
+    job = db.session.scalar(stmt)
+
+    if not job or job.status != "completed":
+        return jsonify({"error": "Job not found or not completed"}), 404
+
+    try:
+        if not job.nodes_file:
+            return jsonify({"error": "No nodes file path set"}), 404
+
+        # Resolve path relative to static directory
+        preprocessed_data_dir = current_app.config.get(
+            "PREPROCESSED_DATA_DIR", "preprocessed"
+        )
+        nodes_path = (
+            Path(current_app.static_folder) / preprocessed_data_dir / job.nodes_file  # type: ignore
+        )
+        logger.debug(
+            f"nodes_file: {job.nodes_file}, resolved_path: {nodes_path}, exists: {nodes_path.exists()}"
+        )
+
+        if not nodes_path.exists():
+            return jsonify({"error": f"Nodes file not found at {nodes_path}"}), 404
+
+        df_nodes = pd.read_csv(nodes_path)
+        # Convert to the format expected by D3.js
+        nodes_data = df_nodes.to_dict("records")
+        return jsonify(nodes_data)
+    except Exception as e:
+        logger.error(f"Error reading nodes file: {e}")
+        return jsonify({"error": "Error reading nodes data"}), 500
+
+
+@bp.route("/graph-data/<uuid:job_id>/edges", methods=["GET"])
+def graph_edges_data(job_id: uuid.UUID):
+    """Serve edges data for graph visualization."""
+    stmt = (
+        select(PreprocessingJob)
+        .join(UploadedFile)
+        .where(
+            PreprocessingJob.uuid == str(job_id),
+            UploadedFile.user_id == current_user.id,
+        )
+    )
+    job = db.session.scalar(stmt)
+
+    if not job or job.status != "completed":
+        return jsonify({"error": "Job not found or not completed"}), 404
+
+    try:
+        if not job.edges_file:
+            return jsonify({"error": "No edges file path set"}), 404
+
+        # Resolve path relative to static directory
+        preprocessed_data_dir = current_app.config.get(
+            "PREPROCESSED_DATA_DIR", "preprocessed"
+        )
+        edges_path = (
+            Path(current_app.static_folder) / preprocessed_data_dir / job.edges_file  # type: ignore
+        )
+        logger.debug(
+            f"edges_file: {job.edges_file}, resolved_path: {edges_path}, exists: {edges_path.exists()}"
+        )
+
+        logger.debug(
+            f"static_folder: {current_app.static_folder}, edges_file: {job.edges_file}"
+        )
+        if not edges_path.exists():
+            return jsonify({"error": f"Edges file not found at {edges_path}"}), 404
+
+        df_edges = pd.read_csv(edges_path)
+        # Convert to the format expected by D3.js
+        edges_data = df_edges.to_dict("records")
+        return jsonify(edges_data)
+    except Exception as e:
+        logger.error(f"Error reading edges file: {e}")
+        return jsonify({"error": "Error reading edges data"}), 500
