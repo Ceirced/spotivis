@@ -5,6 +5,7 @@ from typing import List, Tuple
 import networkx as nx
 import pandas as pd
 from celery import shared_task
+from celery.exceptions import Ignore
 from loguru import logger
 from sqlalchemy import select
 
@@ -13,6 +14,13 @@ from app.models import PreprocessingJob, UploadedFile
 
 MIN_EDGE_WEIGHT = 40
 MIN_COMPONENT_SIZE = 3
+
+
+def check_task_cancellation(task):
+    """Check if the task has been cancelled and raise Ignore if so."""
+    if task.is_aborted():
+        logger.info(f"Task {task.request.id} was cancelled, stopping execution")
+        raise Ignore()
 
 
 def load_playlist_data(filepath: Path) -> Tuple[pd.DataFrame, List[pd.Timestamp]]:
@@ -224,11 +232,17 @@ def preprocess_spotify_data_original(self, filename: str):
             },
         )
 
+        # Check for cancellation before starting work
+        check_task_cancellation(self)
+        
         # Load data (exact same as original)
         df_playlist_track_network, time_period = load_playlist_data(input_filepath)
 
         logger.info(f"Loaded {len(df_playlist_track_network):,} rows")
         logger.info(f"Found {len(time_period)} time periods")
+
+        # Check for cancellation after data loading
+        check_task_cancellation(self)
 
         self.update_state(
             state="PROGRESS",
@@ -246,6 +260,9 @@ def preprocess_spotify_data_original(self, filename: str):
         logger.info(
             f"Built graph with {G.number_of_nodes()} nodes and {G.number_of_edges()} edges"
         )
+
+        # Check for cancellation after graph building
+        check_task_cancellation(self)
 
         self.update_state(
             state="PROGRESS",

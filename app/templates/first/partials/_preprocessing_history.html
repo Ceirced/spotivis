@@ -23,7 +23,7 @@
                         {% endif %}
                         <td>
                             <span
-                                class="badge {% if job.status == 'completed' %}badge-success{% elif job.status == 'failed' %}badge-error{% else %}badge-warning{% endif %}">
+                                class="badge {% if job.status == 'completed' %}badge-success{% elif job.status in ['failed', 'cancelled'] %}badge-error{% else %}badge-warning{% endif %} badge-soft">
                                 {{ job.status }}
                             </span>
                         </td>

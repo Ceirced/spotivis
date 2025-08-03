@@ -98,6 +98,21 @@ def preview_file(filename):
         original_name = filename
         formatted_time = "Unknown"
 
+    # Check for running preprocessing jobs for this file
+    stmt = select(UploadedFile).where(UploadedFile.filename == filename)
+    uploaded_file = db.session.scalar(stmt)
+    
+    running_job = None
+    if uploaded_file:
+        # Look for any running or pending jobs for this file (exclude cancelled)
+        job_stmt = (
+            select(PreprocessingJob)
+            .where(PreprocessingJob.uploaded_file_id == uploaded_file.id)
+            .where(PreprocessingJob.status.in_(["pending", "processing"]))
+            .order_by(PreprocessingJob.started_at.desc())
+        )
+        running_job = db.session.scalar(job_stmt)
+
     file_info = {
         "filename": filename,
         "original_name": original_name,
@@ -108,6 +123,7 @@ def preview_file(filename):
     return render_template(
         "./first/file_preview.html",
         file=file_info,
+        running_job=running_job,
     )
 
 
@@ -324,6 +340,24 @@ def start_preprocessing(filename):
             422,
         )
 
+    # Check if there's already a running job for this file (exclude cancelled)
+    job_stmt = (
+        select(PreprocessingJob)
+        .where(PreprocessingJob.uploaded_file_id == uploaded_file.id)
+        .where(PreprocessingJob.status.in_(["pending", "processing"]))
+        .order_by(PreprocessingJob.started_at.desc())
+    )
+    existing_job = db.session.scalar(job_stmt)
+    
+    if existing_job:
+        return (
+            render_template(
+                "./first/partials/_preprocess_error.html",
+                error="A preprocessing job is already running for this file",
+            ),
+            422,
+        )
+
     # Start the Celery task - it will create the job record internally
     task = preprocess_spotify_data_original.delay(filename)
 
@@ -362,6 +396,14 @@ def task_status(task_id):
             "percent": 100,
             "result": task.info.get("result", task.result),
         }
+    elif task.state == "REVOKED":
+        response = {
+            "state": "CANCELLED",
+            "current": 0,
+            "total": 100,
+            "status": "Task cancelled",
+            "percent": 0,
+        }
     else:  # FAILURE
         response = {
             "state": task.state,
@@ -384,6 +426,40 @@ def task_status(task_id):
     else:
         # Return JSON for other requests
         return jsonify(response)
+
+
+@bp.route("/cancel-job/<task_id>", methods=["POST"])
+def cancel_job(task_id):
+    """Cancel a running preprocessing task."""
+    task = preprocess_spotify_data_original.AsyncResult(task_id)
+    
+    # Check if task exists and is cancellable
+    if task.state in ["PENDING", "PROGRESS"]:
+        # Revoke the task
+        task.revoke(terminate=True)
+        
+        # Update the database status
+        stmt = select(PreprocessingJob).where(PreprocessingJob.task_id == task_id)
+        job = db.session.scalar(stmt)
+        
+        if job:
+            job.status = "cancelled"
+            job.completed_at = db.func.current_timestamp()
+            job.error_message = "Task cancelled by user"
+            db.session.commit()
+        
+        # Return empty content to clear the progress display
+        response = make_response("")
+        response.headers["HX-Trigger"] = "refresh"
+        return response
+    else:
+        return (
+            render_template(
+                "./first/partials/_preprocess_error.html",
+                error="Task cannot be cancelled (not running or already completed)",
+            ),
+            422,
+        )
 
 
 @bp.route("/preprocessing-history", methods=["GET"])
