@@ -143,9 +143,14 @@ def preview_data(filename):
         return render_template("error.html", error="File not found"), 422
 
     try:
-        # Read first 10 rows of the parquet file
-        df = pq.read_table(str(file_path)).to_pandas()
-        preview_df = df.head(10)
+        # Read only first 10 rows of the parquet file for preview
+        parquet_file = pq.ParquetFile(str(file_path))
+
+        total_rows = parquet_file.metadata.num_rows
+
+        # Read only first 10 rows
+        first_batch = next(parquet_file.iter_batches(batch_size=10))
+        preview_df = first_batch.to_pandas()
 
         # Convert to dict for template
         columns = preview_df.columns.tolist()
@@ -156,7 +161,7 @@ def preview_data(filename):
                 "./first/partials/_preview_data.html",
                 columns=columns,
                 rows=rows,
-                total_rows=len(df),
+                total_rows=total_rows,
             )
         )
         if not current_app.config.get("DEBUG", False):
