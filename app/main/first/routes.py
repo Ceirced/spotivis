@@ -70,11 +70,11 @@ def index():
 
 
 @bp.route("/preview/<filename>", methods=["GET"])
-# @cache.cached(
-#     timeout=300,
-#     make_cache_key=make_cache_key_with_htmx,
-#     unless=lambda: current_app.config.get("DEBUG", False),
-# )  # Cache for 5 minutes
+@cache.cached(
+    timeout=300,
+    make_cache_key=make_cache_key_with_htmx,
+    unless=lambda: current_app.config.get("DEBUG", False),
+)  # Cache for 5 minutes
 def preview_file(filename):
     """Show file preview page with metadata and data preview."""
     upload_folder = Path(current_app.root_path).parent / "uploads"
@@ -130,10 +130,10 @@ def preview_file(filename):
 
 
 @bp.route("/preview-data/<filename>", methods=["GET"])
-# @cache.cached(
-#     timeout=300,
-#     unless=lambda: current_app.config.get("DEBUG", False),
-# )  # Cache for 5 minutes
+@cache.cached(
+    timeout=300,
+    unless=lambda: current_app.config.get("DEBUG", False),
+)  # Cache for 5 minutes
 def preview_data(filename):
     """Load and return the actual parquet file data preview."""
     upload_folder = Path(current_app.root_path).parent / "uploads"
@@ -159,8 +159,8 @@ def preview_data(filename):
                 total_rows=len(df),
             )
         )
-        return response
-        # return add_cache_headers(response, max_age=300)  # Cache for 5 minutes
+        if not current_app.config.get("DEBUG", False):
+            return add_cache_headers(response, max_age=300)  # Cache for 5 minutes
     except Exception as e:
         return (
             render_template(
