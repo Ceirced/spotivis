@@ -166,6 +166,8 @@ def preview_data(filename):
         )
         if not current_app.config.get("DEBUG", False):
             return add_cache_headers(response, max_age=300)  # Cache for 5 minutes
+        else:
+            return response
     except Exception as e:
         return (
             render_template(
