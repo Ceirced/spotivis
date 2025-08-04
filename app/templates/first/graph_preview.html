@@ -113,48 +113,67 @@
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
     <script type="module">
-        // Graph visualization adapted from graph.html
-        const jobId = "{{ job.uuid }}";
-        const graphContainer = d3.select("#graph-container");
-        const containerRect = document
-            .getElementById("graph-container")
-            .getBoundingClientRect();
-        const width = containerRect.width;
-        const height = 600;
-
-        let nodes, links;
-        let linkCount = {};
-        let IncomingCount = {};
-        let OutgoingCount = {};
-
-        function fillTooltip(data, incoming = 0, outgoing = 0) {
-            const panel = d3.select("#graph-info-panel");
-            panel.style("display", "block");
-
-            panel
-                .select("#node-name")
-                .text(data.display_name || data.playlist_id);
-            panel
-                .select("#node-description")
-                .text(`Description: ${data.playlist_description || "none"}`);
-            panel
-                .select("#node-followers")
-                .text(`${data.playlist_followers || 0} followers`);
-            panel
-                .select("#node-incoming")
-                .text(`${incoming} incoming connections`);
-            panel
-                .select("#node-outgoing")
-                .text(`${outgoing} outgoing connections`);
+        // Function to load D3 if not already loaded
+        function loadD3() {
+            return new Promise((resolve, reject) => {
+                if (typeof d3 !== 'undefined') {
+                    resolve();
+                    return;
+                }
+                
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/d3@7';
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
         }
+        
+        // Initialize graph after D3 is loaded
+        async function initializeGraph() {
+            await loadD3();
+            
+            // Graph visualization adapted from graph.html
+            const jobId = "{{ job.uuid }}";
+            const graphContainer = d3.select("#graph-container");
+            const containerRect = document
+                .getElementById("graph-container")
+                .getBoundingClientRect();
+            const width = containerRect.width;
+            const height = 600;
 
-        Promise.all([
-            d3.json(`{{ url_for('first.graph_nodes_data', job_id=job.uuid) }}`),
-            d3.json(`{{ url_for('first.graph_edges_data', job_id=job.uuid) }}`),
-        ])
-            .then((data) => {
+            let nodes, links;
+            let linkCount = {};
+            let IncomingCount = {};
+            let OutgoingCount = {};
+
+            function fillTooltip(data, incoming = 0, outgoing = 0) {
+                const panel = d3.select("#graph-info-panel");
+                panel.style("display", "block");
+
+                panel
+                    .select("#node-name")
+                    .text(data.display_name || data.playlist_id);
+                panel
+                    .select("#node-description")
+                    .text(`Description: ${data.playlist_description || "none"}`);
+                panel
+                    .select("#node-followers")
+                    .text(`${data.playlist_followers || 0} followers`);
+                panel
+                    .select("#node-incoming")
+                    .text(`${incoming} incoming connections`);
+                panel
+                    .select("#node-outgoing")
+                    .text(`${outgoing} outgoing connections`);
+            }
+
+            Promise.all([
+                d3.json(`{{ url_for('first.graph_nodes_data', job_id=job.uuid) }}`),
+                d3.json(`{{ url_for('first.graph_edges_data', job_id=job.uuid) }}`),
+            ])
+                .then((data) => {
                 nodes = data[0];
                 links = data[1];
 
@@ -414,18 +433,22 @@
 
                     node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
                 }
-            })
-            .catch((error) => {
-                console.error("Error loading graph data:", error);
-                graphContainer.selectAll("*").remove();
-                graphContainer
-                    .append("div")
-                    .attr(
-                        "class",
-                        "flex items-center justify-center h-full text-error"
-                    )
-                    .text("Error loading graph data");
-            });
+                })
+                .catch((error) => {
+                    console.error("Error loading graph data:", error);
+                    graphContainer.selectAll("*").remove();
+                    graphContainer
+                        .append("div")
+                        .attr(
+                            "class",
+                            "flex items-center justify-center h-full text-error"
+                        )
+                        .text("Error loading graph data");
+                });
+        }
+        
+        // Initialize the graph when the page loads or when navigating via HTMX
+        initializeGraph();
     </script>
 {% endmacro %}
 
