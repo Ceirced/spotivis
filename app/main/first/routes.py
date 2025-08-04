@@ -1,10 +1,12 @@
+import re
 import uuid
 from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
 import pyarrow.parquet as pq
-from flask import current_app, jsonify, make_response, render_template, request
+from flask import current_app, jsonify, render_template, request
+from flask_htmx import make_response
 from flask_login import current_user  # type: ignore
 from loguru import logger
 from sqlalchemy import select
@@ -68,11 +70,11 @@ def index():
 
 
 @bp.route("/preview/<filename>", methods=["GET"])
-@cache.cached(
-    timeout=300,
-    make_cache_key=make_cache_key_with_htmx,
-    unless=lambda: current_app.config.get("DEBUG", False),
-)  # Cache for 5 minutes
+# @cache.cached(
+#     timeout=300,
+#     make_cache_key=make_cache_key_with_htmx,
+#     unless=lambda: current_app.config.get("DEBUG", False),
+# )  # Cache for 5 minutes
 def preview_file(filename):
     """Show file preview page with metadata and data preview."""
     upload_folder = Path(current_app.root_path).parent / "uploads"
@@ -101,7 +103,7 @@ def preview_file(filename):
     # Check for running preprocessing jobs for this file
     stmt = select(UploadedFile).where(UploadedFile.filename == filename)
     uploaded_file = db.session.scalar(stmt)
-    
+
     running_job = None
     if uploaded_file:
         # Look for any running or pending jobs for this file (exclude cancelled)
@@ -128,10 +130,10 @@ def preview_file(filename):
 
 
 @bp.route("/preview-data/<filename>", methods=["GET"])
-@cache.cached(
-    timeout=300,
-    unless=lambda: current_app.config.get("DEBUG", False),
-)  # Cache for 5 minutes
+# @cache.cached(
+#     timeout=300,
+#     unless=lambda: current_app.config.get("DEBUG", False),
+# )  # Cache for 5 minutes
 def preview_data(filename):
     """Load and return the actual parquet file data preview."""
     upload_folder = Path(current_app.root_path).parent / "uploads"
@@ -157,7 +159,8 @@ def preview_data(filename):
                 total_rows=len(df),
             )
         )
-        return add_cache_headers(response, max_age=300)  # Cache for 5 minutes
+        return response
+        # return add_cache_headers(response, max_age=300)  # Cache for 5 minutes
     except Exception as e:
         return (
             render_template(
@@ -348,7 +351,7 @@ def start_preprocessing(filename):
         .order_by(PreprocessingJob.started_at.desc())
     )
     existing_job = db.session.scalar(job_stmt)
-    
+
     if existing_job:
         return (
             render_template(
@@ -432,25 +435,27 @@ def task_status(task_id):
 def cancel_job(task_id):
     """Cancel a running preprocessing task."""
     task = preprocess_spotify_data_original.AsyncResult(task_id)
-    
+
     # Check if task exists and is cancellable
     if task.state in ["PENDING", "PROGRESS"]:
         # Revoke the task
         task.revoke(terminate=True)
-        
+
         # Update the database status
         stmt = select(PreprocessingJob).where(PreprocessingJob.task_id == task_id)
         job = db.session.scalar(stmt)
-        
+
         if job:
             job.status = "cancelled"
             job.completed_at = db.func.current_timestamp()
             job.error_message = "Task cancelled by user"
             db.session.commit()
-        
+
         # Return empty content to clear the progress display
-        response = make_response("")
-        response.headers["HX-Trigger"] = "refresh"
+        response = make_response(
+            "",
+            trigger="refresh",  # Trigger HTMX refresh
+        )
         return response
     else:
         return (

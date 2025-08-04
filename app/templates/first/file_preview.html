@@ -30,7 +30,7 @@
                     hx-post="{{ url_for('first.start_preprocessing', filename=file.filename) }}"
                     hx-target="#preprocessing-container"
                     hx-swap="innerHTML"
-                    class="btn btn-primary{% if running_job %} btn-disabled{% endif %}"
+                    class="btn btn-primary btn-soft"
                     {% if running_job %}disabled{% endif %}>
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -54,17 +54,9 @@
         id="preprocessing-container"
         class="mb-4">
         {% if running_job %}
-            <div class="card bg-base-100 shadow-sm">
-                <div class="card-body">
-                    <h3 class="card-title">Processing {{ file.filename }}</h3>
-                    <div
-                        id="progress-container"
-                        hx-get="{{ url_for('first.task_status', task_id=running_job.task_id) }}"
-                        hx-trigger="load, every 2s">
-                        <div class="skeleton h-20 w-full"></div>
-                    </div>
-                </div>
-            </div>
+            {% with task_id=running_job.task_id %}
+                {% include 'first/partials/_preprocess_started.html' %}
+            {% endwith %}
         {% endif %}
     </div>
 
@@ -73,7 +65,7 @@
             <div
                 id="file-preprocessing-history"
                 hx-get="{{ url_for('first.preprocessing_history', filename=file.filename) }}"
-                hx-trigger="load, refresh">
+                hx-trigger="load, refresh from:body">
                 <div class="skeleton h-32 w-full"></div>
             </div>
         </div>

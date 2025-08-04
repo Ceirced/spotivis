@@ -54,14 +54,6 @@
             .setAttribute("hx-disable", "true");
         htmx.trigger("file-preprocessing-history", "refresh");
     </script>
-{% elif task_state == "CANCELLED" %}
-    <script>
-        // Stop polling and refresh history when cancelled
-        document
-            .getElementById("progress-container")
-            .setAttribute("hx-disable", "true");
-        htmx.trigger("#file-preprocessing-history", "refresh");
-    </script>
 {% else %}
     <div class="space-y-4">
         <div class="flex items-center justify-between">
@@ -72,14 +64,5 @@
             class="progress progress-primary w-full"
             value="{{ percent }}"
             max="100"></progress>
-        <div class="flex justify-end">
-            <button
-                hx-post="{{ url_for('first.cancel_job', task_id=task_id) }}"
-                hx-target="#preprocessing-container"
-                hx-confirm="Are you sure you want to cancel this task?"
-                class="btn btn-sm btn-error">
-                Cancel
-            </button>
-        </div>
     </div>
 {% endif %}
