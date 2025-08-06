@@ -1,4 +1,4 @@
-from flask import render_template
+from flask import current_app, render_template
 
 from app import cache, htmx
 from app.helpers.app_helpers import make_cache_key_with_htmx
@@ -15,9 +15,11 @@ def add_cache_headers(response, max_age=300, private=True):
 
 
 @bp.route("/", methods=["GET"])
-@cache.cached(timeout=60, make_cache_key=make_cache_key_with_htmx)
+@cache.cached(
+    timeout=60,
+    make_cache_key=make_cache_key_with_htmx,
+    unless=lambda: current_app.config.get("DEBUG", False),
+)
 def index():
     title = "First"
-    if htmx.boosted:
-        return render_template("./first/partials/_content.html", title=title)
     return render_template("./first/index.html", title=title)
