@@ -145,7 +145,7 @@ def preview_data(filename):
     file_path = upload_folder / filename
 
     if not file_path.exists() or not file_path.suffix == ".parquet":
-        return render_template("error.html", error="File not found"), 422
+        return render_template("errors/404.html", error="File not found"), 422
 
     try:
         # Read only first 10 rows of the parquet file for preview
@@ -272,7 +272,7 @@ def view_processed_file(job_id: uuid.UUID, file_type: str):
             page=page,
             per_page=per_page,
             total_pages=total_pages,
-            original_filename=job.uploaded_file.original_filename,
+            uploaded_file=job.uploaded_file,
         )
     except Exception as e:
         logger.error(f"Error reading processed file: {e}")

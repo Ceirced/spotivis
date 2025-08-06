@@ -3,10 +3,15 @@
         <div class="card bg-secondary text-secondary-content shadow-sm">
             <div class="card-body">
                 <h2 class="card-title">{{ file_type|title }} Data</h2>
-                <p class="text-sm">From: {{ original_filename }}</p>
+                <p class="text-sm">
+                    From: {{ uploaded_file.original_filename }}
+                </p>
                 <p class="text-sm">File: {{ file_name }}</p>
                 <p class="text-sm">
-                    Total Rows: {{ "{:,}".format(total_rows) }}
+                    <span class="font-extrabold"
+                        >{{ "{:,}".format(total_rows) }}</span
+                    >
+                    total rows
                 </p>
             </div>
         </div>
@@ -20,12 +25,12 @@
                     <div class="flex items-center gap-2">
                         <label
                             for="per_page"
-                            class="text-sm"
+                            class="text-xs"
                             >Rows per page:</label
                         >
                         <select
                             id="per_page"
-                            class="select select-sm select-bordered"
+                            class="select select-xs select-bordered w-fit"
                             hx-get="{{ url_for('first.view_processed_file', job_id=job_id, file_type=file_type) }}"
                             hx-trigger="change"
                             hx-target="#content"
@@ -211,7 +216,11 @@
         {% block top_bar %}
             <div class="container flex w-full items-center justify-between">
                 <a
-                    href="javascript:history.back()"
+                    hx-boost="true"
+                    hx-target="#content"
+                    hx-swap="show:window:top"
+                    href="
+                        {{ url_for('first.preview_file', filename=uploaded_file.filename) }}"
                     class="group hover:text-primary flex items-center gap-1 transition-colors">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
