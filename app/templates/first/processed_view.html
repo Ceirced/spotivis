@@ -1,0 +1,237 @@
+{% macro content() %}
+    <div class="space-y-6">
+        <div class="card bg-secondary text-secondary-content shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title">{{ file_type|title }} Data</h2>
+                <p class="text-sm">From: {{ original_filename }}</p>
+                <p class="text-sm">File: {{ file_name }}</p>
+                <p class="text-sm">
+                    Total Rows: {{ "{:,}".format(total_rows) }}
+                </p>
+            </div>
+        </div>
+
+        <div class="card bg-base-200 shadow-sm">
+            <div class="card-body">
+                <div class="mb-4 flex items-center justify-between">
+                    <h3 class="text-lg font-semibold">
+                        Data Preview (Page {{ page }} of {{ total_pages }})
+                    </h3>
+                    <div class="flex items-center gap-2">
+                        <label
+                            for="per_page"
+                            class="text-sm"
+                            >Rows per page:</label
+                        >
+                        <select
+                            id="per_page"
+                            class="select select-sm select-bordered"
+                            hx-get="{{ url_for('first.view_processed_file', job_id=job_id, file_type=file_type) }}"
+                            hx-trigger="change"
+                            hx-target="#content"
+                            hx-vals='{"page": 1}'
+                            name="per_page">
+                            <option
+                                value="50"
+                                {% if per_page == 50 %}selected{% endif %}>
+                                50
+                            </option>
+                            <option
+                                value="100"
+                                {% if per_page == 100 %}selected{% endif %}>
+                                100
+                            </option>
+                            <option
+                                value="250"
+                                {% if per_page == 250 %}selected{% endif %}>
+                                250
+                            </option>
+                            <option
+                                value="500"
+                                {% if per_page == 500 %}selected{% endif %}>
+                                500
+                            </option>
+                            <option
+                                value="1000"
+                                {% if per_page == 1000 %}selected{% endif %}>
+                                1000
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                {% if columns %}
+                    <div class="overflow-x-auto">
+                        <table class="table-zebra table-sm table">
+                            <thead>
+                                <tr>
+                                    <th class="bg-base-300 sticky left-0 z-10">
+                                        #
+                                    </th>
+                                    {% for column in columns %}
+                                        <th class="bg-base-300">
+                                            {{ column }}
+                                        </th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in rows %}
+                                    <tr>
+                                        <td
+                                            class="bg-base-100 sticky left-0 z-10 font-mono text-xs">
+                                            {{ (page - 1) * per_page + loop.index }}
+                                        </td>
+                                        {% for value in row %}
+                                            <td class="font-mono text-xs">
+                                                {% if value is none %}
+                                                    <span
+                                                        class="text-base-content/50"
+                                                        >null</span
+                                                    >
+                                                {% else %}
+                                                    {{ value }}
+                                                {% endif %}
+                                            </td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination controls -->
+                    <div
+                        class="mt-6 flex justify-center"
+                        hx-boost="true"
+                        hx-target="#content"
+                        hx-swap="show:none">
+                        <div class="join">
+                            {% if page > 1 %}
+                                <a
+                                    href="{{ url_for('first.view_processed_file', job_id=job_id, file_type=file_type, page=page-1, per_page=per_page) }}"
+                                    class="join-item btn btn-sm">
+                                    Previous
+                                </a>
+                            {% else %}
+                                <button
+                                    class="join-item btn btn-sm btn-disabled">
+                                    Previous
+                                </button>
+                            {% endif %}
+
+                            <!-- Page numbers -->
+                            {% set start_page = 1 if page - 2 < 1 else page - 2 %}
+                            {% set end_page = total_pages if page + 2 > total_pages else page + 2 %}
+
+                            {% if start_page > 1 %}
+                                <a
+                                    href="{{ url_for('first.view_processed_file', job_id=job_id, file_type=file_type, page=1, per_page=per_page) }}"
+                                    class="join-item btn btn-sm">
+                                    1
+                                </a>
+                                {% if start_page > 2 %}
+                                    <button
+                                        class="join-item btn btn-sm btn-disabled">
+                                        ...
+                                    </button>
+                                {% endif %}
+                            {% endif %}
+
+                            {% for p in range(start_page, end_page + 1) %}
+                                {% if p == page %}
+                                    <button
+                                        class="join-item btn btn-sm btn-active">
+                                        {{ p }}
+                                    </button>
+                                {% else %}
+                                    <a
+                                        href="{{ url_for('first.view_processed_file', job_id=job_id, file_type=file_type, page=p, per_page=per_page) }}"
+                                        class="join-item btn btn-sm">
+                                        {{ p }}
+                                    </a>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if end_page < total_pages %}
+                                {% if end_page < total_pages - 1 %}
+                                    <button
+                                        class="join-item btn btn-sm btn-disabled">
+                                        ...
+                                    </button>
+                                {% endif %}
+                                <a
+                                    href="{{ url_for('first.view_processed_file', job_id=job_id, file_type=file_type, page=total_pages, per_page=per_page) }}"
+                                    class="join-item btn btn-sm">
+                                    {{ total_pages }}
+                                </a>
+                            {% endif %}
+
+                            {% if page < total_pages %}
+                                <a
+                                    href="{{ url_for('first.view_processed_file', job_id=job_id, file_type=file_type, page=page+1, per_page=per_page) }}"
+                                    class="join-item btn btn-sm">
+                                    Next
+                                </a>
+                            {% else %}
+                                <button
+                                    class="join-item btn btn-sm btn-disabled">
+                                    Next
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            class="h-6 w-6 shrink-0 stroke-current">
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>No data available</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{% if htmx %}
+    <title>{{ file_type|title }} Data - SpotiVis</title>
+
+    <div
+        id="top-bar"
+        hx-swap-oob="innerHTML">
+        {% block top_bar %}
+            <div class="container flex w-full items-center justify-between">
+                <a
+                    href="javascript:history.back()"
+                    class="group hover:text-primary flex items-center gap-1 transition-colors">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        class="size-4 stroke-current stroke-2 transition-transform duration-300 ease-out group-hover:-translate-x-1">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                    </svg>
+                    <span>back</span>
+                </a>
+            </div>
+        {% endblock %}
+    </div>
+    {{ content() }}
+{% else %}
+    {% extends 'base.html' %}
+    {% block content %}
+        {{ content() }}
+    {% endblock %}
+{% endif %}

@@ -1,4 +1,3 @@
-import re
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -6,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 import pyarrow.parquet as pq
 from flask import current_app, jsonify, render_template, request
-from flask_htmx import make_response
+from flask_htmx import make_response  # type: ignore
 from flask_login import current_user  # type: ignore
 from loguru import logger
 from sqlalchemy import select
@@ -81,7 +80,7 @@ def preview_file(filename):
     file_path = upload_folder / filename
 
     if not file_path.exists() or not file_path.suffix == ".parquet":
-        return render_template("error.html", error="File not found"), 404
+        return render_template("errors/404.html", error="File not found"), 404
 
     file_stat = file_path.stat()
 
@@ -115,6 +114,11 @@ def preview_file(filename):
         )
         running_job = db.session.scalar(job_stmt)
 
+    completed_job = next(
+        (job for job in uploaded_file.preprocessing_jobs if job.status == "completed"),
+        None,
+    )
+
     file_info = {
         "filename": filename,
         "original_name": original_name,
@@ -126,6 +130,7 @@ def preview_file(filename):
         "./first/file_preview.html",
         file=file_info,
         running_job=running_job,
+        completed_job=completed_job,
     )
 
 
@@ -174,6 +179,105 @@ def preview_data(filename):
                 "./first/partials/_preview_data.html",
                 error=f"Error reading file: {str(e)}",
             ),
+            500,
+        )
+
+
+@bp.route("/view-processed/<uuid:job_id>/<file_type>", methods=["GET"])
+@cache.cached(
+    timeout=300,
+    make_cache_key=make_cache_key_with_htmx,
+    unless=lambda: current_app.config.get("DEBUG", False),
+)  # Cache for 5 minutes
+def view_processed_file(job_id: uuid.UUID, file_type: str):
+    """View processed edges or nodes CSV file from a completed job."""
+    if file_type not in ["edges", "nodes"]:
+        return render_template("errors/404.html", error="Invalid file type"), 404
+
+    stmt = (
+        select(PreprocessingJob)
+        .join(UploadedFile)
+        .where(
+            PreprocessingJob.uuid == str(job_id),
+            UploadedFile.user_id == current_user.id,
+        )
+    )
+    job = db.session.scalar(stmt)
+
+    if not job or job.status != "completed":
+        return (
+            render_template("errors/404.html", error="Job not found or not completed"),
+            404,
+        )
+
+    try:
+        # Get the appropriate file path
+        if file_type == "edges":
+            if not job.edges_file:
+                return (
+                    render_template("errors/404.html", error="No edges file available"),
+                    404,
+                )
+            file_name = job.edges_file
+        else:  # nodes
+            if not job.nodes_file:
+                return (
+                    render_template("errors/404.html", error="No nodes file available"),
+                    404,
+                )
+            file_name = job.nodes_file
+
+        # Resolve path relative to static directory
+        preprocessed_data_dir = current_app.config.get(
+            "PREPROCESSED_DATA_DIR", "preprocessed"
+        )
+        file_path = Path(current_app.static_folder) / preprocessed_data_dir / file_name  # type: ignore
+
+        if not file_path.exists():
+            return (
+                render_template(
+                    "errors/404.html", error=f"File not found: {file_name}"
+                ),
+                404,
+            )
+
+        # Read CSV file with pagination
+        page = request.args.get("page", 1, type=int)
+        per_page = request.args.get("per_page", 100, type=int)
+        per_page = min(per_page, 1000)  # Cap at 1000 rows per page
+
+        # Read the CSV file
+        df = pd.read_csv(file_path)
+        total_rows = len(df)
+
+        # Calculate pagination
+        offset = (page - 1) * per_page
+        df_page = df.iloc[offset : offset + per_page]
+
+        # Convert to dict for template
+        columns = df_page.columns.tolist()
+        rows = df_page.values.tolist()
+
+        # Calculate pagination info
+        total_pages = (total_rows + per_page - 1) // per_page
+
+        return render_template(
+            "./first/processed_view.html",
+            job_id=job_id,
+            file_type=file_type,
+            file_name=file_name,
+            columns=columns,
+            rows=rows,
+            total_rows=total_rows,
+            page=page,
+            per_page=per_page,
+            total_pages=total_pages,
+            original_filename=job.uploaded_file.original_filename,
+        )
+    except Exception as e:
+        logger.error(f"Error reading processed file: {e}")
+        return (
+            render_template("errors/500.html", error=f"Error reading file: {str(e)}"),
             500,
         )
 
