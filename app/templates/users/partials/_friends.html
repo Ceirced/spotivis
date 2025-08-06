@@ -2,13 +2,15 @@
 {% if not friends %}
     <p class="text-xl">No friends yet</p>
 {% endif %}
-<ul class="list mt-3">
+<ul
+    class="list mt-3"
+    hx-boost="true"
+    hx-swap="show:window:top"
+    hx-target="#content">
     {% for friend in friends %}
         <li
             class="group list-row hover:bg-base-200 relative rounded-md py-0 transition-colors duration-200">
             <a
-                hx-boost="true"
-                hx-target="#content"
                 class="group-hover:text-primary list-col-grow py-2 text-lg transition-colors duration-200"
                 href="{{ url_for('users.profile', username = friend.username) }}">
                 {{ friend.username }}
