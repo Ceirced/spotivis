@@ -7,6 +7,7 @@
         <header class="flex justify-end p-4">
             <div class="flex items-center">
                 <a
+                    hx-boost="true"
                     href="{{ url_for('security.login') }}"
                     class="text-primary btn btn-ghost text-lg font-medium"
                     >Login
@@ -36,7 +37,9 @@
                     class="bg-linear-to-b from-zinc-400 to-zinc-500 bg-clip-text text-4xl leading-normal font-semibold text-transparent sm:text-5xl sm:leading-normal">
                     dream big, start small
                 </h1>
-                <a href="{{ url_for('security.register') }}">
+                <a
+                    hx-boost="true"
+                    href="{{ url_for('security.register') }}">
                     <button class="btn btn-primary btn-lg">Get Started</button>
                 </a>
             </hgroup>
