@@ -117,7 +117,7 @@ IN_CONTAINER=1  # Set when running in Docker
 
 ## HTMX Patterns
 
-1. **Boosted Navigation**: Main layout uses hx-boost for SPA-like navigation
+1. **Boosted Navigation**: Main layout uses hx-boost for SPA-like navigation but not the body is swapped but the innerHTML of the #content div.
 2. **Partial Updates**: Forms return partial HTML templates
 3. **Error Handling**: Return appropriate HTTP status codes with error partials
 
