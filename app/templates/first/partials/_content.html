@@ -1,11 +1,11 @@
-{% if htmx.boosted -%}
+{%- if htmx.boosted -%}
     <title>{{ title }}</title>
     <div
         id="top-bar"
         hx-swap-oob="innerHTML">
         {% include "./first/partials/_top_bar.html" %}
     </div>
-{% endif -%}
+{%- endif -%}
 <h1 class="text-3xl font-bold">{{ title }}</h1>
 {% if config['FLASK_ENV'] == 'production' %}
     <script>
