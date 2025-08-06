@@ -1,6 +1,6 @@
 from flask import render_template
 
-from app import htmx
+from app import htmx, cache
 from app.main.first import bp
 
 
