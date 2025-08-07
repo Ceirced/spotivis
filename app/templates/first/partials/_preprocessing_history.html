@@ -55,6 +55,7 @@
                                     hx-boost="true"
                                     href="{{ url_for('first.graph_preview', job_id=job.uuid) }}"
                                     class="btn btn-sm btn-primary"
+                                    hx-swap="show:window:top"
                                     hx-target="#content">
                                     Preview
                                 </a>
