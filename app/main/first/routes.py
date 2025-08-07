@@ -330,9 +330,7 @@ def list_files():
 def upload_file():
     if "file" not in request.files:
         return (
-            render_template(
-                "./first/partials/_upload_error.html", error="No file part"
-            ),
+            render_template("./first/partials/_error.html", error="No file part"),
             422,
         )
 
@@ -340,16 +338,14 @@ def upload_file():
 
     if file.filename == "":
         return (
-            render_template(
-                "./first/partials/_upload_error.html", error="No selected file"
-            ),
+            render_template("./first/partials/_error.html", error="No selected file"),
             422,
         )
 
     if not allowed_file(file.filename):
         return (
             render_template(
-                "./first/partials/_upload_error.html",
+                "./first/partials/_error.html",
                 error="Invalid file type. Only .parquet files are allowed",
             ),
             422,
@@ -363,7 +359,7 @@ def upload_file():
     if file_length > MAX_FILE_SIZE:
         return (
             render_template(
-                "./first/partials/_upload_error.html",
+                "./first/partials/_error.html",
                 error=f"File too large. Maximum size is {MAX_FILE_SIZE // (1024*1024)}MB",
             ),
             422,
@@ -389,7 +385,7 @@ def upload_file():
             file_path.unlink()
             return (
                 render_template(
-                    "./first/partials/_upload_error.html",
+                    "./first/partials/_error.html",
                     error=error_message,
                 ),
                 422,
@@ -420,7 +416,7 @@ def upload_file():
             file_path.unlink()
         return (
             render_template(
-                "./first/partials/_upload_error.html",
+                "./first/partials/_error.html",
                 error=f"Failed to save file: {str(e)}",
             ),
             422,
@@ -435,9 +431,7 @@ def start_preprocessing(filename):
 
     if not file_path.exists() or not file_path.suffix == ".parquet":
         return (
-            render_template(
-                "./first/partials/_preprocess_error.html", error="File not found"
-            ),
+            render_template("./first/partials/_error.html", error="File not found"),
             422,
         )
 
@@ -448,7 +442,7 @@ def start_preprocessing(filename):
     if not uploaded_file:
         return (
             render_template(
-                "./first/partials/_preprocess_error.html",
+                "./first/partials/_error.html",
                 error="File record not found in database",
             ),
             422,
@@ -466,7 +460,7 @@ def start_preprocessing(filename):
     if existing_job:
         return (
             render_template(
-                "./first/partials/_preprocess_error.html",
+                "./first/partials/_error.html",
                 error="A preprocessing job is already running for this file",
             ),
             422,
@@ -571,7 +565,7 @@ def cancel_job(task_id):
     else:
         return (
             render_template(
-                "./first/partials/_preprocess_error.html",
+                "./first/partials/_error.html",
                 error="Task cannot be cancelled (not running or already completed)",
             ),
             422,
