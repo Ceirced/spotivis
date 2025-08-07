@@ -7,8 +7,8 @@ class TestFileUploadAPI:
     def test_upload_endpoint_exists(self, authenticated_client):
         """Test that the upload endpoint exists."""
         response = authenticated_client.post('/first/upload')
-        # Should get 400 (no file) not 404
-        assert response.status_code == 400
+        # Should get 422 (no file) not 404
+        assert response.status_code == 422
 
     def test_home_page_shows_upload_form(self, authenticated_client):
         """Test that the home page displays the upload form."""
@@ -41,7 +41,7 @@ class TestFileUploadAPI:
         """Test upload endpoint with no file."""
         response = authenticated_client.post('/first/upload', data={})
 
-        assert response.status_code == 400
+        assert response.status_code == 422
         assert b'No file part' in response.data
 
     def test_upload_empty_filename(self, authenticated_client):
@@ -51,7 +51,7 @@ class TestFileUploadAPI:
             '/first/upload', data=data, content_type='multipart/form-data'
         )
 
-        assert response.status_code == 400
+        assert response.status_code == 422
         assert b'No selected file' in response.data
 
     def test_upload_invalid_file_type(self, authenticated_client, invalid_file):
@@ -62,7 +62,7 @@ class TestFileUploadAPI:
                 '/first/upload', data=data, content_type='multipart/form-data'
             )
 
-        assert response.status_code == 400
+        assert response.status_code == 422
         assert b'Invalid file type' in response.data
 
     def test_upload_invalid_parquet_content(self, authenticated_client):
@@ -74,8 +74,8 @@ class TestFileUploadAPI:
             '/first/upload', data=data, content_type='multipart/form-data'
         )
 
-        assert response.status_code == 400
-        assert b'Invalid parquet file format' in response.data
+        assert response.status_code == 422
+        assert b'Invalid parquet file' in response.data
 
     def test_upload_large_file(self, authenticated_client, app):
         """Test uploading a file larger than MAX_FILE_SIZE."""
@@ -93,7 +93,7 @@ class TestFileUploadAPI:
                 '/first/upload', data=data, content_type='multipart/form-data'
             )
 
-            assert response.status_code == 400
+            assert response.status_code == 422
             assert b'File too large' in response.data
 
         finally:

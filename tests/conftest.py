@@ -54,9 +54,13 @@ def authenticated_client(app, client):
     from app.extensions.security import user_datastore
 
     with app.app_context():
-        # Create a test user
+        # Create a test user with username (required by the system)
         user_datastore.create_user(
-            email='test@example.com', password=hash_password('password'), active=True
+            email='test@example.com', 
+            username='testuser',
+            password=hash_password('password'), 
+            active=True,
+            confirmed_at=db.func.now()
         )
         db.session.commit()
 
@@ -75,12 +79,16 @@ def sample_parquet_file():
     """Create a sample Parquet file for testing."""
     import pyarrow as pa
     import pyarrow.parquet as pq
+    from datetime import datetime
 
     # Create a temporary file
     fd, path = tempfile.mkstemp(suffix='.parquet')
 
-    # Create sample data
+    # Create sample data with required columns: isrc, playlist_id, thu_date
     data = {
+        'isrc': ['US1234567890', 'US2345678901', 'US3456789012'],
+        'playlist_id': ['playlist_1', 'playlist_2', 'playlist_1'],
+        'thu_date': [datetime.now().isoformat()] * 3,
         'track_name': ['Song 1', 'Song 2', 'Song 3'],
         'artist_name': ['Artist 1', 'Artist 2', 'Artist 3'],
         'play_count': [100, 200, 150],
