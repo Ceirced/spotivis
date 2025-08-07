@@ -13,6 +13,39 @@
                     >
                     total rows
                 </p>
+                
+                {% if file_type == 'nodes' %}
+                    <div class="card-actions justify-end mt-4">
+                        <div id="enrichment-container">
+                            {% if enrichment_job and enrichment_job.status == 'processing' %}
+                                <div
+                                    hx-get="{{ url_for('first.enrichment_status', task_id=enrichment_job.task_id) }}"
+                                    hx-trigger="load, every 1s"
+                                    hx-swap="innerHTML">
+                                    <div class="flex items-center gap-4">
+                                        <span class="loading loading-spinner loading-sm"></span>
+                                        <span>Enrichment in progress...</span>
+                                    </div>
+                                </div>
+                            {% elif enrichment_job and enrichment_job.status == 'completed' %}
+                                <div class="badge badge-success gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-4 h-4 stroke-current">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Data enriched ({{ enrichment_job.found_count }} found, {{ enrichment_job.not_found_count }} not found)
+                                </div>
+                            {% else %}
+                                <button
+                                    class="btn btn-primary btn-sm"
+                                    hx-post="{{ url_for('first.start_playlist_enrichment', job_id=job_id) }}"
+                                    hx-target="#enrichment-container"
+                                    hx-swap="innerHTML">
+                                    Enrich Playlists with Spotify Data
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
             </div>
         </div>
 
@@ -94,6 +127,12 @@
                                                         class="text-base-content/50"
                                                         >null</span
                                                     >
+                                                {% elif columns[loop.index0] == 'playlist_id' %}
+                                                    <a href="https://open.spotify.com/playlist/{{ value }}" 
+                                                       target="_blank" 
+                                                       class="link link-primary">
+                                                        {{ value }}
+                                                    </a>
                                                 {% else %}
                                                     {{ value }}
                                                 {% endif %}

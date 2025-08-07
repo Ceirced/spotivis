@@ -14,7 +14,8 @@ from werkzeug.utils import secure_filename
 from app import cache, db
 from app.helpers.app_helpers import make_cache_key_with_htmx
 from app.main.first import bp
-from app.models import PreprocessingJob, UploadedFile
+from app.models import PlaylistEnrichmentJob, PreprocessingJob, UploadedFile
+from app.tasks.playlist_enrichment import enrich_playlist_nodes
 from app.tasks.preprocessing import preprocess_spotify_data_original
 
 ALLOWED_EXTENSIONS = {"parquet"}
@@ -261,6 +262,16 @@ def view_processed_file(job_id: uuid.UUID, file_type: str):
         # Calculate pagination info
         total_pages = (total_rows + per_page - 1) // per_page
 
+        # Check for enrichment job if this is a nodes file
+        enrichment_job = None
+        if file_type == "nodes":
+            enrichment_stmt = (
+                select(PlaylistEnrichmentJob)
+                .where(PlaylistEnrichmentJob.preprocessing_job_id == str(job_id))
+                .order_by(PlaylistEnrichmentJob.started_at.desc())
+            )
+            enrichment_job = db.session.scalar(enrichment_stmt)
+
         return render_template(
             "./first/processed_view.html",
             job_id=job_id,
@@ -273,6 +284,7 @@ def view_processed_file(job_id: uuid.UUID, file_type: str):
             per_page=per_page,
             total_pages=total_pages,
             uploaded_file=job.uploaded_file,
+            enrichment_job=enrichment_job,
         )
     except Exception as e:
         logger.error(f"Error reading processed file: {e}")
@@ -714,3 +726,173 @@ def graph_edges_data(job_id: uuid.UUID):
     except Exception as e:
         logger.error(f"Error reading edges file: {e}")
         return jsonify({"error": "Error reading edges data"}), 500
+
+
+@bp.route("/enrich-playlists/<uuid:job_id>", methods=["POST"])
+def start_playlist_enrichment(job_id: uuid.UUID):
+    """Start playlist enrichment task for processed nodes."""
+    stmt = (
+        select(PreprocessingJob)
+        .join(UploadedFile)
+        .where(
+            PreprocessingJob.uuid == str(job_id),
+            UploadedFile.user_id == current_user.id,
+        )
+    )
+    preprocessing_job = db.session.scalar(stmt)
+
+    if not preprocessing_job or preprocessing_job.status != "completed":
+        return (
+            render_template(
+                "./first/partials/_error.html",
+                error="Preprocessing job not found or not completed",
+            ),
+            422,
+        )
+
+    if not preprocessing_job.nodes_file:
+        return (
+            render_template(
+                "./first/partials/_error.html",
+                error="No nodes file available for enrichment",
+            ),
+            422,
+        )
+
+    # Check if there's already a running enrichment job for this preprocessing job
+    job_stmt = (
+        select(PlaylistEnrichmentJob)
+        .where(PlaylistEnrichmentJob.preprocessing_job_id == str(job_id))
+        .where(PlaylistEnrichmentJob.status.in_(["pending", "processing"]))
+    )
+    existing_job = db.session.scalar(job_stmt)
+
+    if existing_job:
+        return (
+            render_template(
+                "./first/partials/_error.html",
+                error="An enrichment job is already running for this preprocessing job",
+            ),
+            422,
+        )
+
+    # Start the Celery task - it will create the job record internally
+    task = enrich_playlist_nodes.delay(str(job_id))
+
+    return render_template(
+        "./first/partials/_enrichment_started.html",
+        task_id=task.id,
+        job_uuid=None,  # We don't have the UUID yet as it's created in the task
+    )
+
+
+@bp.route("/enrichment-status/<task_id>", methods=["GET"])
+def enrichment_status(task_id):
+    """Check the status of an enrichment task."""
+    task = enrich_playlist_nodes.AsyncResult(task_id)
+
+    if task.state == "PENDING":
+        response = {
+            "state": task.state,
+            "current": 0,
+            "total": 100,
+            "status": "Task pending...",
+            "percent": 0,
+            "found": 0,
+            "not_found": 0,
+        }
+    elif task.state == "PROGRESS":
+        response = {
+            "state": task.state,
+            "current": task.info.get("current", 0),
+            "total": task.info.get("total", 100),
+            "status": task.info.get("status", ""),
+            "percent": task.info.get("percent", 0),
+            "found": task.info.get("found", 0),
+            "not_found": task.info.get("not_found", 0),
+        }
+    elif task.state == "SUCCESS":
+        response = {
+            "state": task.state,
+            "current": 100,
+            "total": 100,
+            "status": "Complete!",
+            "percent": 100,
+            "found": task.info.get("found", 0),
+            "not_found": task.info.get("not_found", 0),
+            "result": task.info.get("result", task.result),
+        }
+    elif task.state == "REVOKED":
+        response = {
+            "state": "CANCELLED",
+            "current": 0,
+            "total": 100,
+            "status": "Task cancelled",
+            "percent": 0,
+            "found": 0,
+            "not_found": 0,
+        }
+    else:  # FAILURE
+        response = {
+            "state": task.state,
+            "current": 0,
+            "total": 100,
+            "status": str(task.info),
+            "percent": 0,
+            "found": 0,
+            "not_found": 0,
+        }
+
+    if request.headers.get("HX-Request"):
+        # Return HTML partial for HTMX
+        return render_template(
+            "./first/partials/_enrichment_progress.html",
+            task_id=task_id,
+            task_state=response["state"],
+            percent=response["percent"],
+            status=response["status"],
+            found=response["found"],
+            not_found=response["not_found"],
+            result=response.get("result"),
+        )
+    else:
+        # Return JSON for other requests
+        return jsonify(response)
+
+
+@bp.route("/cancel-enrichment/<task_id>", methods=["POST"])
+def cancel_enrichment_job(task_id):
+    """Cancel a running enrichment task."""
+    task = enrich_playlist_nodes.AsyncResult(task_id)
+
+    # Check if task exists and is cancellable
+    if task.state in ["PENDING", "PROGRESS"]:
+        # Revoke the task
+        task.revoke(terminate=True)
+
+        # Update the database status
+        stmt = select(PlaylistEnrichmentJob).where(
+            PlaylistEnrichmentJob.task_id == task_id
+        )
+        job = db.session.scalar(stmt)
+
+        if job:
+            job.status = "cancelled"
+            job.completed_at = db.func.current_timestamp()
+            job.error_message = "Task cancelled by user"
+            db.session.commit()
+
+        # Return empty content to clear the progress display
+        response = make_response(
+            "",
+            trigger="refresh",  # Trigger HTMX refresh
+        )
+        return response
+    else:
+        return (
+            render_template(
+                "./first/partials/_error.html",
+                error="Task cannot be cancelled (not running or already completed)",
+            ),
+            422,
+        )

@@ -177,3 +177,42 @@ class PreprocessingJob(Model):
 
     def __repr__(self):
         return f"<PreprocessingJob {self.uuid} - {self.status}>"
+
+
+class PlaylistEnrichmentJob(Model):
+    __tablename__ = "playlist_enrichment_jobs"
+
+    uuid: so.Mapped[str] = so.mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    task_id: so.Mapped[str] = so.mapped_column(String(255), nullable=False, unique=True)
+    preprocessing_job_id: so.Mapped[str] = so.mapped_column(
+        ForeignKey("preprocessing_jobs.uuid"), nullable=False
+    )
+    preprocessing_job: so.Mapped[PreprocessingJob] = so.relationship(
+        "PreprocessingJob", backref="enrichment_jobs"
+    )
+
+    status: so.Mapped[str] = so.mapped_column(
+        String(50), nullable=False, default="pending"
+    )
+    started_at: so.Mapped[datetime] = so.mapped_column(
+        db.DateTime, nullable=False, default=db.func.current_timestamp()
+    )
+    completed_at: so.Mapped[datetime | None] = so.mapped_column(
+        db.DateTime, nullable=True
+    )
+
+    # Output file path for the enriched data
+    output_file: so.Mapped[str | None] = so.mapped_column(String(500), nullable=True)
+
+    # Statistics
+    total_playlists: so.Mapped[int | None] = so.mapped_column(db.Integer, nullable=True)
+    found_count: so.Mapped[int | None] = so.mapped_column(db.Integer, nullable=True)
+    not_found_count: so.Mapped[int | None] = so.mapped_column(db.Integer, nullable=True)
+
+    # Error tracking
+    error_message: so.Mapped[str | None] = so.mapped_column(db.Text, nullable=True)
+
+    def __repr__(self):
+        return f"<PlaylistEnrichmentJob {self.uuid} - {self.status}>"
