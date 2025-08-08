@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 import pyarrow.parquet as pq
-from flask import current_app, jsonify, render_template, request
+from flask import current_app, jsonify, render_template, request, send_from_directory
 from flask_htmx import make_response  # type: ignore
 from flask_login import current_user  # type: ignore
 from loguru import logger
@@ -673,10 +673,10 @@ def graph_nodes_data(job_id: uuid.UUID):
         if not nodes_path.exists():
             return jsonify({"error": f"Nodes file not found at {nodes_path}"}), 404
 
-        df_nodes = pd.read_csv(nodes_path)
-        # Convert to the format expected by D3.js
-        nodes_data = df_nodes.to_dict("records")
-        return jsonify(nodes_data)
+        return send_from_directory(
+            str(nodes_path.parent), nodes_path.name, as_attachment=False
+        )
+
     except Exception as e:
         logger.error(f"Error reading nodes file: {e}")
         return jsonify({"error": "Error reading nodes data"}), 500
@@ -719,10 +719,11 @@ def graph_edges_data(job_id: uuid.UUID):
         if not edges_path.exists():
             return jsonify({"error": f"Edges file not found at {edges_path}"}), 404
 
-        df_edges = pd.read_csv(edges_path)
-        # Convert to the format expected by D3.js
-        edges_data = df_edges.to_dict("records")
-        return jsonify(edges_data)
+        return send_from_directory(
+            str(edges_path.parent),
+            edges_path.name,
+            as_attachment=False,
+        )
     except Exception as e:
         logger.error(f"Error reading edges file: {e}")
         return jsonify({"error": "Error reading edges data"}), 500
