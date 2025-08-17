@@ -1,38 +1,60 @@
 {% if task_state == 'CANCELLED' %}
     <div class="alert alert-warning">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            class="h-6 w-6 shrink-0 stroke-current">
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
         <span>Enrichment cancelled</span>
     </div>
 {% elif task_state == 'FAILURE' %}
     <div class="alert alert-error">
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6 shrink-0 stroke-current"
+            fill="none"
+            viewBox="0 0 24 24">
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <span>Enrichment failed: {{ status }}</span>
     </div>
 {% elif task_state == 'SUCCESS' %}
     <div class="alert alert-success">
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6 shrink-0 stroke-current"
+            fill="none"
+            viewBox="0 0 24 24">
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <div>
             <span>Enrichment complete!</span>
-            <div class="text-sm mt-1">
-                Found: {{ found }} playlists | Not found: {{ not_found }} playlists
+            <div class="mt-1 text-sm">
+                Found: {{ found }} playlists | Not found: {{ not_found }}
+                playlists
             </div>
-            <div class="text-sm mt-1">
+            <div class="mt-1 text-sm">
                 The page will refresh to show the enriched data...
             </div>
         </div>
     </div>
-    
+
     <script>
-        setTimeout(function() {
+        setTimeout(function () {
             window.location.reload();
         }, 2000);
     </script>
@@ -41,15 +63,17 @@
         hx-get="{{ url_for('first.enrichment_status', task_id=task_id) }}"
         hx-trigger="every 1s"
         hx-swap="innerHTML">
-        
         <div class="mb-4">
-            <div class="flex justify-between text-sm mb-2">
+            <div class="mb-2 flex justify-between text-sm">
                 <span>{{ status }}</span>
                 <span>{{ percent }}%</span>
             </div>
-            <progress class="progress progress-primary w-full" value="{{ percent }}" max="100"></progress>
+            <progress
+                class="progress progress-primary w-full"
+                value="{{ percent }}"
+                max="100"></progress>
         </div>
-        
+
         {% if found > 0 or not_found > 0 %}
             <div class="stats stats-horizontal shadow">
                 <div class="stat">
@@ -62,16 +86,5 @@
                 </div>
             </div>
         {% endif %}
-        
-        <div class="mt-4">
-            <button
-                class="btn btn-error btn-sm"
-                onclick="if(confirm('Are you sure you want to cancel this enrichment?')) {
-                    fetch('{{ url_for('first.cancel_enrichment_job', task_id=task_id) }}', {method: 'POST'})
-                    .then(() => location.reload());
-                }">
-                Cancel Enrichment
-            </button>
-        </div>
     </div>
 {% endif %}
