@@ -262,15 +262,17 @@ def view_processed_file(job_id: uuid.UUID, file_type: str):
         # Calculate pagination info
         total_pages = (total_rows + per_page - 1) // per_page
 
-        # Check for enrichment job if this is a nodes file
-        enrichment_job = None
-        if file_type == "nodes":
-            enrichment_stmt = (
-                select(PlaylistEnrichmentJob)
-                .where(PlaylistEnrichmentJob.preprocessing_job_id == str(job_id))
-                .order_by(PlaylistEnrichmentJob.started_at.desc())
-            )
-            enrichment_job = db.session.scalar(enrichment_stmt)
+        enrichment_stmt = select(PlaylistEnrichmentJob).where(
+            PlaylistEnrichmentJob.preprocessing_job_id == str(job_id),
+        )
+
+        enrichment_jobs = db.session.scalars(enrichment_stmt).all()
+        enriched = any(job.status == "completed" for job in enrichment_jobs)
+
+        # might be a problem if there are multiple
+        job_in_progress = next(
+            (job for job in enrichment_jobs if job.status == "processing"), None
+        )
 
         return render_template(
             "./first/processed_view.html",
@@ -284,7 +286,8 @@ def view_processed_file(job_id: uuid.UUID, file_type: str):
             per_page=per_page,
             total_pages=total_pages,
             uploaded_file=job.uploaded_file,
-            enrichment_job=enrichment_job,
+            enrichment_job=job_in_progress if job_in_progress else None,
+            enriched=enriched,
         )
     except Exception as e:
         logger.error(f"Error reading processed file: {e}")
@@ -535,7 +538,7 @@ def task_status(task_id):
 
     if htmx:
         # Return HTML partial for HTMX
-        return render_template(
+        template = render_template(
             "./first/partials/_task_progress.html",
             task_id=task_id,
             task_state=response["state"],
@@ -543,6 +546,10 @@ def task_status(task_id):
             status=response["status"],
             result=response.get("result"),
         )
+
+        return make_response(
+            template, refresh=True if response["state"] == "SUCCESS" else False
+        )  # Trigger HTMX refresh only on success
     else:
         # Return JSON for other requests
         return jsonify(response)
@@ -569,10 +576,7 @@ def cancel_job(task_id):
             db.session.commit()
 
         # Return empty content to clear the progress display
-        response = make_response(
-            "",
-            trigger="refresh",  # Trigger HTMX refresh
-        )
+        response = make_response("", trigger="refresh")  # Trigger HTMX refresh
         return response
     else:
         return (

@@ -16,3 +16,4 @@ instance/
 uploads/
 raw_data/
 preprocessed/
+clean_data/
