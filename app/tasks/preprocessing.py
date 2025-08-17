@@ -296,6 +296,13 @@ def preprocess_spotify_data_original(self, filename: str):
             )
 
         # Final statistics
+        # Check if graph is empty before connectivity checks
+        is_weakly = False
+        is_strongly = False
+        if G.number_of_nodes() > 0:
+            is_weakly = nx.is_weakly_connected(G)
+            is_strongly = nx.is_strongly_connected(G)
+
         result = {
             "status": "success",
             "input_file": filename,
@@ -309,8 +316,8 @@ def preprocess_spotify_data_original(self, filename: str):
                 "final_nodes": G.number_of_nodes(),
                 "final_edges": G.number_of_edges(),
                 "directed": nx.is_directed(G),
-                "weakly_connected": nx.is_weakly_connected(G),
-                "strongly_connected": nx.is_strongly_connected(G),
+                "weakly_connected": is_weakly,
+                "strongly_connected": is_strongly,
                 "time_periods": len(time_period),
             },
         }
