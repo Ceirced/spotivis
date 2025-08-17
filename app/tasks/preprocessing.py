@@ -173,6 +173,12 @@ def preprocess_spotify_data_original(self, filename: str):
 
         if not uploaded_file:
             logger.error(f"No uploaded file found for filename: {filename}")
+
+            self.update_state(
+                state="FAILURE",
+                meta={"error": f"File {filename} not found in database"},
+            )
+
             return {
                 "status": "error",
                 "error": f"File {filename} not found in database",
@@ -210,6 +216,12 @@ def preprocess_spotify_data_original(self, filename: str):
                 job.error_message = f"File {filename} not found"
                 job.completed_at = datetime.now(timezone.utc)
                 db.session.commit()
+
+            self.update_state(
+                state="FAILURE",
+                meta={"error": f"File {filename} not found"},
+            )
+
             return {"status": "error", "error": f"File {filename} not found"}
 
         logger.info(f"Starting original algorithm preprocessing of {filename}")
