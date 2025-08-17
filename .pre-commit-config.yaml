@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: build-css
+        name: Build Tailwind CSS
+        entry: bash -c 'npm run prod && git add app/static/css/output.min.css'
+        language: system
+        files: \.(css|html|js)$
+        pass_filenames: false
