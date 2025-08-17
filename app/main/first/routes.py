@@ -11,7 +11,7 @@ from loguru import logger
 from sqlalchemy import select
 from werkzeug.utils import secure_filename
 
-from app import cache, db
+from app import cache, db, htmx
 from app.helpers.app_helpers import make_cache_key_with_htmx
 from app.main.first import bp
 from app.models import PlaylistEnrichmentJob, PreprocessingJob, UploadedFile
@@ -533,7 +533,7 @@ def task_status(task_id):
             "percent": 0,
         }
 
-    if request.headers.get("HX-Request"):
+    if htmx:
         # Return HTML partial for HTMX
         return render_template(
             "./first/partials/_task_progress.html",
@@ -844,7 +844,7 @@ def enrichment_status(task_id):
             "not_found": 0,
         }
 
-    if request.headers.get("HX-Request"):
+    if htmx:
         # Return HTML partial for HTMX
         return render_template(
             "./first/partials/_enrichment_progress.html",
