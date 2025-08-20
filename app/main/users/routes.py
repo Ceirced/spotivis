@@ -1,6 +1,6 @@
 import sqlalchemy as sa
 from sqlalchemy import select
-from flask import jsonify, make_response, render_template, request, url_for
+from flask import make_response, render_template, request, url_for
 from flask_security import current_user
 
 from app import db, htmx
@@ -188,14 +188,3 @@ def settings():
     if htmx.boosted:
         return render_template("users/partials/_settings_content.html", title=title)
     return render_template("users/settings.html", title=title)
-
-
-@bp.route("/toggle-track-spending", methods=["POST"])
-def toggle_track_spending():
-    response = make_response(jsonify(success=True))
-    return response
-
-
-@bp.route("/toggle-discreet-mode", methods=["POST"])
-def toggle_discreet_mode():
-    return jsonify(success=True)
