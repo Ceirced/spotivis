@@ -4,7 +4,7 @@
     <input
         type="checkbox"
         class="theme-controller"
-        value="forest" />
+        value="dark" />
 
     <!-- sun icon -->
 
@@ -39,7 +39,7 @@
             const themeController = document.querySelector(".theme-controller");
             if (themeController) {
                 // Set checkbox state based on saved theme
-                themeController.checked = savedTheme === "forest";
+                themeController.checked = savedTheme === "dark";
 
                 // Remove existing event listener if it exists
                 if (themeChangeHandler) {
@@ -51,7 +51,7 @@
 
                 // Create new handler
                 themeChangeHandler = function () {
-                    const newTheme = this.checked ? "forest" : "light";
+                    const newTheme = this.checked ? "dark" : "light";
                     localStorage.setItem("theme", newTheme);
                     // Apply theme immediately to HTML data-theme attribute
                     document.documentElement.setAttribute(
