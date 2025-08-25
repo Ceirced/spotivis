@@ -7,6 +7,8 @@
         "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
       "Courier New", monospace;
+    --color-green-400: oklch(79.2% 0.209 151.711);
+    --color-green-500: oklch(72.3% 0.219 149.579);
     --color-purple-800: oklch(43.8% 0.218 303.724);
     --color-gray-200: oklch(92.8% 0.006 264.531);
     --color-gray-500: oklch(55.1% 0.027 264.364);
@@ -252,37 +254,6 @@
       }
     }
   }
-  .drawer-open {
-    > .drawer-side {
-      overflow-y: auto;
-    }
-    > .drawer-toggle {
-      display: none;
-      & ~ .drawer-side {
-        pointer-events: auto;
-        visibility: visible;
-        position: sticky;
-        display: block;
-        width: auto;
-        overscroll-behavior: auto;
-        opacity: 100%;
-        & > .drawer-overlay {
-          cursor: default;
-          background-color: transparent;
-        }
-        & > *:not(.drawer-overlay) {
-          translate: 0%;
-          [dir="rtl"] & {
-            translate: 0%;
-          }
-        }
-      }
-      &:checked ~ .drawer-side {
-        pointer-events: auto;
-        visibility: visible;
-      }
-    }
-  }
   .menu {
     display: flex;
     width: fit-content;
@@ -512,39 +483,6 @@
     &:has(.input-xl, .select-xl, .textarea-xl) span {
       font-size: 1.375rem;
       top: calc(var(--size-field, 0.25rem) * 14 / 2);
-    }
-  }
-  .collapse-arrow {
-    > .collapse-title:after {
-      position: absolute;
-      display: block;
-      height: 0.5rem;
-      width: 0.5rem;
-      transform: translateY(-100%) rotate(45deg);
-      transition-property: all;
-      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-      transition-duration: 0.2s;
-      top: 1.9rem;
-      inset-inline-end: 1.4rem;
-      content: "";
-      transform-origin: 75% 75%;
-      box-shadow: 2px 2px;
-      pointer-events: none;
-    }
-  }
-  .collapse-plus {
-    > .collapse-title:after {
-      position: absolute;
-      display: block;
-      height: 0.5rem;
-      width: 0.5rem;
-      transition-property: all;
-      transition-duration: 300ms;
-      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-      top: 0.9rem;
-      inset-inline-end: 1.4rem;
-      content: "+";
-      pointer-events: none;
     }
   }
   .dropdown {
@@ -901,15 +839,6 @@
         display: block;
         color: var(--color-error);
       }
-    }
-  }
-  .collapse-open {
-    grid-template-rows: max-content 1fr;
-    > .collapse-content {
-      visibility: visible;
-      min-height: fit-content;
-      padding-bottom: 1rem;
-      transition: padding 0.2s ease-out, background-color 0.2s ease-out;
     }
   }
   .collapse {
@@ -2844,20 +2773,11 @@
   .flex-1 {
     flex: 1;
   }
-  .flex-shrink {
-    flex-shrink: 1;
-  }
   .shrink {
     flex-shrink: 1;
   }
   .shrink-0 {
     flex-shrink: 0;
-  }
-  .flex-grow {
-    flex-grow: 1;
-  }
-  .border-collapse {
-    border-collapse: collapse;
   }
   .-translate-x-1 {
     --tw-translate-x: calc(var(--spacing) * -1);
@@ -2953,9 +2873,6 @@
   }
   .flex-row {
     flex-direction: row;
-  }
-  .flex-wrap {
-    flex-wrap: wrap;
   }
   .items-center {
     align-items: center;
@@ -3056,7 +2973,7 @@
     @media (width >= 48rem) {
       padding: calc(var(--spacing) * 5);
     }
-    @media (prefers-color-scheme: dark) {
+    &:where([data-theme=dark], [data-theme=dark] *) {
       background-color: var(--color-zinc-900);
     }
   }
@@ -3180,9 +3097,6 @@
   }
   .bg-clip-text {
     background-clip: text;
-  }
-  .mask-repeat {
-    mask-repeat: repeat;
   }
   .fill-current {
     fill: currentcolor;
@@ -3324,9 +3238,6 @@
   .font-semibold {
     --tw-font-weight: var(--font-weight-semibold);
     font-weight: var(--font-weight-semibold);
-  }
-  .text-wrap {
-    text-wrap: wrap;
   }
   .file-input-primary {
     --btn-color: var(--color-primary);
@@ -3557,10 +3468,6 @@
   }
   .backdrop-blur-md {
     --tw-backdrop-blur: blur(var(--blur-md));
-    -webkit-backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,) var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,) var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,);
-    backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,) var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,) var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,);
-  }
-  .backdrop-filter {
     -webkit-backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,) var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,) var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,);
     backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,) var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,) var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,);
   }
@@ -4076,7 +3983,7 @@
   }
 }
 @layer base {
-  :where(:root),:root:has(input.theme-controller[value=forest]:checked),[data-theme="forest"] {
+  :where(:root),:root:has(input.theme-controller[value=dark]:checked),[data-theme="dark"] {
     color-scheme: dark;
     --color-base-100: oklch(20.84% 0.008 17.911);
     --color-base-200: oklch(18.522% 0.007 17.911);
