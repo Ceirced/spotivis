@@ -11,7 +11,7 @@ class BaseConfig:
 
     LOG_TO_STDOUT = os.environ.get("LOG_TO_STDOUT")
     APP_NAME = "Spotivis"
-    
+
     # Preprocessed data directory path (relative to static folder)
     PREPROCESSED_DATA_DIR = "preprocessed"
 
@@ -28,9 +28,8 @@ class DevelopmentConfig(BaseConfig):
     DEBUG = True
     SECRET_KEY = os.getenv("SECRET_KEY")
     FLASK_ENV = "development"
-    SQLALCHEMY_DATABASE_URI = "sqlite:///dev.db"
-    SERVER_NAME = os.getenv("HOST_NAME")
-    REDIS_URL = 'redis://redis' if os.getenv("IN_CONTAINER") else 'redis://localhost'
+    SQLALCHEMY_DATABASE_URI = "sqlite:///spotivis.db"
+    REDIS_URL = "redis://redis" if os.getenv("IN_CONTAINER") else "redis://localhost"
 
 
 class TestingConfig(BaseConfig):
@@ -44,7 +43,7 @@ class TestingConfig(BaseConfig):
 
 class ProductionConfig(BaseConfig):
     SECRET_KEY = os.getenv("SECRET_KEY")
-    SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")
+    SQLALCHEMY_DATABASE_URI = "sqlite:///spotivis.db"
     SESSION_COOKIE_SECURE = (
         True  # does not allow cookies to be sent over an unencrypted connection
     )
