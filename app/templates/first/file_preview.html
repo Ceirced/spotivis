@@ -3,27 +3,39 @@
         <div class="card-body">
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                    <p class="text-sm">Original Name</p>
-                    <p class="text-xl font-medium text-white">
+                    <p class="text-xs">Original Name</p>
+                    <p class="text-sm font-medium text-white">
                         {{ file.original_name }}
                     </p>
                 </div>
                 <div>
-                    <p class="text-sm">File Size</p>
-                    <p class="text-xl font-medium text-white">
+                    <p class="text-xs">File Size</p>
+                    <p class="text-sm font-medium text-white">
                         {{ file.size_mb }} MB
                     </p>
                 </div>
                 <div>
-                    <p class="text-sm">Upload Time</p>
+                    <p class="text-xs">Upload Time</p>
                     <p class="font-medium text-white">{{ file.upload_time }}</p>
                 </div>
                 <div>
-                    <p class="text-sm">Full Filename</p>
+                    <p class="text-xs">Full Filename</p>
                     <p class="text-xs font-medium text-white">
                         {{ file.filename }}
                     </p>
                 </div>
+                {% if file.start_date and file.end_date %}
+                    <div>
+                        <p class="text-xs">Data Period</p>
+                        <p class="font-medium text-white">
+                            {{ file.start_date.strftime('%B %d, %Y') }} to
+                            {{ file.end_date.strftime('%B %d, %Y') }}
+                        </p>
+                        <p class="text-secondary-content/70 text-xs">
+                            ({{ file.days_covered }} days)
+                        </p>
+                    </div>
+                {% endif %}
             </div>
             <div class="card-actions mt-4 justify-end">
                 <button

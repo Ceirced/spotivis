@@ -120,11 +120,39 @@ def preview_file(filename):
         None,
     )
 
+    # Extract date range from parquet file
+    date_range_info = {}
+    try:
+        parquet_file = pq.ParquetFile(str(file_path))
+        # Read only the thu_date column to get min/max dates
+        thu_date_table = parquet_file.read(columns=['thu_date'])
+        thu_date_series = thu_date_table.to_pandas()['thu_date']
+        
+        if not thu_date_series.empty:
+            # Convert to datetime if needed and get min/max
+            thu_date_series = pd.to_datetime(thu_date_series)
+            min_date = thu_date_series.min()
+            max_date = thu_date_series.max()
+            
+            date_range_info = {
+                "start_date": min_date,  # Pass datetime object
+                "end_date": max_date,    # Pass datetime object
+                "days_covered": (max_date - min_date).days + 1,
+            }
+    except Exception as e:
+        logger.warning(f"Could not extract date range from {filename}: {e}")
+        date_range_info = {
+            "start_date": None,
+            "end_date": None,
+            "days_covered": None,
+        }
+
     file_info = {
         "filename": filename,
         "original_name": original_name,
         "size_mb": round(file_stat.st_size / (1024 * 1024), 2),
         "upload_time": formatted_time,
+        **date_range_info,  # Include date range info
     }
 
     return render_template(
