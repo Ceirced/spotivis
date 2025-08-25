@@ -1,0 +1,86 @@
+{% if task_state == "SUCCESS" %}
+    <div class="space-y-4">
+        <div class="flex items-center justify-between">
+            <span class="text-success font-medium">✓ Combination Complete!</span>
+            <span>100%</span>
+        </div>
+        <progress
+            class="progress progress-success w-full"
+            value="100"
+            max="100"></progress>
+
+        {% if result and result.result %}
+            <div class="bg-base-200 mt-4 rounded-lg p-4">
+                <h4 class="mb-2 font-semibold">Results:</h4>
+                <div class="space-y-1 text-sm">
+                    <p>✓ Total Nodes: {{ result.result.total_nodes }}</p>
+                    <p>✓ Total Edges: {{ result.result.total_edges }}</p>
+                    <p>✓ Old dataset: {{ result.result.nodes_from_first }} unique nodes</p>
+                    <p>✓ New dataset: {{ result.result.nodes_from_second }} unique nodes</p>
+                    <p>✓ Common nodes: {{ result.result.common_nodes }}</p>
+                    <p>✓ Combined files created successfully</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    <script>
+        // Stop polling on success and refresh combine history
+        document
+            .getElementById("combine-progress-container")
+            .setAttribute("hx-disable", "true");
+        htmx.trigger("#combined-history", "refresh");
+    </script>
+{% elif task_state == "CANCELLED" %}
+    <div class="space-y-4">
+        <div class="flex items-center justify-between">
+            <span class="text-warning font-medium">⚠ Combination Cancelled</span>
+            <span>{{ percent }}%</span>
+        </div>
+        <progress
+            class="progress progress-warning w-full"
+            value="{{ percent }}"
+            max="100"></progress>
+        <div class="alert alert-warning mt-2">
+            <span>Combination task was cancelled by user.</span>
+        </div>
+    </div>
+    <script>
+        // Stop polling on cancellation and refresh combine history
+        document
+            .getElementById("combine-progress-container")
+            .setAttribute("hx-disable", "true");
+        htmx.trigger("#combined-history", "refresh");
+    </script>
+{% elif task_state == "FAILURE" %}
+    <div class="space-y-4">
+        <div class="flex items-center justify-between">
+            <span class="text-error font-medium">✗ Combination Failed</span>
+            <span>{{ percent }}%</span>
+        </div>
+        <progress
+            class="progress progress-error w-full"
+            value="{{ percent }}"
+            max="100"></progress>
+        <div class="alert alert-error mt-2">
+            <span>{{ status }}</span>
+        </div>
+    </div>
+    <script>
+        // Stop polling on failure and refresh combine history
+        document
+            .getElementById("combine-progress-container")
+            .setAttribute("hx-disable", "true");
+        htmx.trigger("#combined-history", "refresh");
+    </script>
+{% else %}
+    <div class="space-y-4">
+        <div class="flex items-center justify-between">
+            <span>{{ status }}</span>
+            <span>{{ percent }}%</span>
+        </div>
+        <progress
+            class="progress progress-primary w-full"
+            value="{{ percent }}"
+            max="100"></progress>
+    </div>
+{% endif %}

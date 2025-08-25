@@ -14,7 +14,13 @@ from werkzeug.utils import secure_filename
 from app import cache, db, htmx
 from app.helpers.app_helpers import make_cache_key_with_htmx
 from app.main.first import bp
-from app.models import PlaylistEnrichmentJob, PreprocessingJob, UploadedFile
+from app.models import (
+    CombinedPreprocessingJob,
+    PlaylistEnrichmentJob,
+    PreprocessingJob,
+    UploadedFile,
+)
+from app.tasks.combine_datasets import combine_preprocessed_datasets
 from app.tasks.playlist_enrichment import enrich_playlist_nodes
 from app.tasks.preprocessing import preprocess_spotify_data_original
 
@@ -120,27 +126,15 @@ def preview_file(filename):
         None,
     )
 
-    # Extract date range from parquet file
+    # Get date range from database (stored during upload)
     date_range_info = {}
-    try:
-        parquet_file = pq.ParquetFile(str(file_path))
-        # Read only the thu_date column to get min/max dates
-        thu_date_table = parquet_file.read(columns=['thu_date'])
-        thu_date_series = thu_date_table.to_pandas()['thu_date']
-        
-        if not thu_date_series.empty:
-            # Convert to datetime if needed and get min/max
-            thu_date_series = pd.to_datetime(thu_date_series)
-            min_date = thu_date_series.min()
-            max_date = thu_date_series.max()
-            
-            date_range_info = {
-                "start_date": min_date,  # Pass datetime object
-                "end_date": max_date,    # Pass datetime object
-                "days_covered": (max_date - min_date).days + 1,
-            }
-    except Exception as e:
-        logger.warning(f"Could not extract date range from {filename}: {e}")
+    if uploaded_file and uploaded_file.data_start_date and uploaded_file.data_end_date:
+        date_range_info = {
+            "start_date": uploaded_file.data_start_date,
+            "end_date": uploaded_file.data_end_date,
+            "days_covered": (uploaded_file.data_end_date - uploaded_file.data_start_date).days + 1,
+        }
+    else:
         date_range_info = {
             "start_date": None,
             "end_date": None,
@@ -434,12 +428,31 @@ def upload_file():
                 422,
             )
 
+        # Extract date range from parquet file
+        data_start_date = None
+        data_end_date = None
+        try:
+            parquet_file = pq.ParquetFile(str(file_path))
+            # Read only the thu_date column to get min/max dates
+            thu_date_table = parquet_file.read(columns=["thu_date"])
+            thu_date_series = thu_date_table.to_pandas()["thu_date"]
+            
+            if not thu_date_series.empty:
+                # Convert to datetime if needed and get min/max
+                thu_date_series = pd.to_datetime(thu_date_series)
+                data_start_date = thu_date_series.min()
+                data_end_date = thu_date_series.max()
+        except Exception as e:
+            logger.warning(f"Could not extract date range from uploaded file {filename}: {e}")
+
         # Save file metadata to database
         uploaded_file = UploadedFile(
             filename=filename,
             original_filename=file.filename,
             file_size=file_length,
             user_id=current_user.id if current_user.is_authenticated else None,
+            data_start_date=data_start_date,
+            data_end_date=data_end_date,
         )
         db.session.add(uploaded_file)
         db.session.commit()
@@ -929,3 +942,7 @@ def cancel_enrichment_job(task_id):
             ),
             422,
         )
+
+
+# Import combine routes
+from app.main.first import combine_routes  # noqa: F401

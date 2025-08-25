@@ -1,0 +1,311 @@
+{% macro content() %}
+    <div class="breadcrumbs text-sm mb-4">
+        <ul>
+            <li>
+                <a href="{{ url_for('first.index') }}" 
+                   hx-boost="true"
+                   hx-target="#content"
+                   hx-swap="show:window:top">
+                    Files
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('first.combine_files') }}" 
+                   hx-boost="true"
+                   hx-target="#content"
+                   hx-swap="show:window:top">
+                    Combine Datasets
+                </a>
+            </li>
+            <li>Combined Graph</li>
+        </ul>
+    </div>
+    
+    <div class="card bg-secondary text-secondary-content mb-8 shadow-sm">
+        <div class="card-body">
+            <h2 class="card-title text-white">
+                Combined Dataset Visualization
+            </h2>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                    <p class="text-xs">First Dataset</p>
+                    <p class="text-sm font-medium text-white">
+                        {{ job.first_job.uploaded_file.original_filename }}
+                    </p>
+                    {% if job.first_start_date and job.first_end_date %}
+                        <p class="text-secondary-content/70 text-xs">
+                            {{ job.first_start_date.strftime('%B %d, %Y') }} to
+                            {{ job.first_end_date.strftime('%B %d, %Y') }}
+                        </p>
+                    {% endif %}
+                </div>
+                <div>
+                    <p class="text-xs">Second Dataset</p>
+                    <p class="text-sm font-medium text-white">
+                        {{ job.second_job.uploaded_file.original_filename }}
+                    </p>
+                    {% if job.second_start_date and job.second_end_date %}
+                        <p class="text-secondary-content/70 text-xs">
+                            {{ job.second_start_date.strftime('%B %d, %Y') }} to
+                            {{ job.second_end_date.strftime('%B %d, %Y') }}
+                        </p>
+                    {% endif %}
+                </div>
+                <div>
+                    <p class="text-xs">Total Nodes</p>
+                    <p class="text-xl font-medium text-white">
+                        {{ job.total_nodes }}
+                    </p>
+                </div>
+                <div>
+                    <p class="text-xs">Total Edges</p>
+                    <p class="text-xl font-medium text-white">
+                        {{ job.total_edges }}
+                    </p>
+                </div>
+                <div>
+                    <p class="text-xs">Old Dataset Only</p>
+                    <p class="font-medium text-blue-300">
+                        {{ job.nodes_from_first }} nodes
+                    </p>
+                </div>
+                <div>
+                    <p class="text-xs">New Dataset Only</p>
+                    <p class="font-medium text-green-300">
+                        {{ job.new_nodes }} nodes
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card bg-base-200 shadow-sm">
+        <div class="card-body">
+            <div class="mb-4 flex items-center justify-between">
+                <h3 class="card-title">Network Graph</h3>
+                <div class="flex items-center gap-4 text-sm">
+                    <div class="flex items-center gap-1">
+                        <div class="h-3 w-3 rounded-full bg-blue-500"></div>
+                        <span>Old Dataset</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <div class="h-3 w-3 rounded-full bg-green-500"></div>
+                        <span>New Dataset</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <div class="h-3 w-3 rounded-full bg-purple-500"></div>
+                        <span>Both Periods</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graph container with temporal coloring -->
+            <div
+                id="graph-container"
+                class="w-full"
+                style="height: 600px;">
+                <div class="flex h-full items-center justify-center">
+                    <div class="loading loading-spinner loading-lg"></div>
+                    <span class="ml-2">Loading graph visualization...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        loadCombinedGraph("{{ job.uuid }}");
+
+        function loadCombinedGraph(jobId) {
+            if (typeof d3 === "undefined") {
+                const script = document.createElement("script");
+                script.src = "https://d3js.org/d3.v7.min.js";
+                script.onload = () => createCombinedGraph(jobId);
+                document.head.appendChild(script);
+            } else {
+                createCombinedGraph(jobId);
+            }
+        }
+
+        function createCombinedGraph(jobId) {
+            const container = document.getElementById("graph-container");
+            const width = container.offsetWidth;
+            const height = container.offsetHeight;
+
+            // Clear loading state
+            container.innerHTML = "";
+
+            // Create SVG
+            const svg = d3
+                .select("#graph-container")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height);
+
+            // Create groups for zoom behavior
+            const g = svg.append("g");
+
+            // Color scheme for time periods
+            const colorMap = {
+                old: "#3b82f6", // blue for old dataset only
+                new: "#10b981", // green for new dataset only
+                both: "#8b5cf6", // purple for nodes in both periods
+            };
+
+            // Load combined graph data
+            Promise.all([
+                d3.csv(`/first/combine/data/${jobId}/nodes`),
+                d3.csv(`/first/combine/data/${jobId}/edges`),
+            ])
+                .then(([nodes, edges]) => {
+                    // Process nodes - ensure numeric values and add time period coloring
+                    nodes.forEach((d) => {
+                        d.id = d.playlist_id; // Use playlist_id as the node id
+                        d.name = d.playlist_id; // Use playlist_id as display name
+                        d.size = 10; // Default size since we don't have size data
+                        d.x = Math.random() * width;
+                        d.y = Math.random() * height;
+                        d.color = colorMap[d.time_period] || "#6b7280"; // default gray
+                    });
+
+                    // Process edges - map playlist_id columns to source/target
+                    edges.forEach((d) => {
+                        d.source = d.playlist_id_1;
+                        d.target = d.playlist_id_2;
+                        d.weight = +d.weight || 1;
+                    });
+
+                    // Create force simulation
+                    const simulation = d3
+                        .forceSimulation(nodes)
+                        .force(
+                            "link",
+                            d3
+                                .forceLink(edges)
+                                .id((d) => d.id)
+                                .distance(50)
+                        )
+                        .force("charge", d3.forceManyBody().strength(-100))
+                        .force("center", d3.forceCenter(width / 2, height / 2));
+
+                    // Create zoom behavior
+                    const zoom = d3
+                        .zoom()
+                        .scaleExtent([0.1, 3])
+                        .on("zoom", (event) =>
+                            g.attr("transform", event.transform)
+                        );
+
+                    svg.call(zoom);
+
+                    // Create edges
+                    const link = g
+                        .append("g")
+                        .selectAll("line")
+                        .data(edges)
+                        .enter()
+                        .append("line")
+                        .attr("stroke", "#999")
+                        .attr("stroke-opacity", 0.6)
+                        .attr("stroke-width", (d) => Math.sqrt(d.weight));
+
+                    // Create nodes
+                    const node = g
+                        .append("g")
+                        .selectAll("circle")
+                        .data(nodes)
+                        .enter()
+                        .append("circle")
+                        .attr("r", (d) => Math.sqrt(d.size) * 3)
+                        .attr("fill", (d) => d.color)
+                        .attr("stroke", "#fff")
+                        .attr("stroke-width", 1.5)
+                        .call(
+                            d3
+                                .drag()
+                                .on("start", dragstarted)
+                                .on("drag", dragged)
+                                .on("end", dragended)
+                        );
+
+                    // Add tooltips
+                    node.append("title").text(
+                        (d) =>
+                            `Playlist: ${d.playlist_id}\nTime Period: ${d.time_period}`
+                    );
+
+                    // Update positions
+                    simulation.on("tick", () => {
+                        link.attr("x1", (d) => d.source.x)
+                            .attr("y1", (d) => d.source.y)
+                            .attr("x2", (d) => d.target.x)
+                            .attr("y2", (d) => d.target.y);
+
+                        node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+                    });
+
+                    function dragstarted(event, d) {
+                        if (!event.active)
+                            simulation.alphaTarget(0.3).restart();
+                        d.fx = d.x;
+                        d.fy = d.y;
+                    }
+
+                    function dragged(event, d) {
+                        d.fx = event.x;
+                        d.fy = event.y;
+                    }
+
+                    function dragended(event, d) {
+                        if (!event.active) simulation.alphaTarget(0);
+                        d.fx = null;
+                        d.fy = null;
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error loading graph data:", error);
+                    container.innerHTML =
+                        '<div class="text-error text-center">Error loading graph data</div>';
+                });
+        }
+    </script>
+{% endmacro %}
+
+{% if htmx.boosted %}
+    <title>
+        Combined Graph - {{ job.first_job.uploaded_file.original_filename }} +
+        {{ job.second_job.uploaded_file.original_filename }}
+    </title>
+
+    <div
+        id="top-bar"
+        hx-swap-oob="innerHTML">
+        {% block top_bar %}
+            <div class="container flex w-full items-center justify-between">
+                <a
+                    hx-boost="true"
+                    hx-target="#content"
+                    hx-swap="show:window:top"
+                    href="{{ url_for('first.combine_files') }}"
+                    class="group hover:text-primary flex items-center gap-1 transition-colors">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        class="size-4 stroke-current stroke-2 transition-transform duration-300 ease-out group-hover:-translate-x-1">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                    </svg>
+                    <span>Back to Combine</span>
+                </a>
+            </div>
+        {% endblock %}
+    </div>
+    {{ content() }}
+{% else %}
+    {% extends 'base.html' %}
+    {% block content %}
+        {{ content() }}
+    {% endblock %}
+{% endif %}

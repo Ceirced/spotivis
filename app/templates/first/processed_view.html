@@ -1,4 +1,26 @@
 {% macro content() %}
+    <div class="breadcrumbs text-sm mb-4">
+        <ul>
+            <li>
+                <a href="{{ url_for('first.index') }}" 
+                   hx-boost="true"
+                   hx-target="#content"
+                   hx-swap="show:window:top">
+                    Files
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('first.preview_file', filename=uploaded_file.filename) }}" 
+                   hx-boost="true"
+                   hx-target="#content"
+                   hx-swap="show:window:top">
+                    {{ uploaded_file.original_filename }}
+                </a>
+            </li>
+            <li>{{ file_type|title }} Data</li>
+        </ul>
+    </div>
+    
     <div class="space-y-6">
         <div class="card bg-secondary text-secondary-content shadow-sm">
             <div class="card-body">
