@@ -1,26 +1,28 @@
 {% macro content() %}
-    <div class="breadcrumbs text-sm mb-4">
+    <div class="breadcrumbs mb-4 text-sm">
         <ul>
             <li>
-                <a href="{{ url_for('first.index') }}" 
-                   hx-boost="true"
-                   hx-target="#content"
-                   hx-swap="show:window:top">
+                <a
+                    href="{{ url_for('first.index') }}"
+                    hx-boost="true"
+                    hx-target="#content"
+                    hx-swap="show:window:top">
                     Files
                 </a>
             </li>
             <li>
-                <a href="{{ url_for('first.combine_files') }}" 
-                   hx-boost="true"
-                   hx-target="#content"
-                   hx-swap="show:window:top">
+                <a
+                    href="{{ url_for('first.combine_files') }}"
+                    hx-boost="true"
+                    hx-target="#content"
+                    hx-swap="show:window:top">
                     Combine Datasets
                 </a>
             </li>
             <li>Combined Graph</li>
         </ul>
     </div>
-    
+
     <div class="card bg-secondary text-secondary-content mb-8 shadow-sm">
         <div class="card-body">
             <h2 class="card-title text-white">
@@ -113,18 +115,7 @@
     </div>
 
     <script>
-        loadCombinedGraph("{{ job.uuid }}");
-
-        function loadCombinedGraph(jobId) {
-            if (typeof d3 === "undefined") {
-                const script = document.createElement("script");
-                script.src = "https://d3js.org/d3.v7.min.js";
-                script.onload = () => createCombinedGraph(jobId);
-                document.head.appendChild(script);
-            } else {
-                createCombinedGraph(jobId);
-            }
-        }
+        createCombinedGraph("{{ job.uuid }}");
 
         function createCombinedGraph(jobId) {
             const container = document.getElementById("graph-container");

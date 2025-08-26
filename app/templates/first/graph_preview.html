@@ -1,26 +1,28 @@
 {% macro content() %}
-    <div class="breadcrumbs text-sm mb-4">
+    <div class="breadcrumbs mb-4 text-sm">
         <ul>
             <li>
-                <a href="{{ url_for('first.index') }}" 
-                   hx-boost="true"
-                   hx-target="#content"
-                   hx-swap="show:window:top">
+                <a
+                    href="{{ url_for('first.index') }}"
+                    hx-boost="true"
+                    hx-target="#content"
+                    hx-swap="show:window:top">
                     Files
                 </a>
             </li>
             <li>
-                <a href="{{ url_for('first.preview_file', filename=job.uploaded_file.filename) }}" 
-                   hx-boost="true"
-                   hx-target="#content"
-                   hx-swap="show:window:top">
+                <a
+                    href="{{ url_for('first.preview_file', filename=job.uploaded_file.filename) }}"
+                    hx-boost="true"
+                    hx-target="#content"
+                    hx-swap="show:window:top">
                     {{ job.uploaded_file.original_filename }}
                 </a>
             </li>
             <li>Graph Preview</li>
         </ul>
     </div>
-    
+
     <div class="space-y-6">
         <div class="bg-secondary text-secondary-content rounded-lg p-4">
             <h3 class="mb-2 text-xl font-bold">
@@ -136,26 +138,7 @@
         </div>
     </div>
     <script type="module">
-        // Function to load D3 if not already loaded
-        function loadD3() {
-            return new Promise((resolve, reject) => {
-                if (typeof d3 !== "undefined") {
-                    resolve();
-                    return;
-                }
-
-                const script = document.createElement("script");
-                script.src = "https://cdn.jsdelivr.net/npm/d3@7";
-                script.onload = resolve;
-                script.onerror = reject;
-                document.head.appendChild(script);
-            });
-        }
-
-        // Initialize graph after D3 is loaded
-        async function initializeGraph() {
-            await loadD3();
-
+        function initializeGraph() {
             // Graph visualization adapted from graph.html
             const jobId = "{{ job.uuid }}";
             const graphContainer = d3.select("#graph-container");
