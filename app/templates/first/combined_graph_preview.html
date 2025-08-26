@@ -115,149 +115,22 @@
     </div>
 
     <script>
-        createCombinedGraph("{{ job.uuid }}");
-
-        function createCombinedGraph(jobId) {
-            const container = document.getElementById("graph-container");
-            const width = container.offsetWidth;
-            const height = container.offsetHeight;
-
-            // Clear loading state
-            container.innerHTML = "";
-
-            // Create SVG
-            const svg = d3
-                .select("#graph-container")
-                .append("svg")
-                .attr("width", width)
-                .attr("height", height);
-
-            // Create groups for zoom behavior
-            const g = svg.append("g");
-
-            // Color scheme for time periods
-            const colorMap = {
-                old: "#3b82f6", // blue for old dataset only
-                new: "#10b981", // green for new dataset only
-                both: "#8b5cf6", // purple for nodes in both periods
+        // Load the bundled script with D3 included
+        (function() {
+            // Check if our function is already loaded
+            if (typeof window.createCombinedGraph !== 'undefined') {
+                window.createCombinedGraph("{{ job.uuid }}");
+                return;
+            }
+            
+            // Load our bundled TypeScript with D3
+            const script = document.createElement("script");
+            script.src = "{{ url_for('static', filename='js/build/combined-graph.js') }}";
+            script.onload = () => {
+                window.createCombinedGraph("{{ job.uuid }}");
             };
-
-            // Load combined graph data
-            Promise.all([
-                d3.csv(`/first/combine/data/${jobId}/nodes`),
-                d3.csv(`/first/combine/data/${jobId}/edges`),
-            ])
-                .then(([nodes, edges]) => {
-                    // Process nodes - ensure numeric values and add time period coloring
-                    nodes.forEach((d) => {
-                        d.id = d.playlist_id; // Use playlist_id as the node id
-                        d.name = d.playlist_id; // Use playlist_id as display name
-                        d.size = 10; // Default size since we don't have size data
-                        d.x = Math.random() * width;
-                        d.y = Math.random() * height;
-                        d.color = colorMap[d.time_period] || "#6b7280"; // default gray
-                    });
-
-                    // Process edges - map playlist_id columns to source/target
-                    edges.forEach((d) => {
-                        d.source = d.playlist_id_1;
-                        d.target = d.playlist_id_2;
-                        d.weight = +d.weight || 1;
-                    });
-
-                    // Create force simulation
-                    const simulation = d3
-                        .forceSimulation(nodes)
-                        .force(
-                            "link",
-                            d3
-                                .forceLink(edges)
-                                .id((d) => d.id)
-                                .distance(50)
-                        )
-                        .force("charge", d3.forceManyBody().strength(-100))
-                        .force("center", d3.forceCenter(width / 2, height / 2));
-
-                    // Create zoom behavior
-                    const zoom = d3
-                        .zoom()
-                        .scaleExtent([0.1, 3])
-                        .on("zoom", (event) =>
-                            g.attr("transform", event.transform)
-                        );
-
-                    svg.call(zoom);
-
-                    // Create edges
-                    const link = g
-                        .append("g")
-                        .selectAll("line")
-                        .data(edges)
-                        .enter()
-                        .append("line")
-                        .attr("stroke", "#999")
-                        .attr("stroke-opacity", 0.6)
-                        .attr("stroke-width", (d) => Math.sqrt(d.weight));
-
-                    // Create nodes
-                    const node = g
-                        .append("g")
-                        .selectAll("circle")
-                        .data(nodes)
-                        .enter()
-                        .append("circle")
-                        .attr("r", (d) => Math.sqrt(d.size) * 3)
-                        .attr("fill", (d) => d.color)
-                        .attr("stroke", "#fff")
-                        .attr("stroke-width", 1.5)
-                        .call(
-                            d3
-                                .drag()
-                                .on("start", dragstarted)
-                                .on("drag", dragged)
-                                .on("end", dragended)
-                        );
-
-                    // Add tooltips
-                    node.append("title").text(
-                        (d) =>
-                            `Playlist: ${d.playlist_id}\nTime Period: ${d.time_period}`
-                    );
-
-                    // Update positions
-                    simulation.on("tick", () => {
-                        link.attr("x1", (d) => d.source.x)
-                            .attr("y1", (d) => d.source.y)
-                            .attr("x2", (d) => d.target.x)
-                            .attr("y2", (d) => d.target.y);
-
-                        node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-                    });
-
-                    function dragstarted(event, d) {
-                        if (!event.active)
-                            simulation.alphaTarget(0.3).restart();
-                        d.fx = d.x;
-                        d.fy = d.y;
-                    }
-
-                    function dragged(event, d) {
-                        d.fx = event.x;
-                        d.fy = event.y;
-                    }
-
-                    function dragended(event, d) {
-                        if (!event.active) simulation.alphaTarget(0);
-                        d.fx = null;
-                        d.fy = null;
-                    }
-                })
-                .catch((error) => {
-                    console.error("Error loading graph data:", error);
-                    container.innerHTML =
-                        '<div class="text-error text-center">Error loading graph data</div>';
-                });
-        }
+            document.head.appendChild(script);
+        })();
     </script>
 {% endmacro %}
 

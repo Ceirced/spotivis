@@ -17,3 +17,6 @@ uploads/
 raw_data/
 preprocessed/
 clean_data/
+
+# Build artifacts
+app/static/js/build/

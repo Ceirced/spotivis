@@ -4,22 +4,33 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "dev": "npx @tailwindcss/cli -i ./app/static/css/input.css -o ./app/static/css/output.css --watch",
-        "prod": "npx @tailwindcss/cli -i ./app/static/css/input.css -o ./app/static/css/output.min.css --minify"
+        "dev:css": "npx @tailwindcss/cli -i ./app/static/css/input.css -o ./app/static/css/output.css --watch",
+        "dev:ts": "vite build --watch --mode development",
+        "dev": "concurrently \"npm run dev:css\" \"npm run dev:ts\"",
+        "build:css": "npx @tailwindcss/cli -i ./app/static/css/input.css -o ./app/static/css/output.min.css --minify",
+        "build:ts": "vite build --mode production",
+        "build": "npm run build:css && npm run build:ts",
+        "clean": "rm -rf app/static/js/build/ app/static/css/output*.css"
     },
     "author": "",
     "license": "ISC",
     "devDependencies": {
+        "@types/d3": "^7.4.3",
+        "@types/node": "^24.3.0",
+        "concurrently": "^9.2.1",
         "daisyui": "^5.0.43",
         "prettier": "^3.3.3",
         "prettier-plugin-jinja-template": "^1.3.2",
         "prettier-plugin-tailwindcss": "^0.6.11",
-        "tailwindcss": "^4.1.3"
+        "tailwindcss": "^4.1.3",
+        "typescript": "^5.9.2",
+        "vite": "^7.1.3"
     },
     "dependencies": {
         "cal-heatmap": "^4.2.4",
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.1.0",
+        "d3": "^7.9.0",
         "lucide-react": "^0.340.0",
         "tailwind-merge": "^2.2.1",
         "tailwindcss-animate": "^1.0.7"
