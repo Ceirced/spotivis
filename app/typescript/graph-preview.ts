@@ -313,21 +313,21 @@ export function createGraph(jobId: string): void {
             });
 
             function drag(simulation: d3.Simulation<NodeData, undefined>) {
-                function dragstarted(event: d3.D3DragEvent<SVGCircleElement, NodeData, NodeData>): void {
+                function dragstarted(event: d3.D3DragEvent<SVGCircleElement, NodeData, NodeData>, d: NodeData): void {
                     if (!event.active) simulation.alphaTarget(0.3).restart();
-                    event.subject.fx = event.subject.x;
-                    event.subject.fy = event.subject.y;
+                    d.fx = d.x;
+                    d.fy = d.y;
                 }
 
-                function dragged(event: d3.D3DragEvent<SVGCircleElement, NodeData, NodeData>): void {
-                    event.subject.fx = event.x;
-                    event.subject.fy = event.y;
+                function dragged(event: d3.D3DragEvent<SVGCircleElement, NodeData, NodeData>, d: NodeData): void {
+                    d.fx = event.x;
+                    d.fy = event.y;
                 }
 
-                function dragended(event: d3.D3DragEvent<SVGCircleElement, NodeData, NodeData>): void {
+                function dragended(event: d3.D3DragEvent<SVGCircleElement, NodeData, NodeData>, d: NodeData): void {
                     if (!event.active) simulation.alphaTarget(0);
-                    event.subject.fx = null;
-                    event.subject.fy = null;
+                    d.fx = null;
+                    d.fy = null;
                 }
 
                 return d3
