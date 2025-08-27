@@ -115,7 +115,7 @@
     </div>
 
     <script type="module">
-        // D3 is available via import map (inline data URL, no extra request)
+        // D3 is bundled directly in the module
         import { createCombinedGraph } from "{{ url_for('static', filename='js/build/combined-graph.js') }}";
         
         // Call the function when ready

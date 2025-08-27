@@ -26,8 +26,7 @@ export default defineConfig(({ mode }) => {
       minify: !isDev,
       sourcemap: isDev ? 'inline' : false,
       rollupOptions: {
-        // D3 is always external - loaded separately
-        external: ['d3'],
+        // No externals - bundle everything including D3
         output: {
           entryFileNames: '[name].js',
           format: 'es'
