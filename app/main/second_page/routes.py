@@ -1,12 +1,16 @@
-from flask import render_template
+from flask import current_app, render_template
 
-from app import htmx, cache
+from app import cache, htmx
 from app.helpers.app_helpers import make_cache_key_with_htmx
 from app.main.second_page import bp
 
 
 @bp.route("/")
-@cache.cached(timeout=600, make_cache_key=make_cache_key_with_htmx)
+@cache.cached(
+    timeout=600,
+    make_cache_key=make_cache_key_with_htmx,
+    unless=lambda: current_app.config.get("DEBUG", False),
+)
 def index():
     title = "Second"
     if htmx.boosted:
