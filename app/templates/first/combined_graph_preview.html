@@ -114,23 +114,12 @@
         </div>
     </div>
 
-    <script>
-        // Load the bundled script with D3 included
-        (function() {
-            // Check if our function is already loaded
-            if (typeof window.createCombinedGraph !== 'undefined') {
-                window.createCombinedGraph("{{ job.uuid }}");
-                return;
-            }
-            
-            // Load our bundled TypeScript with D3
-            const script = document.createElement("script");
-            script.src = "{{ url_for('static', filename='js/build/combined-graph.js') }}";
-            script.onload = () => {
-                window.createCombinedGraph("{{ job.uuid }}");
-            };
-            document.head.appendChild(script);
-        })();
+    <script type="module">
+        // D3 is available via import map (inline data URL, no extra request)
+        import { createCombinedGraph } from "{{ url_for('static', filename='js/build/combined-graph.js') }}";
+        
+        // Call the function when ready
+        createCombinedGraph("{{ job.uuid }}");
     </script>
 {% endmacro %}
 

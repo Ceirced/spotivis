@@ -81,14 +81,23 @@ npm run build:ts   # Minified, tree-shaken JavaScript
 ## Adding New TypeScript Files
 
 1. Create new `.ts` file in `app/typescript/`
-2. Add entry to `vite.config.ts`:
+2. Export your functions using ES module syntax:
 ```typescript
-entry: {
-  'combined-graph': resolve(__dirname, 'app/typescript/combined-graph.ts'),
-  'new-feature': resolve(__dirname, 'app/typescript/new-feature.ts'), // Add this
+// app/typescript/new-feature.ts
+export function myFeature() {
+  // Your code here
 }
 ```
-3. Import in your template:
-```html
-<script src="{{ url_for('static', filename='js/new-feature.js') }}"></script>
+3. Build (automatically includes all `.ts` files):
+```bash
+npm run build:ts
 ```
+4. Import in your template using ES modules:
+```html
+<script type="module">
+  import { myFeature } from "{{ url_for('static', filename='js/build/new-feature.js') }}";
+  myFeature();
+</script>
+```
+
+**Note:** All TypeScript files in `app/typescript/` are automatically built - no config needed!

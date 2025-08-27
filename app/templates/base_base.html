@@ -133,7 +133,18 @@
         <script
             defer
             src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+
+        <!-- Load D3 as a single file (creates window.d3) -->
+        <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+        
+        <!-- Import map to make global d3 available for ES modules -->
+        <script type="importmap">
+        {
+          "imports": {
+            "d3": "data:text/javascript,export default window.d3"
+          }
+        }
+        </script>
 
         <!-- Global theme initialization - runs immediately to prevent flash -->
         <script>

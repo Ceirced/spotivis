@@ -1,4 +1,4 @@
-import * as d3 from 'd3';
+import d3 from 'd3';
 
 interface NodeData extends d3.SimulationNodeDatum {
     id: string;
@@ -28,7 +28,7 @@ const COLOR_MAP: Record<string, string> = {
     both: "#8b5cf6",  // purple for nodes in both periods
 };
 
-function createCombinedGraph(jobId: string): void {
+export function createCombinedGraph(jobId: string): void {
     const container = document.getElementById("graph-container");
     if (!container) {
         console.error("Graph container not found");
@@ -178,6 +178,3 @@ function createCombinedGraph(jobId: string): void {
             container.innerHTML = '<div class="text-error text-center">Error loading graph data</div>';
         });
 }
-
-// Make the function available globally
-(window as any).createCombinedGraph = createCombinedGraph;
