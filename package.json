@@ -4,11 +4,13 @@
     "description": "",
     "main": "index.js",
     "scripts": {
+        "type-check": "tsc --noEmit",
+        "type-check:watch": "tsc --noEmit --watch",
         "dev:css": "npx @tailwindcss/cli -i ./app/static/css/input.css -o ./app/static/css/output.css --watch",
         "dev:ts": "vite build --watch --mode development",
-        "dev": "concurrently \"npm run dev:css\" \"npm run dev:ts\"",
+        "dev": "concurrently \"npm run dev:css\" \"npm run dev:ts\" \"npm run type-check:watch\"",
         "build:css": "npx @tailwindcss/cli -i ./app/static/css/input.css -o ./app/static/css/output.min.css --minify",
-        "build:ts": "vite build --mode production",
+        "build:ts": "npm run type-check && vite build --mode production",
         "build": "npm run build:css && npm run build:ts",
         "clean": "rm -rf app/static/js/build/ app/static/css/output*.css"
     },
