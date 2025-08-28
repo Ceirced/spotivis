@@ -104,14 +104,15 @@ export function createGraph(jobId: string): void {
                 .attr("width", width)
                 .attr("height", height);
 
+            // Create a group for zoom behavior
+            const g = svg.append("g");
+
             function nodeSize(d: NodeData): number {
                 return Math.sqrt(outgoingCount[d.playlist_id] || 1) * 4;
             }
 
             function zoomed(event: d3.D3ZoomEvent<SVGSVGElement, unknown>): void {
-                const transform = event.transform;
-                node.attr("transform", transform.toString());
-                link.attr("transform", transform.toString());
+                g.attr("transform", event.transform.toString());
             }
 
             // Define zoom behavior
@@ -122,7 +123,7 @@ export function createGraph(jobId: string): void {
 
             svg.call(zoom);
 
-            // Add definitions for markers and gradients
+            // Add definitions for markers and gradients (keep in svg, not in g)
             const defs = svg.append("defs");
 
             defs.selectAll("marker")
@@ -205,7 +206,7 @@ export function createGraph(jobId: string): void {
             }
 
             // Create links
-            const link = svg
+            const link = g
                 .selectAll<SVGLineElement, ProcessedEdgeData>("line")
                 .data(links)
                 .enter()
@@ -279,7 +280,7 @@ export function createGraph(jobId: string): void {
             }
 
             // Create nodes
-            const node = svg
+            const node = g
                 .selectAll<SVGCircleElement, NodeData>("circle")
                 .data(nodes)
                 .enter()
