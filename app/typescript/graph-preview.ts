@@ -207,6 +207,8 @@ export function createGraph(jobId: string): void {
 
             // Create links
             const link = g
+                .append("g")
+                .attr("id", "edges")
                 .selectAll<SVGLineElement, ProcessedEdgeData>("line")
                 .data(links)
                 .enter()
@@ -281,6 +283,8 @@ export function createGraph(jobId: string): void {
 
             // Create nodes
             const node = g
+                .append("g")
+                .attr("id", "nodes")
                 .selectAll<SVGCircleElement, NodeData>("circle")
                 .data(nodes)
                 .enter()
@@ -297,18 +301,15 @@ export function createGraph(jobId: string): void {
                 .on("click", function (event: MouseEvent, d: NodeData) {
                     highlightNeighbors(event, d, this);
                 })
-                .on("reset", function () {
-                    d3.selectAll("circle").attr("opacity", 1);
-                    d3.selectAll("line").attr("opacity", (d) =>
-                        linkOpacity(d as ProcessedEdgeData)
-                    );
-                });
 
             // Reset on background click
             svg.on("click", function (event: MouseEvent) {
                 const target = event.target as Element;
                 if (target.tagName !== "circle") {
-                    d3.selectAll("circle").dispatch("reset");
+                    d3.selectAll("circle").attr("opacity", 1);
+                    d3.selectAll("line").attr("opacity", (d) =>
+                        linkOpacity(d as ProcessedEdgeData)
+                    );
                     d3.select("#graph-info-panel").style("display", "none");
                 }
             });
