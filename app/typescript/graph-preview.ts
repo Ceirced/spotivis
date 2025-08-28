@@ -30,7 +30,8 @@ export function createGraph(jobId: string): void {
 
     const containerRect = containerElement.getBoundingClientRect();
     const width = containerRect.width;
-    const height = 600;
+    const height = containerRect.height || 600; // Use container height or fallback to 600
+
 
     let nodes: NodeData[];
     let links: ProcessedEdgeData[];

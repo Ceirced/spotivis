@@ -8,12 +8,10 @@
             {% block top_bar %}{% endblock %}
         </div>
         <div
-            id="body-container"
-            class="container mx-auto px-4 pt-12 pb-[calc(env(safe-area-inset-bottom)+56px)] md:pt-16">
-            <div id="content">
-                {% block content %}
-                {% endblock %}
-            </div>
+            id="content"
+            class="container mx-auto flex min-h-full flex-col px-4 pt-12 pb-[calc(env(safe-area-inset-bottom)+56px)] md:pt-16">
+            {% block content %}
+            {% endblock %}
         </div>
         {% include 'partials/_flash-messages.html' %}
         {%

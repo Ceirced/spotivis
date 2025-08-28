@@ -1,30 +1,30 @@
 {% macro content() %}
-    <div class="breadcrumbs mb-4 text-sm">
-        <ul>
-            <li>
-                <a
-                    href="{{ url_for('first.index') }}"
-                    hx-boost="true"
-                    hx-target="#content"
-                    hx-swap="show:window:top">
-                    Files
-                </a>
-            </li>
-            <li>
-                <a
-                    href="{{ url_for('first.preview_file', filename=job.uploaded_file.filename) }}"
-                    hx-boost="true"
-                    hx-target="#content"
-                    hx-swap="show:window:top">
-                    {{ job.uploaded_file.original_filename }}
-                </a>
-            </li>
-            <li>Graph Preview</li>
-        </ul>
-    </div>
+    <div class="flex flex-1 flex-col pb-8">
+        <div class="breadcrumbs mb-4 text-sm">
+            <ul>
+                <li>
+                    <a
+                        href="{{ url_for('first.index') }}"
+                        hx-boost="true"
+                        hx-target="#content"
+                        hx-swap="show:window:top">
+                        Files
+                    </a>
+                </li>
+                <li>
+                    <a
+                        href="{{ url_for('first.preview_file', filename=job.uploaded_file.filename) }}"
+                        hx-boost="true"
+                        hx-target="#content"
+                        hx-swap="show:window:top">
+                        {{ job.uploaded_file.original_filename }}
+                    </a>
+                </li>
+                <li>Graph Preview</li>
+            </ul>
+        </div>
 
-    <div class="space-y-6">
-        <div class="bg-secondary text-secondary-content rounded-lg p-4">
+        <div class="bg-secondary text-secondary-content mb-6 rounded-lg p-4">
             <h3 class="mb-2 text-xl font-bold">
                 Graph Preview: {{ job.uploaded_file.original_filename }}
             </h3>
@@ -47,69 +47,10 @@
             </div>
         </div>
 
-        {% if edges_preview %}
-            <div>
-                <h4 class="mb-2 text-lg font-semibold">
-                    Edge Preview (First 20)
-                </h4>
-                <div class="overflow-x-auto">
-                    <table class="table-sm table-zebra table">
-                        <thead>
-                            <tr>
-                                <th>Source Playlist</th>
-                                <th>Target Playlist</th>
-                                <th>Weight</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for edge in edges_preview %}
-                                <tr>
-                                    <td class="font-mono text-xs">
-                                        {{ edge['playlist_id_1'] }}
-                                    </td>
-                                    <td class="font-mono text-xs">
-                                        {{ edge['playlist_id_2'] }}
-                                    </td>
-                                    <td>{{ edge['weight'] }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        {% endif %}
-
-        {% if nodes_preview %}
-            <div>
-                <h4 class="mb-2 text-lg font-semibold">
-                    Node Preview (First 20)
-                </h4>
-                <div class="overflow-x-auto">
-                    <table class="table-sm table-zebra table">
-                        <thead>
-                            <tr>
-                                <th>Playlist ID</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for node in nodes_preview %}
-                                <tr>
-                                    <td class="font-mono text-xs">
-                                        {{ node['playlist_id'] }}
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        {% endif %}
-
-        <div class="mt-4">
+        <div class="relative flex flex-1 flex-col overflow-hidden">
             <div
                 id="graph-container"
-                class="bg-base-100 relative overflow-hidden rounded-lg ring-1 inset-shadow-sm/15 ring-black/5"
-                style="height: 600px;">
+                class="bg-base-100 relative m-[1px] flex-1 overflow-hidden rounded-lg ring-1 inset-shadow-sm/15 ring-black/5">
                 <div class="skeleton h-full w-full"></div>
             </div>
 
