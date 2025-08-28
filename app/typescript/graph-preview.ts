@@ -135,7 +135,7 @@ export function createGraph(jobId: string): void {
                 .append("marker")
                 .attr("id", String)
                 .attr("viewBox", "0 -5 10 10")
-                .attr("refX", 24.5)
+                .attr("refX", 8)
                 .attr("refY", 0)
                 .attr("markerWidth", 6)
                 .attr("markerHeight", 6)
@@ -180,12 +180,34 @@ export function createGraph(jobId: string): void {
                         return source.y!;
                     })
                     .attr("x2", (d: ProcessedEdgeData) => {
+                        const source = d.source as NodeData;
                         const target = d.target as NodeData;
-                        return target.x!;
+                        
+                        // Calculate angle from source to target
+                        const dx = target.x! - source.x!;
+                        const dy = target.y! - source.y!;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        // Offset by target node radius + small gap for arrow
+                        const targetRadius = nodeSize(target) + 2;
+                        const ratio = (distance - targetRadius) / distance;
+                        
+                        return source.x! + dx * ratio;
                     })
                     .attr("y2", (d: ProcessedEdgeData) => {
+                        const source = d.source as NodeData;
                         const target = d.target as NodeData;
-                        return target.y!;
+                        
+                        // Calculate angle from source to target
+                        const dx = target.x! - source.x!;
+                        const dy = target.y! - source.y!;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        // Offset by target node radius + small gap for arrow
+                        const targetRadius = nodeSize(target) + 2;
+                        const ratio = (distance - targetRadius) / distance;
+                        
+                        return source.y! + dy * ratio;
                     });
 
                 node.attr("cx", (d: NodeData) => d.x!).attr("cy", (d: NodeData) => d.y!);
