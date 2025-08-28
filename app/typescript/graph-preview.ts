@@ -121,10 +121,15 @@ export function createGraph(jobId: string): void {
             // Define zoom behavior
             const zoom = d3
                 .zoom<SVGSVGElement, unknown>()
-                .scaleExtent([0.1, 2])
+                .scaleExtent([0.1, 3])
                 .on("zoom", zoomed)
 
             svg.call(zoom);
+            
+            // Prevent browser zoom when using wheel on the SVG
+            svg.node()?.addEventListener("wheel", function(event: WheelEvent) {
+                event.preventDefault();
+            }, { passive: false });
 
             // Add definitions for markers and gradients (keep in svg, not in g)
             const defs = svg.append("defs");
