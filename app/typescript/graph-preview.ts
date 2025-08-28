@@ -25,6 +25,7 @@ interface ForceSettings {
     collisionForce: number;
     linkStrength: number;
     linkDistance: number;
+    zoomLevel?: number;
 }
 
 function loadForceSettings(): ForceSettings {
@@ -38,7 +39,8 @@ function loadForceSettings(): ForceSettings {
         chargeStrength: -60,
         collisionForce: 1,
         linkStrength: 0,
-        linkDistance: 80
+        linkDistance: 80,
+        zoomLevel: 1
     };
 }
 
@@ -180,6 +182,8 @@ export function createGraph(jobId: string): void {
 
             function zoomed(event: d3.D3ZoomEvent<SVGSVGElement, unknown>): void {
                 g.attr("transform", event.transform.toString());
+                // Save zoom level to localStorage
+                saveForceSettings({ zoomLevel: event.transform.k });
             }
 
             // Define zoom behavior
@@ -189,6 +193,17 @@ export function createGraph(jobId: string): void {
                 .on("zoom", zoomed)
 
             svg.call(zoom);
+            
+            // Apply saved zoom level centered on the graph
+            if (settings.zoomLevel && settings.zoomLevel !== 1) {
+                const centerX = width / 2;
+                const centerY = height / 2;
+                const transform = d3.zoomIdentity
+                    .translate(centerX, centerY)
+                    .scale(settings.zoomLevel)
+                    .translate(-centerX, -centerY);
+                svg.call(zoom.transform, transform);
+            }
             
             // Prevent browser zoom when using wheel on the SVG
             svg.node()?.addEventListener("wheel", function(event: WheelEvent) {
