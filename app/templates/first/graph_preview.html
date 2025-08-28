@@ -106,12 +106,9 @@
         {% endif %}
 
         <div class="mt-4">
-            <h4 class="mb-4 text-lg font-semibold">
-                Interactive Graph Visualization
-            </h4>
             <div
                 id="graph-container"
-                class="bg-base-100 relative rounded-lg"
+                class="bg-base-100 relative overflow-hidden rounded-lg ring-1 inset-shadow-sm/15 ring-black/5"
                 style="height: 600px;">
                 <div class="skeleton h-full w-full"></div>
             </div>
@@ -139,7 +136,7 @@
     </div>
     <script type="module">
         import { createGraph } from "{{ url_for('static', filename='js/build/graph-preview.js') }}";
-        
+
         // Initialize the graph when ready
         createGraph("{{ job.uuid }}");
     </script>

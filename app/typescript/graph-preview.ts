@@ -7,6 +7,7 @@ interface NodeData extends d3.SimulationNodeDatum {
     playlist_followers?: number;
     x?: number;
     y?: number;
+    color: string;
 }
 
 
@@ -61,6 +62,7 @@ export function createGraph(jobId: string): void {
                 playlist_followers: d.playlist_followers ? +d.playlist_followers : 0,
                 x: Math.random() * width,
                 y: Math.random() * height,
+                color: "#3b82f6"
             }));
 
             // Process edges
@@ -69,6 +71,7 @@ export function createGraph(jobId: string): void {
                 target: d.playlist_id_2 || '',
                 weight: +(d.weight || 1),
             }));
+            console.log(links);
 
             // Calculate link counts
             links.forEach((link) => {
@@ -108,7 +111,7 @@ export function createGraph(jobId: string): void {
             const g = svg.append("g");
 
             function nodeSize(d: NodeData): number {
-                return Math.sqrt(outgoingCount[d.playlist_id] || 1) * 4;
+                return 5 + Math.sqrt(outgoingCount[d.playlist_id] || 1) * 4;
             }
 
             function zoomed(event: d3.D3ZoomEvent<SVGSVGElement, unknown>): void {
@@ -118,8 +121,8 @@ export function createGraph(jobId: string): void {
             // Define zoom behavior
             const zoom = d3
                 .zoom<SVGSVGElement, unknown>()
-                .scaleExtent([0.2, 10])
-                .on("zoom", zoomed);
+                .scaleExtent([0.1, 2])
+                .on("zoom", zoomed)
 
             svg.call(zoom);
 
@@ -132,32 +135,15 @@ export function createGraph(jobId: string): void {
                 .append("marker")
                 .attr("id", String)
                 .attr("viewBox", "0 -5 10 10")
-                .attr("refX", 15)
-                .attr("refY", -1.5)
+                .attr("refX", 24.5)
+                .attr("refY", 0)
                 .attr("markerWidth", 6)
                 .attr("markerHeight", 6)
                 .attr("orient", "auto")
                 .append("svg:path")
                 .attr("d", "M0,-5L10,0L0,5")
-                .attr("class", "fill-current");
+                .attr("fill", "#999")
 
-            const gradient = defs
-                .append("radialGradient")
-                .attr("id", "gradient")
-                .attr("cx", "50%")
-                .attr("cy", "50%")
-                .attr("r", "50%");
-
-            gradient
-                .append("stop")
-                .attr("offset", "0%")
-                .attr("stop-color", "#1ED760")
-                .attr("stop-opacity", 1);
-            gradient
-                .append("stop")
-                .attr("offset", "100%")
-                .attr("stop-color", "#128C46")
-                .attr("stop-opacity", 1);
 
             function linkOpacity(d: ProcessedEdgeData): number {
                 return Math.min(d.weight / 64, 0.8);
@@ -213,9 +199,32 @@ export function createGraph(jobId: string): void {
                 .data(links)
                 .enter()
                 .append("line")
-                .attr("class", "stroke-current")
+                .attr("stroke", '#999' )
                 .attr("opacity", (d: ProcessedEdgeData) => linkOpacity(d))
-                .attr("marker-end", "url(#end)");
+                .attr("marker-end", "url(#end)")
+
+            // Create nodes
+            const node = g
+                .append("g")
+                .attr("id", "nodes")
+                .selectAll<SVGCircleElement, NodeData>("circle")
+                .data(nodes)
+                .enter()
+                .append("circle")
+                .attr("r", (d: NodeData) => nodeSize(d))
+                .attr("fill",(d: NodeData) => d.color )
+                .attr("stroke", "#fff")
+                .attr("stroke-width", 1.5)
+                .call(drag(simulation))
+                .on("mouseover", function (event: MouseEvent, d: NodeData) {
+                    selectNode(event, d, this);
+                })
+                .on("mouseout", function (event: MouseEvent, d: NodeData) {
+                    deselectNode(event, d, this);
+                })
+                .on("click", function (event: MouseEvent, d: NodeData) {
+                    highlightNeighbors(event, d, this);
+                })
 
             // Node event handlers
             function selectNode(_event: MouseEvent, d: NodeData, nodeElement: SVGCircleElement): void {
@@ -224,11 +233,6 @@ export function createGraph(jobId: string): void {
                     incomingCount[d.playlist_id],
                     outgoingCount[d.playlist_id]
                 );
-
-                d3.select(nodeElement)
-                    .transition()
-                    .duration(200)
-                    .attr("r", nodeSize(d) + 5);
             }
 
             function deselectNode(_event: MouseEvent, d: NodeData, nodeElement: SVGCircleElement): void {
@@ -281,26 +285,6 @@ export function createGraph(jobId: string): void {
                 d3.select(nodeElement).attr("opacity", 1);
             }
 
-            // Create nodes
-            const node = g
-                .append("g")
-                .attr("id", "nodes")
-                .selectAll<SVGCircleElement, NodeData>("circle")
-                .data(nodes)
-                .enter()
-                .append("circle")
-                .attr("r", (d: NodeData) => nodeSize(d))
-                .attr("fill", "url(#gradient)")
-                .call(drag(simulation))
-                .on("mouseover", function (event: MouseEvent, d: NodeData) {
-                    selectNode(event, d, this);
-                })
-                .on("mouseout", function (event: MouseEvent, d: NodeData) {
-                    deselectNode(event, d, this);
-                })
-                .on("click", function (event: MouseEvent, d: NodeData) {
-                    highlightNeighbors(event, d, this);
-                })
 
             // Reset on background click
             svg.on("click", function (event: MouseEvent) {
