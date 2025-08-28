@@ -54,116 +54,20 @@
                 <div class="skeleton h-full w-full"></div>
             </div>
 
-            <!-- Graph info panel -->
-            <div
-                id="graph-info-panel"
-                class="card bg-base-300 absolute bottom-4 left-4 z-20 mb-4 w-80 opacity-95 shadow-xl ring-1 ring-white/15 backdrop-blur-lg"
-                style="display: none">
-                <div class="card-body p-4">
-                    <h5
-                        id="node-name"
-                        class="card-title text-sm"></h5>
-                    <div
-                        id="node-info"
-                        class="space-y-2 text-xs">
-                        <div id="node-description"></div>
-                        <div id="node-followers"></div>
-                        <div id="node-incoming"></div>
-                        <div id="node-outgoing"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Force controls panel -->
-            <div
-                id="force-controls"
-                class="card bg-base-300 absolute top-4 right-4 z-20 w-80 opacity-95 shadow-xl ring-1 ring-white/15 backdrop-blur-lg">
-                <div class="card-body p-4">
-                    <h5 class="card-title mb-3 text-sm">Force Controls</h5>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="text-xs font-medium"
-                                >Center force:
-                                <span id="center-force-value">0</span></label
-                            >
-                            <input
-                                type="range"
-                                id="center-force"
-                                class="range range-sm [--range-fill:0] [--range-thumb:neutral]"
-                                min="0"
-                                max="1"
-                                value="0.2"
-                                step="0.05" />
-                        </div>
-                        <div>
-                            <label class="text-xs font-medium"
-                                >Charge Strength:
-                                <span id="charge-strength-value"
-                                    >-60</span
-                                ></label
-                            >
-                            <input
-                                type="range"
-                                id="charge-strength"
-                                class="range range-sm [--range-fill:0] [--range-thumb:neutral]"
-                                min="-200"
-                                max="-10"
-                                value="-60"
-                                step="10" />
-                        </div>
-                        <div>
-                            <label class="text-xs font-medium"
-                                >Collision Force:
-                                <span id="collision-force-value">1</span></label
-                            >
-                            <input
-                                type="range"
-                                id="collision-force"
-                                class="range range-sm [--range-fill:0] [--range-thumb:neutral]"
-                                min="0"
-                                max="3"
-                                value="1"
-                                step="0.1" />
-                        </div>
-                        <div>
-                            <label class="text-xs font-medium"
-                                >Link force:
-                                <span id="link-strength-value">0</span></label
-                            >
-                            <input
-                                type="range"
-                                id="link-strength"
-                                class="range range-sm [--range-fill:0] [--range-thumb:neutral]"
-                                min="0"
-                                max="1"
-                                value="0"
-                                step="0.05" />
-                        </div>
-                        <div>
-                            <label class="text-xs font-medium"
-                                >Link distance:
-                                <span id="link-distance-value">80</span></label
-                            >
-                            <input
-                                type="range"
-                                id="link-distance"
-                                type="range"
-                                min="30"
-                                max="500"
-                                value="40"
-                                step="10"
-                                class="range range-sm [--range-fill:0] [--range-thumb:neutral]" />
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% include 'partials/graph_tooltip.html' %}
+            {% include 'partials/graph_controls.html' %}
         </div>
     </div>
     <script type="module">
         import { createGraph } from "{{ url_for('static', filename='js/build/graph-preview.js') }}";
 
         // Initialize the graph when ready
-        createGraph("{{ job.uuid }}");
+        createGraph({
+            jobId: "{{ job.uuid }}",
+            nodesUrl: `/first/graph-data/{{ job.uuid }}/nodes`,
+            edgesUrl: `/first/graph-data/{{ job.uuid }}/edges`,
+            defaultNodeColor: "#3b82f6"
+        });
     </script>
 {% endmacro %}
 

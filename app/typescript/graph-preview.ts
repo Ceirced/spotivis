@@ -8,6 +8,7 @@ interface NodeData extends d3.SimulationNodeDatum {
     x?: number;
     y?: number;
     color: string;
+    time_period?: string;
 }
 
 
@@ -26,6 +27,15 @@ interface ForceSettings {
     linkStrength: number;
     linkDistance: number;
     zoomLevel?: number;
+}
+
+interface GraphConfig {
+    jobId: string;
+    nodesUrl?: string;
+    edgesUrl?: string;
+    defaultNodeColor?: string;
+    colorField?: string;
+    colorMap?: Record<string, string>;
 }
 
 function loadForceSettings(): ForceSettings {
@@ -80,7 +90,8 @@ function initializeSliders(settings: ForceSettings): void {
     }
 }
 
-export function createGraph(jobId: string): void {
+export function createGraph(config: GraphConfig): void {
+
     const graphContainer = d3.select<HTMLElement, unknown>("#graph-container");
     const containerElement = document.getElementById("graph-container");
     
@@ -93,7 +104,7 @@ export function createGraph(jobId: string): void {
     const width = containerRect.width;
     const height = containerRect.height || 600; // Use container height or fallback to 600
     
-    // Load settings and initialize sliders
+    // Load settings and initialize sliders (always enabled)
     const settings = loadForceSettings();
     initializeSliders(settings);
 
@@ -116,20 +127,35 @@ export function createGraph(jobId: string): void {
     }
 
     Promise.all([
-        d3.csv(`/first/graph-data/${jobId}/nodes`),
-        d3.csv(`/first/graph-data/${jobId}/edges`),
+        d3.csv(config.nodesUrl!),
+        d3.csv(config.edgesUrl!),
     ])
         .then(([rawNodes, rawEdges]) => {
-            // Process nodes
-            nodes = rawNodes.map((d) => ({
-                playlist_id: d.playlist_id || '',
-                display_name: d.display_name,
-                playlist_description: d.playlist_description,
-                playlist_followers: d.playlist_followers ? +d.playlist_followers : 0,
-                x: Math.random() * width,
-                y: Math.random() * height,
-                color: "#3b82f6"
-            }));
+            // Process nodes with dynamic color mapping
+            nodes = rawNodes.map((d) => {
+                let nodeColor = config.defaultNodeColor!;
+                
+                // Apply color mapping if specified
+                if (config.colorField && config.colorMap && d[config.colorField]) {
+                    nodeColor = config.colorMap[d[config.colorField]] || nodeColor;
+                }
+                
+                // Use direct color field if available
+                if (d.color) {
+                    nodeColor = d.color;
+                }
+                
+                return {
+                    playlist_id: d.playlist_id || '',
+                    display_name: d.display_name,
+                    playlist_description: d.playlist_description,
+                    playlist_followers: d.playlist_followers ? +d.playlist_followers : 0,
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    color: nodeColor,
+                    time_period: d.time_period
+                };
+            });
 
             // Process edges
             links = rawEdges.map((d) => ({
