@@ -19,6 +19,65 @@ interface ProcessedEdgeData extends d3.SimulationLinkDatum<NodeData> {
 
 type LinkCount = Record<string, number>;
 
+interface ForceSettings {
+    centerForce: number;
+    chargeStrength: number;
+    collisionForce: number;
+    linkStrength: number;
+    linkDistance: number;
+}
+
+function loadForceSettings(): ForceSettings {
+    const stored = localStorage.getItem('graphForceSettings');
+    if (stored) {
+        return JSON.parse(stored);
+    }
+    // Default values
+    return {
+        centerForce: 0.2,
+        chargeStrength: -60,
+        collisionForce: 1,
+        linkStrength: 0,
+        linkDistance: 80
+    };
+}
+
+function saveForceSettings(settings: Partial<ForceSettings>): void {
+    const current = loadForceSettings();
+    const updated = { ...current, ...settings };
+    localStorage.setItem('graphForceSettings', JSON.stringify(updated));
+}
+
+function initializeSliders(settings: ForceSettings): void {
+    // Set slider values
+    const centerSlider = document.getElementById("center-force") as HTMLInputElement;
+    const chargeSlider = document.getElementById("charge-strength") as HTMLInputElement;
+    const collisionSlider = document.getElementById("collision-force") as HTMLInputElement;
+    const linkStrengthSlider = document.getElementById("link-strength") as HTMLInputElement;
+    const linkDistanceSlider = document.getElementById("link-distance") as HTMLInputElement;
+    
+    if (centerSlider) {
+        centerSlider.value = settings.centerForce.toString();
+        document.getElementById("center-force-value")!.textContent = settings.centerForce.toFixed(2);
+    }
+    if (chargeSlider) {
+        chargeSlider.value = settings.chargeStrength.toString();
+        document.getElementById("charge-strength-value")!.textContent = settings.chargeStrength.toString();
+    }
+    if (collisionSlider) {
+        collisionSlider.value = settings.collisionForce.toString();
+        document.getElementById("collision-force-value")!.textContent = settings.collisionForce.toFixed(1);
+    }
+    if (linkStrengthSlider) {
+        linkStrengthSlider.value = settings.linkStrength.toString();
+        document.getElementById("link-strength-value")!.textContent = settings.linkStrength.toFixed(2);
+    }
+    if (linkDistanceSlider) {
+        linkDistanceSlider.value = settings.linkDistance.toString();
+        document.getElementById("link-distance-value")!.textContent = settings.linkDistance.toString();
+    }
+}
+
 export function createGraph(jobId: string): void {
     const graphContainer = d3.select<HTMLElement, unknown>("#graph-container");
     const containerElement = document.getElementById("graph-container");
@@ -31,6 +90,10 @@ export function createGraph(jobId: string): void {
     const containerRect = containerElement.getBoundingClientRect();
     const width = containerRect.width;
     const height = containerRect.height || 600; // Use container height or fallback to 600
+    
+    // Load settings and initialize sliders
+    const settings = loadForceSettings();
+    initializeSliders(settings);
 
 
     let nodes: NodeData[];
@@ -122,7 +185,7 @@ export function createGraph(jobId: string): void {
             // Define zoom behavior
             const zoom = d3
                 .zoom<SVGSVGElement, unknown>()
-                .scaleExtent([0.1, 3])
+                .scaleExtent([0.05, 3])
                 .on("zoom", zoomed)
 
             svg.call(zoom);
@@ -155,25 +218,30 @@ export function createGraph(jobId: string): void {
                 return Math.min(d.weight / 64, 0.8);
             }
 
+            // Create force instances with settings from localStorage
+            const linkForce = d3
+                .forceLink<NodeData, ProcessedEdgeData>(links)
+                .id((d: NodeData) => d.playlist_id)
+                .distance(settings.linkDistance)
+                .strength(settings.linkStrength);
+            
+            const chargeForce = d3.forceManyBody<NodeData>().strength(settings.chargeStrength);
+
+            const xForce = d3.forceX(width / 2).strength(settings.centerForce);
+            const yForce = d3.forceY(height / 2).strength(settings.centerForce);
+
+            const collisionForce = d3.forceCollide<NodeData>()
+                .radius((d: NodeData) => nodeSize(d) + 3).iterations(3)
+                .strength(settings.collisionForce);
+
             // Create simulation
             const simulation = d3
                 .forceSimulation<NodeData>(nodes)
-                .force(
-                    "link",
-                    d3
-                        .forceLink<NodeData, ProcessedEdgeData>(links)
-                        .id((d: NodeData) => d.playlist_id)
-                        .distance(80)
-                )
-                .force(
-                    "collide",
-                    d3.forceCollide<NodeData>().radius((d: NodeData) => nodeSize(d))
-                )
-                .force("charge", d3.forceManyBody<NodeData>().strength(-60))
-                .force(
-                    "center",
-                    d3.forceCenter(width / 2, height / 2).strength(0.2)
-                )
+                .force("link", linkForce)
+                .force("collide", collisionForce)
+                .force("charge", chargeForce)
+                .force("x", xForce)
+                .force("y", yForce)
                 .on("tick", ticked);
 
             function ticked(): void {
@@ -349,6 +417,64 @@ export function createGraph(jobId: string): void {
                     .on("start", dragstarted)
                     .on("drag", dragged)
                     .on("end", dragended);
+            }
+
+            // Add slider event listeners
+            const linkDistanceSlider = document.getElementById("link-distance") as HTMLInputElement;
+            const linkStrengthSlider = document.getElementById("link-strength") as HTMLInputElement;
+            const chargeStrengthSlider = document.getElementById("charge-strength") as HTMLInputElement;
+            const centerForceSlider = document.getElementById("center-force") as HTMLInputElement;
+            const collisionForceSlider = document.getElementById("collision-force") as HTMLInputElement;
+            
+            if (linkDistanceSlider) {
+                linkDistanceSlider.addEventListener("input", function() {
+                    const value = +this.value;
+                    document.getElementById("link-distance-value")!.textContent = value.toString();
+                    linkForce.distance(value);
+                    saveForceSettings({ linkDistance: value });
+                    simulation.alpha(0.3).restart();
+                });
+            }
+            
+            if (linkStrengthSlider) {
+                linkStrengthSlider.addEventListener("input", function() {
+                    const value = +this.value;
+                    document.getElementById("link-strength-value")!.textContent = value.toFixed(2);
+                    linkForce.strength(value);
+                    saveForceSettings({ linkStrength: value });
+                    simulation.alpha(0.3).restart();
+                });
+            }
+            
+            if (chargeStrengthSlider) {
+                chargeStrengthSlider.addEventListener("input", function() {
+                    const value = +this.value;
+                    document.getElementById("charge-strength-value")!.textContent = value.toString();
+                    chargeForce.strength(value);
+                    saveForceSettings({ chargeStrength: value });
+                    simulation.alpha(0.3).restart();
+                });
+            }
+            
+            if (centerForceSlider) {
+                centerForceSlider.addEventListener("input", function() {
+                    const value = +this.value;
+                    document.getElementById("center-force-value")!.textContent = value.toFixed(2);
+                    xForce.strength(value);
+                    yForce.strength(value);
+                    saveForceSettings({ centerForce: value });
+                    simulation.alpha(0.3).restart();
+                });
+            }
+            
+            if (collisionForceSlider) {
+                collisionForceSlider.addEventListener("input", function() {
+                    const value = +this.value;
+                    document.getElementById("collision-force-value")!.textContent = value.toFixed(1);
+                    collisionForce.strength(value);
+                    saveForceSettings({ collisionForce: value });
+                    simulation.alpha(0.3).restart();
+                });
             }
         })
         .catch((error) => {
