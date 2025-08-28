@@ -81,43 +81,35 @@
         </div>
     </div>
 
-    <div class="card bg-base-200 shadow-sm">
-        <div class="card-body">
-            <div class="mb-4 flex items-center justify-between">
-                <h3 class="card-title">Network Graph</h3>
-                <div class="flex items-center gap-4 text-sm">
-                    <div class="flex items-center gap-1">
-                        <div class="h-3 w-3 rounded-full bg-blue-500"></div>
-                        <span>Old Dataset</span>
-                    </div>
-                    <div class="flex items-center gap-1">
-                        <div class="h-3 w-3 rounded-full bg-green-500"></div>
-                        <span>New Dataset</span>
-                    </div>
-                    <div class="flex items-center gap-1">
-                        <div class="h-3 w-3 rounded-full bg-purple-500"></div>
-                        <span>Both Periods</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Graph container with temporal coloring -->
-            <div
-                id="graph-container"
-                class="w-full"
-                style="height: 600px;">
-                <div class="flex h-full items-center justify-center">
-                    <div class="loading loading-spinner loading-lg"></div>
-                    <span class="ml-2">Loading graph visualization...</span>
-                </div>
-            </div>
+    <dl class="mb-1 flex items-center justify-end-safe gap-4 text-sm">
+        <div class="flex items-center gap-1">
+            <dt class="h-3 w-3 rounded-full bg-blue-500"></dt>
+            <dd>Old Dataset</dd>
         </div>
-    </div>
+        <div class="flex items-center gap-1">
+            <dt class="h-3 w-3 rounded-full bg-green-500"></dt>
+            <dd>New Dataset</dd>
+        </div>
+        <div class="flex items-center gap-1">
+            <dt class="h-3 w-3 rounded-full bg-purple-500"></dt>
+            <dd>Both Periods</dd>
+        </div>
+    </dl>
+
+    <!-- Graph container with temporal coloring -->
+    <figure
+        id="graph-container"
+        class="bg-base-100 relative m-[1px] flex-1 overflow-hidden rounded-lg ring-1 inset-shadow-sm/15 ring-black/5">
+        <div class="flex h-full items-center justify-center">
+            <div class="loading loading-spinner loading-lg"></div>
+            <span class="ml-2">Loading graph visualization...</span>
+        </div>
+    </figure>
 
     <script type="module">
         // D3 is bundled directly in the module
         import { createCombinedGraph } from "{{ url_for('static', filename='js/build/combined-graph.js') }}";
-        
+
         // Call the function when ready
         createCombinedGraph("{{ job.uuid }}");
     </script>
