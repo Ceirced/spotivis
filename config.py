@@ -27,7 +27,7 @@ class DevelopmentConfig(BaseConfig):
     FLASK_ENV = "development"
     SQLALCHEMY_DATABASE_URI = "sqlite:///dev.db"
     SERVER_NAME = os.getenv("HOST_NAME")
-    REDIS_URL = 'redis://redis' if os.getenv("IN_CONTAINER") else 'redis://localhost'
+    REDIS_URL = "redis://redis" if os.getenv("IN_CONTAINER") else "redis://localhost"
 
 
 class TestingConfig(BaseConfig):

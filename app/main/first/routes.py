@@ -1,6 +1,6 @@
 from flask import current_app, render_template
 
-from app import cache, htmx
+from app import cache
 from app.helpers.app_helpers import make_cache_key_with_htmx
 from app.main.first import bp
 
