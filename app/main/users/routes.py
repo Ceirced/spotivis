@@ -1,7 +1,6 @@
-import sqlalchemy as sa
-from sqlalchemy import select
 from flask import make_response, render_template, request, url_for
 from flask_security import current_user
+from sqlalchemy import select
 
 from app import db, htmx
 from app.main.users import bp
@@ -72,7 +71,7 @@ def search_users():
 
 @bp.route("/<username>", methods=["GET"])
 def profile(username):
-    user = db.first_or_404(sa.select(User).where(User.username == username))
+    user = db.first_or_404(select(User).where(User.username == username))
     is_friend = current_user.is_friends_with(user.id)
 
     # Check if there's a pending friend request
