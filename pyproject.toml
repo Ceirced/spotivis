@@ -43,3 +43,7 @@ pre-commit = "^4.3.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+ignore_missing_imports = true
+exclude = ["migrations/"]
