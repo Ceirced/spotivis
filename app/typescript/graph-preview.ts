@@ -27,6 +27,8 @@ interface ForceSettings {
     linkStrength: number;
     linkDistance: number;
     zoomLevel?: number;
+    nodeSize?: number;
+    lineWidth?: number;
 }
 
 interface GraphConfig {
@@ -50,7 +52,9 @@ function loadForceSettings(): ForceSettings {
         collisionForce: 1,
         linkStrength: 0,
         linkDistance: 80,
-        zoomLevel: 1
+        zoomLevel: 1,
+        nodeSize: 5,
+        lineWidth: 1
     };
 }
 
@@ -67,6 +71,8 @@ function initializeSliders(settings: ForceSettings): void {
     const collisionSlider = document.getElementById("collision-force") as HTMLInputElement;
     const linkStrengthSlider = document.getElementById("link-strength") as HTMLInputElement;
     const linkDistanceSlider = document.getElementById("link-distance") as HTMLInputElement;
+    const nodeSizeSlider = document.getElementById("node-size") as HTMLInputElement;
+    const lineWidthSlider = document.getElementById("line-width") as HTMLInputElement;
     
     if (centerSlider) {
         centerSlider.value = settings.centerForce.toString();
@@ -87,6 +93,14 @@ function initializeSliders(settings: ForceSettings): void {
     if (linkDistanceSlider) {
         linkDistanceSlider.value = settings.linkDistance.toString();
         document.getElementById("link-distance-value")!.textContent = settings.linkDistance.toString();
+    }
+    if (nodeSizeSlider) {
+        nodeSizeSlider.value = (settings.nodeSize || 5).toString();
+        document.getElementById("node-size-value")!.textContent = (settings.nodeSize || 5).toFixed(1);
+    }
+    if (lineWidthSlider) {
+        lineWidthSlider.value = (settings.lineWidth || 1).toString();
+        document.getElementById("line-width-value")!.textContent = (settings.lineWidth || 1).toFixed(1);
     }
 }
 
@@ -203,7 +217,8 @@ export function createGraph(config: GraphConfig): void {
             const g = svg.append("g");
 
             function nodeSize(d: NodeData): number {
-                return 5 + Math.sqrt(outgoingCount[d.playlist_id] || 1) * 4;
+                const baseSize = settings.nodeSize || 5;
+                return baseSize + Math.sqrt(outgoingCount[d.playlist_id] || 1) * 4;
             }
 
             function zoomed(event: d3.D3ZoomEvent<SVGSVGElement, unknown>): void {
@@ -337,6 +352,7 @@ export function createGraph(config: GraphConfig): void {
                 .enter()
                 .append("line")
                 .attr("stroke", '#999' )
+                .attr("stroke-width", settings.lineWidth || 1)
                 .attr("opacity", (d: ProcessedEdgeData) => linkOpacity(d))
                 .attr("marker-end", "url(#end)")
 
@@ -466,6 +482,8 @@ export function createGraph(config: GraphConfig): void {
             const chargeStrengthSlider = document.getElementById("charge-strength") as HTMLInputElement;
             const centerForceSlider = document.getElementById("center-force") as HTMLInputElement;
             const collisionForceSlider = document.getElementById("collision-force") as HTMLInputElement;
+            const nodeSizeSlider = document.getElementById("node-size") as HTMLInputElement;
+            const lineWidthSlider = document.getElementById("line-width") as HTMLInputElement;
             
             if (linkDistanceSlider) {
                 linkDistanceSlider.addEventListener("input", function() {
@@ -515,6 +533,43 @@ export function createGraph(config: GraphConfig): void {
                     collisionForce.strength(value);
                     saveForceSettings({ collisionForce: value });
                     simulation.alpha(0.3).restart();
+                });
+            }
+            
+            if (nodeSizeSlider) {
+                nodeSizeSlider.addEventListener("input", function() {
+                    const value = +this.value;
+                    document.getElementById("node-size-value")!.textContent = value.toFixed(1);
+                    saveForceSettings({ nodeSize: value });
+                    
+                    // Update node sizes
+                    node.transition()
+                        .duration(300)
+                        .attr("r", (d: NodeData) => {
+                            const baseSize = value;
+                            return baseSize + Math.sqrt(outgoingCount[d.playlist_id] || 1) * 4;
+                        });
+                    
+                    // Update collision force radius
+                    collisionForce.radius((d: NodeData) => {
+                        const baseSize = value;
+                        return baseSize + Math.sqrt(outgoingCount[d.playlist_id] || 1) * 4 + 3;
+                    });
+                    
+                    simulation.alpha(0.3).restart();
+                });
+            }
+            
+            if (lineWidthSlider) {
+                lineWidthSlider.addEventListener("input", function() {
+                    const value = +this.value;
+                    document.getElementById("line-width-value")!.textContent = value.toFixed(1);
+                    saveForceSettings({ lineWidth: value });
+                    
+                    // Update line widths
+                    link.transition()
+                        .duration(300)
+                        .attr("stroke-width", value);
                 });
             }
         })
