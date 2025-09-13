@@ -59,7 +59,17 @@ build-backend = "poetry.core.masonry.api"
 exclude = ["migrations/"]
 
 [[tool.mypy.overrides]]
-module = ["flask_login.*", "flask_htmx.*", "spotipy.*", "flask_migrate.*", "flask_admin.*", "flask_security.*", "flask_mailman.*", "flask_caching.*", "flask_wtf.*"]
+module = [
+    "flask_login.*",
+    "flask_htmx.*",
+    "spotipy.*",
+    "flask_migrate.*",
+    "flask_admin.*",
+    "flask_security.*",
+    "flask_mailman.*",
+    "flask_caching.*",
+    "flask_wtf.*"
+]
 ignore_missing_imports = true
 
 

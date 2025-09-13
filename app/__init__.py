@@ -108,8 +108,9 @@ def create_app():
             stream_handler.setLevel(logging.INFO)
             app.logger.addHandler(stream_handler)
         else:
-            if not Path.exists("logs"):
-                Path.mkdir("logs")
+            logs_path = Path("logs")
+            if not logs_path.exists():
+                logs_path.mkdir()
             file_handler = RotatingFileHandler(
                 "logs/flask.log", maxBytes=10240, backupCount=10
             )
