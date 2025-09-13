@@ -2,16 +2,15 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
+import spotipy
 from celery import shared_task
 from loguru import logger
+from spotipy.exceptions import SpotifyException
+from spotipy.oauth2 import SpotifyClientCredentials
 from sqlalchemy import select
 
 from app import db
 from app.models import PlaylistEnrichmentJob, PreprocessingJob
-
-import spotipy  # type: ignore
-from spotipy.exceptions import SpotifyException  # type: ignore
-from spotipy.oauth2 import SpotifyClientCredentials  # type: ignore
 
 
 @shared_task(bind=True)

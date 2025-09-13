@@ -5,8 +5,8 @@ from pathlib import Path
 import pandas as pd
 import pyarrow.parquet as pq
 from flask import current_app, jsonify, render_template, request, send_from_directory
-from flask_htmx import make_response  # type: ignore
-from flask_login import current_user  # type: ignore
+from flask_htmx import make_response
+from flask_login import current_user
 from loguru import logger
 from sqlalchemy import select
 from werkzeug.utils import secure_filename

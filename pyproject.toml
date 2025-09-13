@@ -56,8 +56,12 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]
-ignore_missing_imports = true
 exclude = ["migrations/"]
+
+[[tool.mypy.overrides]]
+module = ["flask_login.*", "flask_htmx.*", "spotipy.*", "flask_migrate.*", "flask_admin.*", "flask_security.*", "flask_mailman.*", "flask_caching.*", "flask_wtf.*"]
+ignore_missing_imports = true
+
 
 [tool.ruff]
 target-version = "py312"
@@ -88,6 +92,7 @@ select = [
   "W", # pycodestyle
 ]
 ignore = [
+  "E501", # line-too-long
   "RUF010", # explicit-f-string-type-conversion
   "RUF012", # mutable-class-default
   "SIM105", # suppressible-exception

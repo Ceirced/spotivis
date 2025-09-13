@@ -3,7 +3,7 @@
 import uuid
 
 from flask import jsonify, render_template, request
-from flask_login import current_user  # type: ignore
+from flask_login import current_user
 from sqlalchemy import select
 
 from app import db, htmx
