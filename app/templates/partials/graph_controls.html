@@ -1,9 +1,46 @@
+<!-- Controls toggle button -->
+<button
+    id="controls-toggle"
+    class="btn btn-circle absolute top-4 right-4 z-30 shadow-lg"
+    onclick="toggleControls()">
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="h-6 w-6">
+        <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+    </svg>
+</button>
+
 <!-- Force controls panel -->
 <div
     id="force-controls"
-    class="card bg-base-300 absolute top-4 right-4 z-20 w-80 opacity-95 shadow-xl ring-1 ring-white/15 backdrop-blur-lg">
+    class="card bg-base-300 absolute top-4 right-4 z-20 hidden w-44 opacity-95 shadow-xl ring-1 ring-white/15 backdrop-blur-lg">
     <div class="card-body p-4">
-        <h5 class="card-title mb-3 text-sm">Force Controls</h5>
+        <div class="mb-3 flex items-center justify-between">
+            <h5 class="card-title text-sm">Force Controls</h5>
+            <button
+                class="btn btn-ghost btn-xs btn-circle"
+                onclick="toggleControls()">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                    stroke="currentColor"
+                    class="h-4 w-4">
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
         <div class="space-y-4">
             <div>
                 <label class="text-xs font-medium"
@@ -74,10 +111,9 @@
                     step="1" />
             </div>
             <div>
-                <label class="text-xs font-medium"
-                    >Node size:
-                    <span id="node-size-value">5</span></label
-                >
+                <label class="text-xs font-medium">
+                    Node size: <span id="node-size-value">5</span>
+                </label>
                 <input
                     type="range"
                     id="node-size"
@@ -88,9 +124,8 @@
                     step="0.5" />
             </div>
             <div>
-                <label class="text-xs font-medium"
-                    >Line width:
-                    <span id="line-width-value">1</span></label
+                <label class="text-xs font-medium">
+                    Line width: <span id="line-width-value">1</span></label
                 >
                 <input
                     type="range"
@@ -104,3 +139,18 @@
         </div>
     </div>
 </div>
+
+<script>
+    function toggleControls() {
+        const controls = document.getElementById("force-controls");
+        const button = document.getElementById("controls-toggle");
+
+        if (controls.classList.contains("hidden")) {
+            controls.classList.remove("hidden");
+            button.style.display = "none";
+        } else {
+            controls.classList.add("hidden");
+            button.style.display = "flex";
+        }
+    }
+</script>
