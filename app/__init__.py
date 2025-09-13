@@ -5,8 +5,8 @@ from logging.handlers import RotatingFileHandler
 import stripe
 from flask import Flask, render_template, request
 from flask_caching import Cache
-from flask_htmx import HTMX  # type: ignore
-from flask_migrate import Migrate  # type: ignore
+from flask_htmx import HTMX
+from flask_migrate import Migrate
 from posthog import Posthog
 from werkzeug.middleware.proxy_fix import ProxyFix
 

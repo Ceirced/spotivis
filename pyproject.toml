@@ -45,8 +45,20 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]
-ignore_missing_imports = true
 exclude = ["migrations/"]
+
+# Packages without type stubs
+[[tool.mypy.overrides]]
+module = [
+    "flask_security.*",
+    "flask_wtf.*",
+    "flask_mailman.*",
+    "flask_admin.*",
+    "flask_htmx.*",
+    "flask_migrate.*",
+    "flask_login.*",
+]
+ignore_missing_imports = true
 
 [tool.ruff]
 target-version = "py312"
