@@ -1,4 +1,4 @@
-from flask_mailman import Mail  # type: ignore
+from flask_mailman import Mail
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from sqlalchemy.orm import DeclarativeBase
