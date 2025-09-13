@@ -34,7 +34,6 @@ def send_flask_mail(**kwargs):
 
 class CeleryMailUtil(MailUtil):
     def send_mail(self, template, subject, recipient, sender, body, html, **kwargs):
-        print(f"Sending email to {recipient} with subject: {subject}")
         send_flask_mail.delay(
             subject=subject, body=body, html=html, to=[recipient], from_email=sender
         )

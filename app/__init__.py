@@ -1,6 +1,7 @@
 import logging
 import os
 from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
 import stripe
 from flask import Flask, render_template, request
@@ -39,11 +40,11 @@ def create_app():
     app.config["MAIL_USE_TLS"] = True
 
     app.config.from_mapping(
-        CELERY=dict(
-            broker_url=app.config["REDIS_URL"],
-            result_backend=app.config["REDIS_URL"],
-            task_ignore_result=True,
-        )
+        CELERY={
+            "broker_url": app.config["REDIS_URL"],
+            "result_backend": app.config["REDIS_URL"],
+            "task_ignore_result": True,
+        }
     )
 
     init_security(app)
@@ -107,8 +108,9 @@ def create_app():
             stream_handler.setLevel(logging.INFO)
             app.logger.addHandler(stream_handler)
         else:
-            if not os.path.exists("logs"):
-                os.mkdir("logs")
+            logs_path = Path("logs")
+            if not logs_path.exists():
+                logs_path.mkdir()
             file_handler = RotatingFileHandler(
                 "logs/flask.log", maxBytes=10240, backupCount=10
             )
