@@ -9,7 +9,6 @@ security = Security(mail_util_cls=CeleryMailUtil)
 
 
 def init_app(app):
-
     app.config.update(
         SECURITY_TRACKABLE=True,
         SECURITY_PASSWORD_SALT="IschlerSalz",

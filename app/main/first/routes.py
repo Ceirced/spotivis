@@ -132,7 +132,10 @@ def preview_file(filename):
         date_range_info = {
             "start_date": uploaded_file.data_start_date,
             "end_date": uploaded_file.data_end_date,
-            "days_covered": (uploaded_file.data_end_date - uploaded_file.data_start_date).days + 1,
+            "days_covered": (
+                uploaded_file.data_end_date - uploaded_file.data_start_date
+            ).days
+            + 1,
         }
     else:
         date_range_info = {
@@ -397,7 +400,7 @@ def upload_file():
         return (
             render_template(
                 "./first/partials/_error.html",
-                error=f"File too large. Maximum size is {MAX_FILE_SIZE // (1024*1024)}MB",
+                error=f"File too large. Maximum size is {MAX_FILE_SIZE // (1024 * 1024)}MB",
             ),
             422,
         )
@@ -436,14 +439,16 @@ def upload_file():
             # Read only the thu_date column to get min/max dates
             thu_date_table = parquet_file.read(columns=["thu_date"])
             thu_date_series = thu_date_table.to_pandas()["thu_date"]
-            
+
             if not thu_date_series.empty:
                 # Convert to datetime if needed and get min/max
                 thu_date_series = pd.to_datetime(thu_date_series)
                 data_start_date = thu_date_series.min()
                 data_end_date = thu_date_series.max()
         except Exception as e:
-            logger.warning(f"Could not extract date range from uploaded file {filename}: {e}")
+            logger.warning(
+                f"Could not extract date range from uploaded file {filename}: {e}"
+            )
 
         # Save file metadata to database
         uploaded_file = UploadedFile(
