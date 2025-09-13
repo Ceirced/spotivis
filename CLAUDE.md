@@ -64,15 +64,19 @@ spotivis/
 
 ```bash
 # Development Setup
-./start.sh local                 # Start only Redis and Celery in Docker
-flask run                        # Run Flask app locally (after ./start.sh local)
+make local                       # Start only Redis and Celery in Docker
+flask run                        # Run Flask app locally (after make local)
 
 # Alternative Development (all in Docker)
-./start.sh dev                   # Run everything in Docker containers
-./start.sh stop                  # Stop all containers
+make dev                         # Run everything in Docker containers
+make stop                        # Stop all containers
+make clean                       # Stop containers and remove volumes
+
+# Production
+make prod                        # Run in production mode
 
 # Backend
-ruff check .                      # Lint Python code
+ruff check .                     # Lint Python code
 black .                          # Format Python code
 mypy .                           # Type check
 
