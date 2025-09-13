@@ -112,9 +112,9 @@
 
         // Color scheme for time periods
         const COLOR_MAP = {
-            old: "#3b82f6",   // blue for old dataset only
-            new: "#10b981",   // green for new dataset only
-            both: "#8b5cf6",  // purple for nodes in both periods
+            old: "#3b82f6", // blue for old dataset only
+            new: "#10b981", // green for new dataset only
+            both: "#8b5cf6", // purple for nodes in both periods
         };
 
         // Call the function when ready
@@ -124,7 +124,7 @@
             edgesUrl: `/first/combine/data/{{ job.uuid }}/edges`,
             defaultNodeColor: "#6b7280",
             colorField: "time_period",
-            colorMap: COLOR_MAP
+            colorMap: COLOR_MAP,
         });
     </script>
 {% endmacro %}
