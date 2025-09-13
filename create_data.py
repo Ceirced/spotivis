@@ -1,6 +1,5 @@
 from datetime import timedelta
 from pathlib import Path
-from typing import List, Tuple
 
 import networkx as nx
 import pandas as pd
@@ -16,7 +15,7 @@ MIN_COMPONENT_SIZE = 3
 PLAYLIST_TRACK_NETWORK_FILE = RAW_DATA_DIR / "playlist_track_network.parquet"
 
 
-def load_playlist_data() -> Tuple[pd.DataFrame, List[pd.Timestamp]]:
+def load_playlist_data() -> tuple[pd.DataFrame, list[pd.Timestamp]]:
     """Load playlist track network data and generate time periods."""
     df = pd.read_parquet(PLAYLIST_TRACK_NETWORK_FILE)
     start_date = df["thu_date"].min()
@@ -74,7 +73,7 @@ def calculate_song_transfers(
 
 
 def build_playlist_network(
-    df: pd.DataFrame, time_period: List[pd.Timestamp]
+    df: pd.DataFrame, time_period: list[pd.Timestamp]
 ) -> nx.DiGraph:
     """Build a directed graph of playlist relationships based on song transfers."""
     G: nx.DiGraph = nx.DiGraph()
@@ -148,8 +147,7 @@ def save_graph(graph: nx.DiGraph, basename: str) -> None:
     nodes_file = CLEAN_DATA_DIR / f"{basename}_{number_of_nodes}_nodes.csv"
     with open(nodes_file, "w") as f:
         f.write("playlist_id\n")
-        for node in graph.nodes:
-            f.write(f"{node}\n")
+        f.writelines(f"{node}\n" for node in graph.nodes)
 
 
 def print_graph_info(G: nx.DiGraph) -> None:

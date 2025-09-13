@@ -31,10 +31,8 @@ class User(Model, fsqla.FsUserMixin):
     )
 
     def __repr__(self):
-        return "<User(id='%s', username='%s', email='%s')>" % (
-            self.id,
-            self.username,
-            self.email,
+        return (
+            f"<User(id='{self.id}', username='{self.username}', email='{self.email}')>"
         )
 
     def is_friends_with(self, other_user_id):
@@ -133,8 +131,12 @@ class UploadedFile(Model):
     user: so.Mapped[User | None] = so.relationship("User", backref="uploaded_files")
 
     # Date range from the parquet data
-    data_start_date: so.Mapped[datetime | None] = so.mapped_column(db.DateTime, nullable=True)
-    data_end_date: so.Mapped[datetime | None] = so.mapped_column(db.DateTime, nullable=True)
+    data_start_date: so.Mapped[datetime | None] = so.mapped_column(
+        db.DateTime, nullable=True
+    )
+    data_end_date: so.Mapped[datetime | None] = so.mapped_column(
+        db.DateTime, nullable=True
+    )
 
     preprocessing_jobs: so.Mapped[list[PreprocessingJob]] = so.relationship(
         "PreprocessingJob", back_populates="uploaded_file", cascade="all, delete-orphan"
@@ -228,7 +230,7 @@ class CombinedPreprocessingJob(Model):
     uuid: so.Mapped[str] = so.mapped_column(
         String(36), primary_key=True, default=lambda: str(uuid.uuid4())
     )
-    
+
     # References to the two preprocessing jobs being combined
     first_job_id: so.Mapped[str] = so.mapped_column(
         ForeignKey("preprocessing_jobs.uuid"), nullable=False
@@ -236,16 +238,18 @@ class CombinedPreprocessingJob(Model):
     first_job: so.Mapped[PreprocessingJob] = so.relationship(
         "PreprocessingJob", foreign_keys=[first_job_id], backref="combined_as_first"
     )
-    
+
     second_job_id: so.Mapped[str] = so.mapped_column(
         ForeignKey("preprocessing_jobs.uuid"), nullable=False
     )
     second_job: so.Mapped[PreprocessingJob] = so.relationship(
         "PreprocessingJob", foreign_keys=[second_job_id], backref="combined_as_second"
     )
-    
+
     # Task and status tracking
-    task_id: so.Mapped[str | None] = so.mapped_column(String(255), nullable=True, unique=True)
+    task_id: so.Mapped[str | None] = so.mapped_column(
+        String(255), nullable=True, unique=True
+    )
     status: so.Mapped[str] = so.mapped_column(
         String(50), nullable=False, default="pending"
     )
@@ -255,27 +259,36 @@ class CombinedPreprocessingJob(Model):
     completed_at: so.Mapped[datetime | None] = so.mapped_column(
         db.DateTime, nullable=True
     )
-    
+
     # Combined output files
     edges_file: so.Mapped[str | None] = so.mapped_column(String(500), nullable=True)
     nodes_file: so.Mapped[str | None] = so.mapped_column(String(500), nullable=True)
-    
+
     # Statistics
     total_nodes: so.Mapped[int | None] = so.mapped_column(db.Integer, nullable=True)
     total_edges: so.Mapped[int | None] = so.mapped_column(db.Integer, nullable=True)
-    nodes_from_first: so.Mapped[int | None] = so.mapped_column(db.Integer, nullable=True)
-    nodes_from_second: so.Mapped[int | None] = so.mapped_column(db.Integer, nullable=True)
+    nodes_from_first: so.Mapped[int | None] = so.mapped_column(
+        db.Integer, nullable=True
+    )
+    nodes_from_second: so.Mapped[int | None] = so.mapped_column(
+        db.Integer, nullable=True
+    )
     new_nodes: so.Mapped[int | None] = so.mapped_column(db.Integer, nullable=True)
-    
     # Date ranges from the combined data
-    first_start_date: so.Mapped[datetime | None] = so.mapped_column(db.DateTime, nullable=True)
-    first_end_date: so.Mapped[datetime | None] = so.mapped_column(db.DateTime, nullable=True)
-    second_start_date: so.Mapped[datetime | None] = so.mapped_column(db.DateTime, nullable=True)
-    second_end_date: so.Mapped[datetime | None] = so.mapped_column(db.DateTime, nullable=True)
-    
+    first_start_date: so.Mapped[datetime | None] = so.mapped_column(
+        db.DateTime, nullable=True
+    )
+    first_end_date: so.Mapped[datetime | None] = so.mapped_column(
+        db.DateTime, nullable=True
+    )
+    second_start_date: so.Mapped[datetime | None] = so.mapped_column(
+        db.DateTime, nullable=True
+    )
+    second_end_date: so.Mapped[datetime | None] = so.mapped_column(
+        db.DateTime, nullable=True
+    )
     # Error tracking
     error_message: so.Mapped[str | None] = so.mapped_column(db.Text, nullable=True)
-    
     # User reference
     user_id: so.Mapped[int | None] = so.mapped_column(
         ForeignKey("user.id"), nullable=True

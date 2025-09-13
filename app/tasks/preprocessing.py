@@ -1,6 +1,5 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import List, Tuple
 
 import networkx as nx
 import pandas as pd
@@ -15,7 +14,7 @@ MIN_EDGE_WEIGHT = 40
 MIN_COMPONENT_SIZE = 3
 
 
-def load_playlist_data(filepath: Path) -> Tuple[pd.DataFrame, List[pd.Timestamp]]:
+def load_playlist_data(filepath: Path) -> tuple[pd.DataFrame, list[pd.Timestamp]]:
     """Load playlist track network data and generate time periods."""
     df = pd.read_parquet(filepath)
     start_date = df["thu_date"].min()
@@ -68,7 +67,7 @@ def calculate_song_transfers(
 
 
 def build_playlist_network(
-    df: pd.DataFrame, time_period: List[pd.Timestamp], task=None
+    df: pd.DataFrame, time_period: list[pd.Timestamp], task=None
 ) -> nx.DiGraph:
     """Build a directed graph of playlist relationships based on song transfers."""
     G: nx.DiGraph = nx.DiGraph()
@@ -139,23 +138,22 @@ def prune_small_components(
 
 def save_graph(
     graph: nx.DiGraph, basename: str, clean_data_dir: Path
-) -> Tuple[str, str]:
+) -> tuple[str, str]:
     """Save graph edges and nodes to CSV files."""
     number_of_nodes = graph.number_of_nodes()
     logger.info(f"Saving graph with {number_of_nodes} nodes")
 
     # Save edges
     edges_file = clean_data_dir / f"{basename}{number_of_nodes}_edges.csv"
-    with open(edges_file, "wb") as f:
+    with Path.open(edges_file, "wb") as f:
         f.write(b"playlist_id_1,playlist_id_2,weight\n")
         nx.write_weighted_edgelist(graph, f, delimiter=",")
 
     # Save nodes
     nodes_file = clean_data_dir / f"{basename}_{number_of_nodes}_nodes.csv"
-    with open(nodes_file, "w") as f:
+    with Path.open(nodes_file, "w") as f:
         f.write("playlist_id\n")
-        for node in graph.nodes:
-            f.write(f"{node}\n")
+        f.writelines(f"{node}\n" for node in graph.nodes)
 
     return str(edges_file), str(nodes_file)
 
@@ -214,7 +212,7 @@ def preprocess_spotify_data_original(self, filename: str):
             if job:
                 job.status = "failed"
                 job.error_message = f"File {filename} not found"
-                job.completed_at = datetime.now(timezone.utc)
+                job.completed_at = datetime.now(UTC)
                 db.session.commit()
 
             self.update_state(
@@ -283,7 +281,7 @@ def preprocess_spotify_data_original(self, filename: str):
         if job:
             logger.info(f"Updating job {job.uuid} status to completed")
             job.status = "completed"
-            job.completed_at = datetime.now(timezone.utc)
+            job.completed_at = datetime.now(UTC)
             # Store relative paths from static directory
             job.edges_file = f"{Path(edges_file).name}"
             job.nodes_file = f"{Path(nodes_file).name}"
@@ -348,7 +346,7 @@ def preprocess_spotify_data_original(self, filename: str):
                 logger.info(f"Updating job {job.uuid} status to failed")
                 job.status = "failed"
                 job.error_message = str(e)
-                job.completed_at = datetime.now(timezone.utc)
+                job.completed_at = datetime.now(UTC)
                 db.session.commit()
                 logger.info(f"Job {job.uuid} status updated to failed: {str(e)}")
             else:

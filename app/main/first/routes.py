@@ -15,12 +15,10 @@ from app import cache, db, htmx
 from app.helpers.app_helpers import make_cache_key_with_htmx
 from app.main.first import bp
 from app.models import (
-    CombinedPreprocessingJob,
     PlaylistEnrichmentJob,
     PreprocessingJob,
     UploadedFile,
 )
-from app.tasks.combine_datasets import combine_preprocessed_datasets
 from app.tasks.playlist_enrichment import enrich_playlist_nodes
 from app.tasks.preprocessing import preprocess_spotify_data_original
 
@@ -86,7 +84,7 @@ def preview_file(filename):
     upload_folder = Path(current_app.root_path).parent / "uploads"
     file_path = upload_folder / filename
 
-    if not file_path.exists() or not file_path.suffix == ".parquet":
+    if not file_path.exists() or file_path.suffix != ".parquet":
         return render_template("errors/404.html", error="File not found"), 404
 
     file_stat = file_path.stat()
@@ -170,7 +168,7 @@ def preview_data(filename):
     upload_folder = Path(current_app.root_path).parent / "uploads"
     file_path = upload_folder / filename
 
-    if not file_path.exists() or not file_path.suffix == ".parquet":
+    if not file_path.exists() or file_path.suffix != ".parquet":
         return render_template("errors/404.html", error="File not found"), 422
 
     try:
@@ -490,7 +488,7 @@ def start_preprocessing(filename):
     upload_folder = Path(current_app.root_path).parent / "uploads"
     file_path = upload_folder / filename
 
-    if not file_path.exists() or not file_path.suffix == ".parquet":
+    if not file_path.exists() or file_path.suffix != ".parquet":
         return (
             render_template("./first/partials/_error.html", error="File not found"),
             422,
@@ -594,7 +592,7 @@ def task_status(task_id):
         )
 
         return make_response(
-            template, refresh=True if response["state"] == "SUCCESS" else False
+            template, refresh=response["state"] == "SUCCESS"
         )  # Trigger HTMX refresh only on success
     else:
         # Return JSON for other requests

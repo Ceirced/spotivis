@@ -20,16 +20,13 @@ def combine_files():
         .join(UploadedFile)
         .where(
             UploadedFile.user_id == current_user.id,
-            PreprocessingJob.status == "completed"
+            PreprocessingJob.status == "completed",
         )
         .order_by(PreprocessingJob.completed_at.desc())
     )
     completed_jobs = db.session.scalars(stmt).all()
-    
-    return render_template(
-        "./first/combine_files.html",
-        completed_jobs=completed_jobs
-    )
+
+    return render_template("./first/combine_files.html", completed_jobs=completed_jobs)
 
 
 @bp.route("/combine/start", methods=["POST"])
@@ -37,25 +34,25 @@ def start_combine_files():
     """Start the process of combining two preprocessed files."""
     first_job_id = request.form.get("first_job_id")
     second_job_id = request.form.get("second_job_id")
-    
+
     if not first_job_id or not second_job_id:
         return (
             render_template(
                 "./first/partials/_error.html",
-                error="Please select both files to combine"
+                error="Please select both files to combine",
             ),
-            422
+            422,
         )
-    
+
     if first_job_id == second_job_id:
         return (
             render_template(
                 "./first/partials/_error.html",
-                error="Please select two different files"
+                error="Please select two different files",
             ),
-            422
+            422,
         )
-    
+
     # Verify both jobs exist and belong to the user
     first_job_stmt = (
         select(PreprocessingJob)
@@ -63,53 +60,53 @@ def start_combine_files():
         .where(
             PreprocessingJob.uuid == first_job_id,
             UploadedFile.user_id == current_user.id,
-            PreprocessingJob.status == "completed"
+            PreprocessingJob.status == "completed",
         )
     )
     first_job = db.session.scalar(first_job_stmt)
-    
+
     second_job_stmt = (
         select(PreprocessingJob)
         .join(UploadedFile)
         .where(
             PreprocessingJob.uuid == second_job_id,
             UploadedFile.user_id == current_user.id,
-            PreprocessingJob.status == "completed"
+            PreprocessingJob.status == "completed",
         )
     )
     second_job = db.session.scalar(second_job_stmt)
-    
+
     if not first_job or not second_job:
         return (
             render_template(
-                "./first/partials/_error.html",
-                error="Invalid job selection"
+                "./first/partials/_error.html", error="Invalid job selection"
             ),
-            422
+            422,
         )
-    
+
     # Create the combined job record
     combined_job = CombinedPreprocessingJob(
         first_job_id=first_job_id,
         second_job_id=second_job_id,
         user_id=current_user.id,
-        status="processing"
+        status="processing",
     )
     db.session.add(combined_job)
     db.session.commit()
-    
+
     # Start the celery task
     from app.tasks.combine_datasets import combine_preprocessed_datasets
+
     task = combine_preprocessed_datasets.delay(str(combined_job.uuid))
-    
+
     # Update with task ID
     combined_job.task_id = task.id
     db.session.commit()
-    
+
     return render_template(
         "./first/partials/_combine_started.html",
         task_id=task.id,
-        combined_job_id=combined_job.uuid
+        combined_job_id=combined_job.uuid,
     )
 
 
@@ -117,8 +114,9 @@ def start_combine_files():
 def combine_status(task_id):
     """Check the status of a combine task."""
     from app.tasks.combine_datasets import combine_preprocessed_datasets
+
     task = combine_preprocessed_datasets.AsyncResult(task_id)
-    
+
     if task.state == "PENDING":
         response = {
             "state": task.state,
@@ -152,7 +150,7 @@ def combine_status(task_id):
             "status": str(task.info),
             "percent": 0,
         }
-    
+
     if htmx:
         return render_template(
             "./first/partials/_combine_progress.html",
@@ -175,74 +173,64 @@ def combined_history():
         .order_by(CombinedPreprocessingJob.started_at.desc())
     )
     combined_jobs = db.session.scalars(stmt).all()
-    
+
     return render_template(
-        "./first/partials/_combined_history.html",
-        combined_jobs=combined_jobs
+        "./first/partials/_combined_history.html", combined_jobs=combined_jobs
     )
 
 
 @bp.route("/combine/view/<uuid:job_id>", methods=["GET"])
 def view_combined_graph(job_id: uuid.UUID):
     """View the combined graph visualization."""
-    stmt = (
-        select(CombinedPreprocessingJob)
-        .where(
-            CombinedPreprocessingJob.uuid == str(job_id),
-            CombinedPreprocessingJob.user_id == current_user.id,
-            CombinedPreprocessingJob.status == "completed"
-        )
+    stmt = select(CombinedPreprocessingJob).where(
+        CombinedPreprocessingJob.uuid == str(job_id),
+        CombinedPreprocessingJob.user_id == current_user.id,
+        CombinedPreprocessingJob.status == "completed",
     )
     combined_job = db.session.scalar(stmt)
-    
+
     if not combined_job:
-        return (
-            render_template("errors/404.html", error="Combined job not found"),
-            404
-        )
-    
-    return render_template(
-        "./first/combined_graph_preview.html",
-        job=combined_job
-    )
+        return (render_template("errors/404.html", error="Combined job not found"), 404)
+
+    return render_template("./first/combined_graph_preview.html", job=combined_job)
 
 
 @bp.route("/combine/data/<uuid:job_id>/nodes", methods=["GET"])
 def combined_graph_nodes_data(job_id: uuid.UUID):
     """Serve nodes data for combined graph visualization."""
-    stmt = (
-        select(CombinedPreprocessingJob)
-        .where(
-            CombinedPreprocessingJob.uuid == str(job_id),
-            CombinedPreprocessingJob.user_id == current_user.id,
-            CombinedPreprocessingJob.status == "completed"
-        )
+    stmt = select(CombinedPreprocessingJob).where(
+        CombinedPreprocessingJob.uuid == str(job_id),
+        CombinedPreprocessingJob.user_id == current_user.id,
+        CombinedPreprocessingJob.status == "completed",
     )
     job = db.session.scalar(stmt)
-    
+
     if not job:
         return jsonify({"error": "Combined job not found"}), 404
-    
+
     try:
         if not job.nodes_file:
             return jsonify({"error": "No nodes file available"}), 404
-            
-        from flask import current_app, send_from_directory
+
         from pathlib import Path
-        
+
+        from flask import current_app, send_from_directory
+
         # Get the nodes file path
-        preprocessed_data_dir = current_app.config.get("PREPROCESSED_DATA_DIR", "preprocessed")
-        nodes_path = Path(current_app.static_folder) / preprocessed_data_dir / job.nodes_file
-        
+        preprocessed_data_dir = current_app.config.get(
+            "PREPROCESSED_DATA_DIR", "preprocessed"
+        )
+        nodes_path = (
+            Path(current_app.static_folder) / preprocessed_data_dir / job.nodes_file
+        )
+
         if not nodes_path.exists():
             return jsonify({"error": f"Nodes file not found at {nodes_path}"}), 404
-            
+
         return send_from_directory(
-            str(nodes_path.parent), 
-            nodes_path.name, 
-            as_attachment=False
+            str(nodes_path.parent), nodes_path.name, as_attachment=False
         )
-        
+
     except Exception as e:
         return jsonify({"error": f"Error reading nodes data: {str(e)}"}), 500
 
@@ -250,39 +238,36 @@ def combined_graph_nodes_data(job_id: uuid.UUID):
 @bp.route("/combine/data/<uuid:job_id>/edges", methods=["GET"])
 def combined_graph_edges_data(job_id: uuid.UUID):
     """Serve edges data for combined graph visualization."""
-    stmt = (
-        select(CombinedPreprocessingJob)
-        .where(
-            CombinedPreprocessingJob.uuid == str(job_id),
-            CombinedPreprocessingJob.user_id == current_user.id,
-            CombinedPreprocessingJob.status == "completed"
-        )
+    stmt = select(CombinedPreprocessingJob).where(
+        CombinedPreprocessingJob.uuid == str(job_id),
+        CombinedPreprocessingJob.user_id == current_user.id,
+        CombinedPreprocessingJob.status == "completed",
     )
     job = db.session.scalar(stmt)
-    
+
     if not job:
         return jsonify({"error": "Combined job not found"}), 404
-    
+
     try:
         if not job.edges_file:
             return jsonify({"error": "No edges file available"}), 404
-            
-        from flask import current_app, send_from_directory
+
         from pathlib import Path
-        
+
+        from flask import current_app, send_from_directory
+
         # Get the edges file path
-        preprocessed_data_dir = current_app.config.get("PREPROCESSED_DATA_DIR", "preprocessed")
-        edges_path = Path(current_app.static_folder) / preprocessed_data_dir / job.edges_file
-        
+        preprocessed_data_dir = current_app.config.get(
+            "PREPROCESSED_DATA_DIR", "preprocessed"
+        )
+        edges_path = (
+            Path(current_app.static_folder) / preprocessed_data_dir / job.edges_file
+        )
         if not edges_path.exists():
             return jsonify({"error": f"Edges file not found at {edges_path}"}), 404
-            
         return send_from_directory(
-            str(edges_path.parent), 
-            edges_path.name, 
-            as_attachment=False
+            str(edges_path.parent), edges_path.name, as_attachment=False
         )
-        
     except Exception as e:
         return jsonify({"error": f"Error reading edges data: {str(e)}"}), 500
 
@@ -291,27 +276,25 @@ def combined_graph_edges_data(job_id: uuid.UUID):
 def cancel_combine_job(task_id):
     """Cancel a running combine task."""
     from app.tasks.combine_datasets import combine_preprocessed_datasets
+
     task = combine_preprocessed_datasets.AsyncResult(task_id)
-    
     # Check if task exists and is cancellable
     if task.state in ["PENDING", "PROGRESS"]:
         # Revoke the task
         task.revoke(terminate=True)
-        
         # Update the database status
         stmt = select(CombinedPreprocessingJob).where(
             CombinedPreprocessingJob.task_id == task_id
         )
         job = db.session.scalar(stmt)
-        
         if job:
             job.status = "cancelled"
             job.completed_at = db.func.current_timestamp()
             job.error_message = "Task cancelled by user"
             db.session.commit()
-        
         # Return empty content to clear the progress display
         from flask_htmx import make_response
+
         response = make_response(
             "",
             trigger="refresh",  # Trigger HTMX refresh

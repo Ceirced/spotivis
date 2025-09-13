@@ -1,8 +1,9 @@
 from flask_security import Security, SQLAlchemyUserDatastore
 
-from app.extensions import db
-from app.extensions.celery import CeleryMailUtil
 from app.models import Role, User
+
+from . import db
+from .celery import CeleryMailUtil
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 security = Security(mail_util_cls=CeleryMailUtil)

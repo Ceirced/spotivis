@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -46,7 +46,7 @@ def enrich_playlist_nodes(self, preprocessing_job_uuid: str):
             )
             job.status = "failed"
             job.error_message = "Preprocessing job or nodes file not found"
-            job.completed_at = datetime.now(timezone.utc)
+            job.completed_at = datetime.now(UTC)
             db.session.commit()
             return {
                 "status": "error",
@@ -68,7 +68,7 @@ def enrich_playlist_nodes(self, preprocessing_job_uuid: str):
         if not nodes_file_path.exists():
             job.status = "failed"
             job.error_message = f"Nodes file not found: {nodes_file_path}"
-            job.completed_at = datetime.now(timezone.utc)
+            job.completed_at = datetime.now(UTC)
             db.session.commit()
             return {
                 "status": "error",
@@ -183,7 +183,7 @@ def enrich_playlist_nodes(self, preprocessing_job_uuid: str):
 
         # Update job record with results
         job.status = "completed"
-        job.completed_at = datetime.now(timezone.utc)
+        job.completed_at = datetime.now(UTC)
         job.output_file = output_filename
         job.total_playlists = total_playlists
         job.found_count = found_count
@@ -230,7 +230,7 @@ def enrich_playlist_nodes(self, preprocessing_job_uuid: str):
             if job:
                 job.status = "failed"
                 job.error_message = str(e)
-                job.completed_at = datetime.now(timezone.utc)
+                job.completed_at = datetime.now(UTC)
                 db.session.commit()
         except Exception as commit_error:
             logger.error(f"Failed to update job status to failed: {commit_error}")

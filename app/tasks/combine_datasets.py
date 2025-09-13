@@ -1,6 +1,5 @@
 """Celery task for combining two preprocessed datasets."""
 
-import uuid
 from datetime import datetime
 from pathlib import Path
 
@@ -11,7 +10,7 @@ from loguru import logger
 from sqlalchemy import select
 
 from app import create_app, db
-from app.models import CombinedPreprocessingJob, PreprocessingJob
+from app.models import CombinedPreprocessingJob
 
 
 @shared_task(bind=True)
@@ -68,7 +67,7 @@ def combine_preprocessed_datasets(self, combined_job_id: str):
             )
 
             if not first_nodes_path.exists() or not first_edges_path.exists():
-                raise FileNotFoundError(f"First dataset files not found")
+                raise FileNotFoundError("First dataset files not found")
 
             first_nodes_df = pd.read_csv(first_nodes_path)
             first_edges_df = pd.read_csv(first_edges_path)
@@ -97,7 +96,7 @@ def combine_preprocessed_datasets(self, combined_job_id: str):
             )
 
             if not second_nodes_path.exists() or not second_edges_path.exists():
-                raise FileNotFoundError(f"Second dataset files not found")
+                raise FileNotFoundError("Second dataset files not found")
 
             second_nodes_df = pd.read_csv(second_nodes_path)
             second_edges_df = pd.read_csv(second_edges_path)

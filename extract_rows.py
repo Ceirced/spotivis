@@ -7,6 +7,7 @@ Usage: python extract_rows.py <n_rows> [input_file] [output_file]
 import argparse
 import sys
 from pathlib import Path
+
 import pyarrow.parquet as pq
 
 
