@@ -56,7 +56,7 @@ def combine_preprocessed_datasets(self, combined_job_id: str):
             preprocessed_data_dir = current_app.config.get(
                 "PREPROCESSED_DATA_DIR", "preprocessed"
             )
-            static_folder = Path(current_app.static_folder)
+            static_folder = Path(current_app.static_folder)  # type: ignore
 
             # Load first dataset
             first_nodes_path = (

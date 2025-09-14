@@ -1,8 +1,9 @@
 """Routes for combining preprocessed datasets."""
 
 import uuid
+from pathlib import Path
 
-from flask import jsonify, render_template, request
+from flask import current_app, jsonify, render_template, request, send_from_directory
 from flask_login import current_user
 from sqlalchemy import select
 
@@ -212,16 +213,12 @@ def combined_graph_nodes_data(job_id: uuid.UUID):
         if not job.nodes_file:
             return jsonify({"error": "No nodes file available"}), 404
 
-        from pathlib import Path
-
-        from flask import current_app, send_from_directory
-
         # Get the nodes file path
         preprocessed_data_dir = current_app.config.get(
             "PREPROCESSED_DATA_DIR", "preprocessed"
         )
         nodes_path = (
-            Path(current_app.static_folder) / preprocessed_data_dir / job.nodes_file
+            Path(current_app.static_folder) / preprocessed_data_dir / job.nodes_file  # type: ignore
         )
 
         if not nodes_path.exists():
@@ -252,16 +249,12 @@ def combined_graph_edges_data(job_id: uuid.UUID):
         if not job.edges_file:
             return jsonify({"error": "No edges file available"}), 404
 
-        from pathlib import Path
-
-        from flask import current_app, send_from_directory
-
         # Get the edges file path
         preprocessed_data_dir = current_app.config.get(
             "PREPROCESSED_DATA_DIR", "preprocessed"
         )
         edges_path = (
-            Path(current_app.static_folder) / preprocessed_data_dir / job.edges_file
+            Path(current_app.static_folder) / preprocessed_data_dir / job.edges_file  # type: ignore
         )
         if not edges_path.exists():
             return jsonify({"error": f"Edges file not found at {edges_path}"}), 404

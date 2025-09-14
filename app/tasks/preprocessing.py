@@ -70,7 +70,7 @@ def build_playlist_network(
     df: pd.DataFrame, time_period: list[pd.Timestamp], task=None
 ) -> nx.DiGraph:
     """Build a directed graph of playlist relationships based on song transfers."""
-    G: nx.DiGraph = nx.DiGraph()
+    graph: nx.DiGraph = nx.DiGraph()
     songs_playlists_next_week = None
     total_weeks = len(time_period)
 
@@ -102,7 +102,7 @@ def build_playlist_network(
         )
         pruned_transfers = df_counts[df_counts["count"] > MIN_EDGE_WEIGHT]
 
-        G.add_edges_from(
+        graph.add_edges_from(
             [
                 (playlist1, playlist2, {"weight": count})
                 for playlist1, playlist2, count in pruned_transfers.itertuples(
@@ -123,17 +123,17 @@ def build_playlist_network(
             },
         )
 
-    return G
+    return graph
 
 
 def prune_small_components(
-    G: nx.DiGraph, min_size: int = MIN_COMPONENT_SIZE
+    graph: nx.DiGraph, min_size: int = MIN_COMPONENT_SIZE
 ) -> nx.DiGraph:
     """Remove weakly connected components with few nodes."""
-    for component in list(nx.weakly_connected_components(G)):
+    for component in list(nx.weakly_connected_components(graph)):
         if len(component) <= min_size:
-            G.remove_nodes_from(component)
-    return G
+            graph.remove_nodes_from(component)
+    return graph
 
 
 def save_graph(
@@ -251,10 +251,12 @@ def preprocess_spotify_data_original(self, filename: str):
         )
 
         # Build graph (exact same as original)
-        G = build_playlist_network(df_playlist_track_network, time_period, task=self)
+        graph = build_playlist_network(
+            df_playlist_track_network, time_period, task=self
+        )
 
         logger.info(
-            f"Built graph with {G.number_of_nodes()} nodes and {G.number_of_edges()} edges"
+            f"Built graph with {graph.number_of_nodes()} nodes and {graph.number_of_edges()} edges"
         )
 
         self.update_state(
@@ -268,13 +270,13 @@ def preprocess_spotify_data_original(self, filename: str):
         )
 
         # Prune small components (exact same as original)
-        initial_nodes = G.number_of_nodes()
-        initial_edges = G.number_of_edges()
-        G = prune_small_components(G)
+        initial_nodes = graph.number_of_nodes()
+        initial_edges = graph.number_of_edges()
+        graph = prune_small_components(graph)
 
         # Save pruned graph (exact same as original)
         edges_file, nodes_file = save_graph(
-            G, "pruned_graph", preprocessed_data_directory
+            graph, "pruned_graph", preprocessed_data_directory
         )
 
         # Update job record with results
@@ -285,8 +287,8 @@ def preprocess_spotify_data_original(self, filename: str):
             # Store relative paths from static directory
             job.edges_file = f"{Path(edges_file).name}"
             job.nodes_file = f"{Path(nodes_file).name}"
-            job.final_nodes = G.number_of_nodes()
-            job.final_edges = G.number_of_edges()
+            job.final_nodes = graph.number_of_nodes()
+            job.final_edges = graph.number_of_edges()
             job.time_periods = len(time_period)
             db.session.commit()
             logger.info(
@@ -297,9 +299,9 @@ def preprocess_spotify_data_original(self, filename: str):
         # Check if graph is empty before connectivity checks
         is_weakly = False
         is_strongly = False
-        if G.number_of_nodes() > 0:
-            is_weakly = nx.is_weakly_connected(G)
-            is_strongly = nx.is_strongly_connected(G)
+        if graph.number_of_nodes() > 0:
+            is_weakly = nx.is_weakly_connected(graph)
+            is_strongly = nx.is_strongly_connected(graph)
 
         result = {
             "status": "success",
@@ -311,9 +313,9 @@ def preprocess_spotify_data_original(self, filename: str):
             "statistics": {
                 "initial_nodes": initial_nodes,
                 "initial_edges": initial_edges,
-                "final_nodes": G.number_of_nodes(),
-                "final_edges": G.number_of_edges(),
-                "directed": nx.is_directed(G),
+                "final_nodes": graph.number_of_nodes(),
+                "final_edges": graph.number_of_edges(),
+                "directed": nx.is_directed(graph),
                 "weakly_connected": is_weakly,
                 "strongly_connected": is_strongly,
                 "time_periods": len(time_period),

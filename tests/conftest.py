@@ -1,5 +1,6 @@
 import os
 import tempfile
+from pathlib import Path
 
 import pytest
 
@@ -106,7 +107,7 @@ def sample_parquet_file():
 
     # Clean up
     os.close(fd)
-    os.unlink(path)
+    Path.unlink(path)
 
 
 @pytest.fixture
@@ -119,7 +120,7 @@ def invalid_file():
     yield path
 
     # Clean up
-    os.unlink(path)
+    Path.unlink(path)
 
 
 @pytest.fixture
@@ -136,4 +137,4 @@ def large_file():
     yield path
 
     # Clean up
-    os.unlink(path)
+    Path.unlink(path)
