@@ -15,6 +15,13 @@ def init_celery(app: Flask) -> Celery:
     celery_app = Celery(app.name, task_cls=FlaskTask)
     celery_app.config_from_object(app.config["CELERY"])
     celery_app.set_default()
+    celery_app.autodiscover_tasks(
+        [
+            "app.tasks.preprocessing",
+            "app.tasks.playlist_enrichment",
+            "app.tasks.combine_datasets",
+        ]
+    )
     app.extensions["celery"] = celery_app
     return celery_app
 
