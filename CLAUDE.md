@@ -113,6 +113,10 @@ flask db upgrade                 # Apply migrations
 SECRET_KEY=your-secret-key
 SQLALCHEMY_DATABASE_URI=sqlite:///dev.db  # or MySQL URI
 
+# Spotify API (Required for playlist enrichment)
+SPOTIFY_CLIENT_ID=your-spotify-client-id
+SPOTIFY_CLIENT_SECRET=your-spotify-client-secret
+
 # Optional
 HOST_NAME=localhost:5000
 REDIS_URL=redis://localhost

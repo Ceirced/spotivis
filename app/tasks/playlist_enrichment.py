@@ -78,13 +78,23 @@ def enrich_playlist_nodes(self, preprocessing_job_uuid: str):
         logger.info(f"Starting enrichment of playlists from {nodes_file_path}")
 
         # Initialize Spotify client with client credentials flow
-        # These should be in environment variables in production
-        CLIENT_ID = "f2db719181dd4643bd8a794a18e90df8"
-        CLIENT_SECRET = "283eb3693c9f4848a34084005ad119d7"
+        import os
+
+        client_id = os.getenv("SPOTIFY_CLIENT_ID")
+        client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
+
+        if not client_id or not client_secret:
+            error_msg = "Spotify API credentials not found in environment variables"
+            logger.error(error_msg)
+            job.status = "failed"
+            job.error_message = error_msg
+            job.completed_at = datetime.now(UTC)
+            db.session.commit()
+            return {"status": "error", "error": error_msg}
 
         # Use client credentials flow - no user authentication needed
         client_credentials_manager = SpotifyClientCredentials(
-            client_id=CLIENT_ID, client_secret=CLIENT_SECRET
+            client_id=client_id, client_secret=client_secret
         )
         sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
