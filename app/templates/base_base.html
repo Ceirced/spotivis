@@ -55,8 +55,10 @@
             <link
                 rel="stylesheet"
                 href="{{ url_for('static', filename='css/build/style.min.css') }}" />
-            <script src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
-            <script src="{{ url_for('static', filename='js/htmx/htmx.min.js') }}"></script>
+            <script
+                src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.7/dist/htmx.min.js"
+                integrity="sha384-ZBXiYtYQ6hJ2Y0ZNoYuI+Nq5MqWBr+chMrS/RkXpNzQCApHEhOt2aY8EJgqwHLkJ"
+                crossorigin="anonymous"></script>
             <script>
                 !(function (t, e) {
                     var o, n, p, r;
@@ -118,23 +120,21 @@
                 })(document, window.posthog || []);
                 posthog.init(
                     "phc_9Z6hpJyX25Gokn4rASmV8zy8NvXpueX1LXojWjQpwIL",
-                    {
-                        api_host: "/king",
-                    }
+                    { api_host: "/king" }
                 );
             </script>
         {% else %}
             <link
                 rel="stylesheet"
                 href="{{ url_for('static', filename='css/build/style.css') }}" />
-            <script src="{{ url_for('static', filename='js/jquery-3.7.1.js') }}"></script>
-            <script src="{{ url_for('static', filename='js/htmx/htmx.js') }}"></script>
+            <script
+                src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.7/dist/htmx.js"
+                integrity="sha384-yWakaGAFicqusuwOYEmoRjLNOC+6OFsdmwC2lbGQaRELtuVEqNzt11c2J711DeCZ"
+                crossorigin="anonymous"></script>
         {% endif %}
         <script
             defer
             src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
-
-        <!-- D3 is now bundled with each module via Vite -->
 
         <!-- Global theme initialization - runs immediately to prevent flash -->
         <script>
