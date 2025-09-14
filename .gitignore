@@ -13,3 +13,6 @@ backup.sh
 .mypy_cache/
 .DS_Store
 instance/
+
+# Generated CSS files
+app/static/css/build/

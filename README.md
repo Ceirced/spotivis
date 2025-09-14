@@ -125,7 +125,7 @@ pytest                           # Run test suite
 
 ```bash
 npm run dev                      # Watch and compile Tailwind CSS
-npm run prod                     # Build minified CSS for production
+npm run build                    # Build minified CSS for production
 ```
 
 ## Docker Configuration

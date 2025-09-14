@@ -4,8 +4,8 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "dev": "npx @tailwindcss/cli -i ./app/static/css/input.css -o ./app/static/css/output.css --watch",
-        "prod": "npx @tailwindcss/cli -i ./app/static/css/input.css -o ./app/static/css/output.min.css --minify"
+        "dev": "npx @tailwindcss/cli -i ./app/static/css/input.css -o ./app/static/css/build/style.css --watch",
+        "build": "npx @tailwindcss/cli -i ./app/static/css/input.css -o ./app/static/css/build/style.min.css --minify"
     },
     "author": "",
     "license": "ISC",
