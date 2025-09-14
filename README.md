@@ -45,7 +45,6 @@ SpotiVis is a web application that visualizes Spotify streaming data from .parqu
     ```
 
 3. **Required environment variables:**
-
     - `SECRET_KEY` - Generate a secure random key
     - `SECURITY_PASSWORD_SALT` - Generate a random salt for password hashing (REQUIRED - app will fail without it)
     - `SQLALCHEMY_DATABASE_URI` - Database connection string
@@ -94,10 +93,10 @@ make clean      # Stop containers and remove volumes
 
 1. **User Authentication**: Flask-Security with email/password
 2. **File Upload**:
-   - Accepts .parquet files up to 500MB
-   - Validates parquet format using PyArrow
-   - Stores files with timestamp prefixes
-   - Lists uploaded files with metadata
+    - Accepts .parquet files up to 500MB
+    - Validates parquet format using PyArrow
+    - Stores files with timestamp prefixes
+    - Lists uploaded files with metadata
 3. **Data Visualization**: Interactive D3.js graphs showing playlist connections
 4. **Graph Features**: Canvas-based rendering with zoom, pan, and node dragging
 5. **Responsive UI**: Mobile-first design with bottom navigation
@@ -148,7 +147,7 @@ npm run build                    # Build everything optimized for production
 
 # Individual commands
 npm run dev:css                  # Watch CSS only
-npm run dev:ts                   # Watch TypeScript only  
+npm run dev:ts                   # Watch TypeScript only
 npm run build:css                # Minified CSS
 npm run build:ts                 # Minified, tree-shaken JavaScript
 ```
@@ -156,12 +155,14 @@ npm run build:ts                 # Minified, tree-shaken JavaScript
 ### Build Features
 
 **Development:**
+
 - Hot reload for TypeScript files
 - Inline source maps for debugging
 - No minification for readable output
 - Fast incremental compilation
 
 **Production:**
+
 - Minification for smaller file sizes
 - Tree shaking removes unused D3 code
 - Optimized builds (~22KB gzipped)
@@ -171,31 +172,34 @@ npm run build:ts                 # Minified, tree-shaken JavaScript
 All TypeScript files in `app/typescript/` are automatically built - no config needed!
 
 **File Structure:**
+
 - **Input:** `app/typescript/*.ts`
 - **Output:** `app/static/js/build/` (gitignored)
 
 **Development Workflow:**
+
 1. Run `npm run dev` in one terminal
-2. Run `flask run` in another terminal  
+2. Run `flask run` in another terminal
 3. Edit TypeScript files in `app/typescript/`
 4. Changes auto-compile and Flask auto-reloads
 
 **Adding New TypeScript Files:**
+
 1. Create new `.ts` file in `app/typescript/`
 2. Export functions using ES module syntax:
-   ```typescript
-   // app/typescript/new-feature.ts
-   export function myFeature() {
-     // Your code here
-   }
-   ```
+    ```typescript
+    // app/typescript/new-feature.ts
+    export function myFeature() {
+        // Your code here
+    }
+    ```
 3. Import in templates using ES modules:
-   ```html
-   <script type="module">
-     import { myFeature } from "{{ url_for('static', filename='js/build/new-feature.js') }}";
-     myFeature();
-   </script>
-   ```
+    ```html
+    <script type="module">
+        import { myFeature } from "{{ url_for('static', filename='js/build/new-feature.js') }}";
+        myFeature();
+    </script>
+    ```
 
 ## Docker Configuration
 

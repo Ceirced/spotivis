@@ -54,7 +54,7 @@
         {% if config['FLASK_ENV'] == 'production' %}
             <link
                 rel="stylesheet"
-                href="{{ url_for('static', filename='css/output.min.css') }}" />
+                href="{{ url_for('static', filename='css/build/style.min.css') }}" />
             <script src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
             <script src="{{ url_for('static', filename='js/htmx/htmx.min.js') }}"></script>
             <script>
@@ -126,7 +126,7 @@
         {% else %}
             <link
                 rel="stylesheet"
-                href="{{ url_for('static', filename='css/output.css') }}" />
+                href="{{ url_for('static', filename='css/build/style.css') }}" />
             <script src="{{ url_for('static', filename='js/jquery-3.7.1.js') }}"></script>
             <script src="{{ url_for('static', filename='js/htmx/htmx.js') }}"></script>
         {% endif %}

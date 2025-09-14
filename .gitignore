@@ -20,3 +20,6 @@ clean_data/
 
 # Build artifacts
 app/static/js/build/
+
+# Generated CSS files
+app/static/css/build/
