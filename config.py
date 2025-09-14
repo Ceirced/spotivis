@@ -18,6 +18,7 @@ class DevelopmentConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = "sqlite:///dev.db"
     SERVER_NAME = os.getenv("HOST_NAME")
     REDIS_URL = "redis://redis" if os.getenv("IN_CONTAINER") else "redis://localhost"
+    SECURITY_PASSWORD_SALT = os.getenv("SECURITY_PASSWORD_SALT")
 
 
 class TestingConfig(BaseConfig):
