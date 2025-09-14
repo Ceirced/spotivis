@@ -55,7 +55,6 @@
             <link
                 rel="stylesheet"
                 href="{{ url_for('static', filename='css/build/style.min.css') }}" />
-            <script src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
             <script src="{{ url_for('static', filename='js/htmx/htmx.min.js') }}"></script>
             <script>
                 !(function (t, e) {
@@ -66,7 +65,7 @@
                         (e.init = function (i, s, a) {
                             function g(t, e) {
                                 var o = e.split(".");
-                                2 == o.length && ((t = t[o[0]]), (e = o[1])),
+                                (2 == o.length && ((t = t[o[0]]), (e = o[1])),
                                     (t[e] = function () {
                                         t.push(
                                             [e].concat(
@@ -76,16 +75,16 @@
                                                 )
                                             )
                                         );
-                                    });
+                                    }));
                             }
-                            ((p = t.createElement("script")).type =
+                            (((p = t.createElement("script")).type =
                                 "text/javascript"),
                                 (p.async = !0),
                                 (p.src = s.api_host + "/static/array.js"),
                                 (r =
                                     t.getElementsByTagName(
                                         "script"
-                                    )[0]).parentNode.insertBefore(p, r);
+                                    )[0]).parentNode.insertBefore(p, r));
                             var u = e;
                             for (
                                 void 0 !== a
@@ -118,31 +117,28 @@
                 })(document, window.posthog || []);
                 posthog.init(
                     "phc_9Z6hpJyX25Gokn4rASmV8zy8NvXpueX1LXojWjQpwIL",
-                    {
-                        api_host: "/king",
-                    }
+                    { api_host: "/king" }
                 );
             </script>
         {% else %}
             <link
                 rel="stylesheet"
                 href="{{ url_for('static', filename='css/build/style.css') }}" />
-            <script src="{{ url_for('static', filename='js/jquery-3.7.1.js') }}"></script>
             <script src="{{ url_for('static', filename='js/htmx/htmx.js') }}"></script>
         {% endif %}
         <script
             defer
             src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
-        
+
         <!-- Global theme initialization - runs immediately to prevent flash -->
         <script>
-            (function() {
+            (function () {
                 // Apply saved theme immediately to prevent flash
                 const savedTheme = localStorage.getItem("theme") || "light";
                 document.documentElement.setAttribute("data-theme", savedTheme);
             })();
         </script>
-        
+
         {% block head %}
         {% endblock %}
     </head>
