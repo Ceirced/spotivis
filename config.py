@@ -7,6 +7,7 @@ class BaseConfig:
     load_dotenv()
     TESTING = False
     SECRET_KEY = os.getenv("SECRET_KEY")
+    SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     LOG_TO_STDOUT = os.environ.get("LOG_TO_STDOUT")
@@ -15,7 +16,6 @@ class BaseConfig:
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
     FLASK_ENV = "development"
-    SQLALCHEMY_DATABASE_URI = "sqlite:///dev.db"
     SERVER_NAME = os.getenv("HOST_NAME")
     REDIS_URL = "redis://redis" if os.getenv("IN_CONTAINER") else "redis://localhost"
     SECURITY_PASSWORD_SALT = os.getenv("SECURITY_PASSWORD_SALT")
@@ -29,7 +29,6 @@ class TestingConfig(BaseConfig):
 
 
 class ProductionConfig(BaseConfig):
-    SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")
     SESSION_COOKIE_SECURE = (
         True  # does not allow cookies to be sent over an unencrypted connection
     )
