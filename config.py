@@ -11,12 +11,12 @@ class BaseConfig:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     LOG_TO_STDOUT = os.environ.get("LOG_TO_STDOUT")
+    SERVER_NAME = os.getenv("HOST_NAME")
 
 
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
     FLASK_ENV = "development"
-    SERVER_NAME = os.getenv("HOST_NAME")
     REDIS_URL = "redis://redis" if os.getenv("IN_CONTAINER") else "redis://localhost"
     SECURITY_PASSWORD_SALT = os.getenv("SECURITY_PASSWORD_SALT")
 
@@ -34,7 +34,6 @@ class ProductionConfig(BaseConfig):
     )
     REMEMBER_COOKIE_SECURE = True
     SESSION_COOKIE_SAMESITE = "Strict"
-    SERVER_NAME = os.getenv("HOST_NAME")
     PREFERRED_URL_SCHEME = "https"
     FLASK_ENV = "production"
     REDIS_URL = os.getenv("REDIS_URL", "redis://localhost")
