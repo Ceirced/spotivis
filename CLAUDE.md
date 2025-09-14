@@ -108,19 +108,36 @@ flask db upgrade                 # Apply migrations
 
 ## Environment Variables
 
+Copy `.env.example` to `.env` and configure:
+
 ```bash
 # Required
-SECRET_KEY=your-secret-key
-SQLALCHEMY_DATABASE_URI=sqlite:///dev.db  # or MySQL URI
+SECRET_KEY=your-secret-key                    # Generate a secure random key
+SECURITY_PASSWORD_SALT=your-salt-here         # Generate a random salt for password hashing
+SQLALCHEMY_DATABASE_URI=sqlite:///dev.db      # Database connection string
+APP_SETTINGS=config.DevelopmentConfig         # Configuration class to use
+APP_NAME=Flask App                            # Application name
+
+# Mail Configuration (Required for email features)
+MAIL_SERVER=smtp.example.com                  # SMTP server address
+MAIL_PORT=587                                 # SMTP port
+MAIL_USERNAME=your-email@example.com          # Email username
+MAIL_PASSWORD=your-password                   # Email password
+
+# Redis Configuration
+REDIS_URL=redis://localhost:6379              # Redis connection URL
 
 # Spotify API (Required for playlist enrichment)
 SPOTIFY_CLIENT_ID=your-spotify-client-id
 SPOTIFY_CLIENT_SECRET=your-spotify-client-secret
 
 # Optional
-HOST_NAME=localhost:5000
-REDIS_URL=redis://localhost
-IN_CONTAINER=1  # Set when running in Docker
+HOST_NAME=localhost:5000                      # Server name for production
+MAINTENANCE_MODE=False                         # Enable maintenance mode
+LOG_TO_STDOUT=False                           # Log to stdout instead of file
+STRIPE_SECRET_KEY=                           # Stripe API key for payments
+STRIPE_WEBHOOK_SECRET=                        # Stripe webhook secret
+POSTHOG_API_KEY=                             # PostHog analytics key
 ```
 
 ## HTMX Patterns

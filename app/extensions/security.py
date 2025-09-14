@@ -1,3 +1,5 @@
+import os
+
 from flask_security import Security, SQLAlchemyUserDatastore
 
 from app.models import Role, User
@@ -12,7 +14,7 @@ security = Security(mail_util_cls=CeleryMailUtil)
 def init_app(app):
     app.config.update(
         SECURITY_TRACKABLE=True,
-        SECURITY_PASSWORD_SALT="IschlerSalz",
+        SECURITY_PASSWORD_SALT=os.environ["SECURITY_PASSWORD_SALT"],
         SECURITY_REGISTERABLE=True,
         SECURITY_PASSWORD_CONFIRM_REQUIRED=False,
         SECURITY_USE_REGISTER_V2=True,
@@ -24,7 +26,8 @@ def init_app(app):
         SECURITY_RECOVERABLE=True,
         SECURITY_DEFAULT_REMEMBER_ME=True,
         SECURITY_CHANGEABLE=True,
-        SECURITY_RETURN_GENERIC_RESPONSES=False,  # This can be set to true when the app has enough users.
+        # Set to True when the app has enough users for security
+        SECURITY_RETURN_GENERIC_RESPONSES=False,
         SECURITY_CHANGE_EMAIL=True,
         SECURITY_REQUIRES_CONFIRMATION_ERROR_VIEW="confirm",
     )

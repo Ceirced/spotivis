@@ -27,7 +27,7 @@ posthog = Posthog(os.getenv("POSTHOG_API_KEY", ""), host="https://eu.i.posthog.c
 def create_app():
     app = Flask(__name__)
 
-    app.config["APP_NAME"] = os.getenv("APP_NAME", "Flask App")
+    app.config["APP_NAME"] = os.getenv("APP_NAME")
     app_settings = os.getenv("APP_SETTINGS")
     app.config.from_object(app_settings)
     app.config["MAINTENANCE_MODE"] = os.getenv("MAINTENANCE_MODE", "False") == "True"
