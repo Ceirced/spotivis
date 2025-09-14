@@ -19,6 +19,7 @@ class DevelopmentConfig(BaseConfig):
     FLASK_ENV = "development"
     SQLALCHEMY_DATABASE_URI = "sqlite:///spotivis.db"
     REDIS_URL = "redis://redis" if os.getenv("IN_CONTAINER") else "redis://localhost"
+    SECURITY_PASSWORD_SALT = os.getenv("SECURITY_PASSWORD_SALT")
 
 
 class TestingConfig(BaseConfig):
