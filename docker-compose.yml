@@ -59,12 +59,6 @@ services:
       - .env
     environment:
       - APP_SETTINGS=config.ProductionConfig
-    healthcheck:
-      test: celery -A app.make_celery inspect ping || exit 1
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
     networks:
       app_network:
         aliases:
