@@ -21,7 +21,7 @@
                                 <td class="font-medium">
                                     <a
                                         class="hover cursor-pointer"
-                                        href="/first/preview/{{ file.filename }}">
+                                        href="{{ url_for('first.preview_file', filename=file.filename) }}">
                                         {{ file.original_name }}
                                     </a>
                                 </td>
