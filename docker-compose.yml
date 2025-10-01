@@ -44,7 +44,7 @@ services:
       context: .
       dockerfile: Dockerfile
     image: flask-app
-    command: celery -A app.make_celery worker --loglevel INFO -E
+    command: celery -A app.make_celery worker --pool=solo --loglevel INFO -E
     
     stop_signal: SIGINT
     # to sync the ./api dir with the container only for development
