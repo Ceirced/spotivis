@@ -322,46 +322,121 @@ def view_processed_file(job_id: uuid.UUID, file_type: str):
 
 @bp.route("/files", methods=["GET"])
 def list_files():
-    """List all uploaded files."""
+    """List all uploaded files that exist both on disk and in database."""
     upload_folder = Path(current_app.root_path).parent / "uploads"
     files = []
 
-    if upload_folder.exists():
-        for file_path in upload_folder.glob("*.parquet"):
-            filename = file_path.name
-            file_stat = file_path.stat()
+    # Get all files from database for current user (or all if no auth)
+    if current_user.is_authenticated:
+        stmt = select(UploadedFile).where(UploadedFile.user_id == current_user.id)
+    else:
+        stmt = select(UploadedFile)
 
-            # Extract original filename and timestamp
-            # Expected format: YYYYMMDD_HHMMSS_original_filename.parquet
-            parts = filename.split("_")
-            if len(parts) >= 3:
-                try:
-                    # Reconstruct timestamp from first two parts
-                    timestamp_str = f"{parts[0]}_{parts[1]}"
-                    upload_time = datetime.strptime(timestamp_str, "%Y%m%d_%H%M%S")
-                    formatted_time = upload_time.strftime("%Y-%m-%d %H:%M:%S")
-                    # Original name is everything after the timestamp
-                    original_name = "_".join(parts[2:])
-                except (ValueError, IndexError):
-                    formatted_time = "Unknown"
-                    original_name = filename
-            else:
-                original_name = filename
+    db_files = db.session.scalars(stmt).all()
+
+    # Only include files that exist both in database and on disk
+    for uploaded_file in db_files:
+        file_path = upload_folder / uploaded_file.filename
+
+        # Skip if file doesn't exist on disk
+        if not file_path.exists():
+            continue
+
+        file_stat = file_path.stat()
+
+        # Extract original filename and timestamp for display
+        parts = uploaded_file.filename.split("_")
+        if len(parts) >= 3:
+            try:
+                # Reconstruct timestamp from first two parts
+                timestamp_str = f"{parts[0]}_{parts[1]}"
+                upload_time = datetime.strptime(timestamp_str, "%Y%m%d_%H%M%S")
+                formatted_time = upload_time.strftime("%Y-%m-%d %H:%M:%S")
+                # Original name is everything after the timestamp
+                original_name = "_".join(parts[2:])
+            except (ValueError, IndexError):
                 formatted_time = "Unknown"
+                original_name = uploaded_file.original_filename or uploaded_file.filename
+        else:
+            original_name = uploaded_file.original_filename or uploaded_file.filename
+            formatted_time = "Unknown"
 
-            files.append(
-                {
-                    "filename": filename,
-                    "original_name": original_name,
-                    "size": file_stat.st_size,
-                    "upload_time": formatted_time,
-                    "size_mb": round(file_stat.st_size / (1024 * 1024), 2),
-                }
-            )
+        files.append(
+            {
+                "filename": uploaded_file.filename,
+                "original_name": original_name,
+                "size": file_stat.st_size,
+                "upload_time": formatted_time,
+                "size_mb": round(file_stat.st_size / (1024 * 1024), 2),
+            }
+        )
 
     # Sort by most recent first
     files.sort(key=lambda x: x["filename"], reverse=True)
     return render_template("./first/partials/_file_list.html", files=files)
+
+
+@bp.route("/delete/<filename>", methods=["DELETE"])
+def delete_file(filename):
+    """Delete an uploaded file and its database record."""
+    upload_folder = Path(current_app.root_path).parent / "uploads"
+    file_path = upload_folder / filename
+
+    # Get the uploaded file record from database
+    stmt = select(UploadedFile).where(UploadedFile.filename == filename)
+    uploaded_file = db.session.scalar(stmt)
+
+    if not uploaded_file:
+        return (
+            render_template("./first/partials/_error.html", error="File not found in database"),
+            404,
+        )
+
+    # Check if user owns the file (if authentication is enabled)
+    if current_user.is_authenticated and uploaded_file.user_id != current_user.id:
+        return (
+            render_template("./first/partials/_error.html", error="Access denied"),
+            403,
+        )
+
+    # Check if there are any active jobs for this file
+    active_jobs_stmt = (
+        select(PreprocessingJob)
+        .where(PreprocessingJob.uploaded_file_id == uploaded_file.id)
+        .where(PreprocessingJob.status.in_(["pending", "processing"]))
+    )
+    active_jobs = db.session.scalars(active_jobs_stmt).all()
+
+    if active_jobs:
+        return (
+            render_template(
+                "./first/partials/_error.html",
+                error="Cannot delete file with active processing jobs. Cancel jobs first."
+            ),
+            422,
+        )
+
+    try:
+        # First, delete database record (this will cascade to related jobs due to foreign key constraints)
+        # If this fails due to FK constraints, the transaction will be rolled back and no file will be deleted
+        db.session.delete(uploaded_file)
+        db.session.commit()
+
+        # Only delete physical file after successful database deletion
+        if file_path.exists():
+            file_path.unlink()
+
+        return "", 200  # Return empty content to remove the row from UI
+
+    except Exception as e:
+        db.session.rollback()
+        return (
+            render_template(
+                "./first/partials/_error.html",
+                error=f"Failed to delete file: {str(e)}",
+            ),
+            500,
+        )
 
 
 @bp.route("/upload", methods=["POST"])
