@@ -67,8 +67,6 @@ services:
 
   nginx:
     build: nginx
-    ports:
-      - 5026:80
     depends_on:
       - app
     networks:
