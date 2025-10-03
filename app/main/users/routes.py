@@ -5,7 +5,7 @@ from flask_security import current_user
 from flask_security.utils import logout_user
 from sqlalchemy import select
 
-from app import db, htmx
+from app import db
 from app.main.users import bp
 from app.models import FriendRequest, User
 
@@ -23,13 +23,6 @@ def index():
     ).all()
 
     title = "Users"
-    if htmx.boosted:
-        return render_template(
-            "users/partials/_content.html",
-            title=title,
-            incoming_requests=incoming_requests,
-            friends=current_user.friends,
-        )
     return render_template(
         "users/index.html",
         title=title,
@@ -40,7 +33,8 @@ def index():
 
 @bp.route("/search_users", methods=["POST"])
 def search_users():
-    # get the search term from the form with the name search and return table rows with results
+    # get the search term from the form with the name search
+    # and return table rows with results
     search_term = request.form.get("search", type=str, default="").strip()
 
     if search_term == "":
@@ -190,12 +184,6 @@ def settings():
 
     title = "Settings"
     delete_form = FlaskForm()
-    if htmx.boosted:
-        return render_template(
-            "users/partials/_settings_content.html",
-            title=title,
-            delete_form=delete_form,
-        )
     return render_template("users/settings.html", title=title, delete_form=delete_form)
 
 

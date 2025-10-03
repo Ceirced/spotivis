@@ -1,36 +1,73 @@
-{% if htmx.boosted %}
-    <title>{{ title }}</title>
+{% macro top_bar() %}
+    <div class="flex w-full items-center justify-between">
+        <a
+            hx-boost="true"
+            hx-swap="show:window:top"
+            hx-target="#content"
+            href="{{ url_for('users.index') }}"
+            class="group hover:text-primary flex items-center gap-1 transition-colors">
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                class="size-4 stroke-current stroke-2 transition-transform duration-300 ease-out group-hover:-translate-x-1">
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+            </svg>
+            <span>users</span>
+        </a>
+    </div>
+{% endmacro %}
 
+{% macro content() %}
+    <header class="flex items-center gap-2">
+        <h1 class="text-3xl font-semibold">{{ user.username }}</h1>
+        <div>
+            {% if is_friend %}
+                <span class="badge badge-success badge-soft">Friend</span>
+            {% elif current_user.id != user.id %}
+                {% if pending_request %}
+                    <span class="badge badge-info badge-soft">pending</span>
+                {% else %}
+                    <button
+                        class="btn btn-sm btn-primary shadow"
+                        hx-post="{{ url_for('users.send_friend_request') }}"
+                        hx-vals='{"receiver_id": {{ user.id }}}'
+                        hx-swap="delete">
+                        <svg
+                            class="mr-1 inline-block size-5 fill-none stroke-current"
+                            id="add-contact"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5">
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
+                        </svg>
+                        Add Friend
+                    </button>
+                {% endif %}
+            {% endif %}
+        </div>
+    </header>
+{% endmacro %}
+
+{% if htmx.boosted -%}
+    <title>{{ title }}</title>
     <div
         id="top-bar"
         hx-swap-oob="innerHTML">
-        {% block top_bar %}
-            <div class="flex w-full items-center justify-between">
-                <a
-                    hx-boost="true"
-                    hx-swap="show:window:top"
-                    hx-target="#content"
-                    href="{{ url_for('users.index') }}"
-                    class="group hover:text-primary flex items-center gap-1 transition-colors">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        class="size-4 stroke-current stroke-2 transition-transform duration-300 ease-out group-hover:-translate-x-1">
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-                    </svg>
-                    <span>users</span>
-                </a>
-            </div>
-        {% endblock %}
+        {{ top_bar() }}
     </div>
-    {% include 'users/partials/_profile_content.html' %}
+    {{ content() }}
 {% else %}
     {% extends 'base.html' %}
+    {% block top_bar %}
+        {{ top_bar() }}
+    {% endblock %}
     {% block content %}
-        {% include 'users/partials/_profile_content.html' %}
+        {{ content() }}
     {% endblock %}
 {% endif %}

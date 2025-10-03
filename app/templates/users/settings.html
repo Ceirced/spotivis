@@ -1,7 +1,131 @@
-{% extends 'base.html' %}
-{% block top_bar %}
-    {% include "users/partials/_settings_top_bar.html" %}
-{% endblock %}
-{% block content %}
-    {% include "users/partials/_settings_content.html" %}
-{% endblock %}
+{% macro content() %}
+    <h1 class="text-3xl font-bold">Settings</h1>
+
+    <main class="mt-8 flex flex-col gap-5">
+        <!-- User Information Section -->
+        <div class="bg-secondary text-secondary-content rounded-box p-4">
+            <h2 class="mb-3 text-xl font-semibold">Account Information</h2>
+            <div class="flex flex-col gap-2">
+                <div class="flex items-center gap-2">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="size-5">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                    </svg>
+                    <span class="font-medium">Username:</span>
+                    <span class="text-secondary-content/80"
+                        >{{ current_user.username if current_user.username else 'Not set' }}</span
+                    >
+                </div>
+                <div class="flex items-center gap-2">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="size-5">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M16.5 12a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Zm0 0c0 1.657 1.007 3 2.25 3S21 13.657 21 12a9 9 0 1 0-2.636 6.364M16.5 12V8.25" />
+                    </svg>
+                    <span class="font-medium">Email:</span>
+                    <span class="text-secondary-content/80"
+                        >{{ current_user.email }}</span
+                    >
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme Settings Section -->
+        <div class="bg-base-200 rounded-box p-4">
+            <h2 class="mb-3 text-xl font-semibold">Appearance</h2>
+            <div class="flex items-center gap-3">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="size-5">
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M4.098 19.902a3.75 3.75 0 0 0 5.304 0l6.401-6.402M6.75 21A3.75 3.75 0 0 1 3 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 0 0 3.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008Z" />
+                </svg>
+
+                <span class="font-medium">Theme:</span>
+                {% include 'components/theme_toggle_inline.html' %}
+            </div>
+        </div>
+
+        <ul class="menu bg-base-200 rounded-box flex w-full flex-col gap-2 p-2">
+            <li>
+                <a
+                    href="{{ url_for('security.change_email') }}"
+                    class="link link-hover link-info"
+                    >Change Email</a
+                >
+            </li>
+            <li>
+                <a
+                    href="{{ url_for('security.change_password') }}"
+                    class="link link-hover link-info"
+                    >Change Password</a
+                >
+            </li>
+            <li>
+                <a
+                    href="{{ url_for('security.logout') }}"
+                    class="link link-hover link-error"
+                    >Logout</a
+                >
+            </li>
+        </ul>
+
+        <!-- Danger Zone -->
+        <div class="bg-error/10 border-error rounded-box mt-4 border p-4">
+            <h2 class="text-error mb-3 text-xl font-semibold">Danger Zone</h2>
+            <p class="text-error/80 mb-4 text-sm">
+                Once you delete your account, there is no going back. Please be certain.
+            </p>
+            <form
+                method="POST"
+                action="{{ url_for('users.delete_account') }}"
+                onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.');">
+                {{ delete_form.hidden_tag() }}
+                <button
+                    type="submit"
+                    class="btn btn-error btn-sm">
+                    Delete Account
+                </button>
+            </form>
+        </div>
+    </main>
+{% endmacro %}
+
+{% if htmx.boosted -%}
+    <title>{{ title }}</title>
+    <div
+        id="top-bar"
+        hx-swap-oob="innerHTML">
+        {% include "users/partials/_settings_top_bar.html" %}
+    </div>
+    {{ content() }}
+{% else %}
+    {% extends 'base.html' %}
+    {% block top_bar %}
+        {% include "users/partials/_settings_top_bar.html" %}
+    {% endblock %}
+    {% block content %}
+        {{ content() }}
+    {% endblock %}
+{% endif %}
