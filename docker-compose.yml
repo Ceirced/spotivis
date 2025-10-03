@@ -36,7 +36,7 @@ services:
     networks:
       app_network:
         aliases:
-          - app
+          - spotivis-app
     restart: unless-stopped
 
   celery:
