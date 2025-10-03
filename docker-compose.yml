@@ -44,7 +44,6 @@ services:
     command: celery -A app.make_celery worker --loglevel INFO -E
     
     stop_signal: SIGINT
-    # to sync the ./api dir with the container only for development
     volumes:
       - ./logs/app:/home/app/logs
       - ./migrations:/home/app/migrations
@@ -61,8 +60,6 @@ services:
 
   nginx:
     build: nginx
-    ports:
-      - 5010:80
     depends_on:
       - app
     networks:
