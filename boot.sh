@@ -4,8 +4,9 @@
 # Function to start the Flask server
 start_server() {
     if [ "$APP_SETTINGS" = "config.ProductionConfig" ]; then
-        echo "Starting Flask server in production..."
-        exec gunicorn --bind :5000 --access-logfile - --error-logfile - flask_app:app --workers 4
+        WORKERS=${GUNICORN_WORKERS:-2}
+        echo "Starting Flask server in production with $WORKERS workers..."
+        exec gunicorn --bind :5000 --access-logfile - --error-logfile - flask_app:app --workers $WORKERS
     else
         echo "Starting Flask server in dev..."
         python3 flask_app.py
