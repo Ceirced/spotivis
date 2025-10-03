@@ -98,4 +98,23 @@
             >
         </li>
     </ul>
+
+    <!-- Danger Zone -->
+    <div class="bg-error/10 border-error rounded-box mt-4 border p-4">
+        <h2 class="text-error mb-3 text-xl font-semibold">Danger Zone</h2>
+        <p class="text-error/80 mb-4 text-sm">
+            Once you delete your account, there is no going back. Please be certain.
+        </p>
+        <form
+            method="POST"
+            action="{{ url_for('users.delete_account') }}"
+            onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.');">
+            {{ delete_form.hidden_tag() }}
+            <button
+                type="submit"
+                class="btn btn-error btn-sm">
+                Delete Account
+            </button>
+        </form>
+    </div>
 </main>

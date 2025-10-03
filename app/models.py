@@ -30,10 +30,8 @@ class User(Model, fsqla.FsUserMixin):
     )
 
     def __repr__(self):
-        return "<User(id='%s', username='%s', email='%s')>" % (
-            self.id,
-            self.username,
-            self.email,
+        return (
+            f"<User(id='{self.id}', username='{self.username}', email='{self.email}')>"
         )
 
     def is_friends_with(self, other_user_id):
@@ -74,8 +72,12 @@ class User(Model, fsqla.FsUserMixin):
 
 class FriendRequest(Model):
     request_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    sender_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    receiver_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    sender_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    receiver_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
     status = db.Column(
         db.Enum("pending", "accepted", "declined", name="status_enum"),
         default="pending",
@@ -95,7 +97,7 @@ class Payment(Model):
         db.DateTime, nullable=False, default=db.func.current_timestamp()
     )
     user_id: so.Mapped[int | None] = so.mapped_column(
-        ForeignKey("user.id"), nullable=True
+        ForeignKey("user.id", ondelete="CASCADE"), nullable=True
     )
     user: so.Mapped[User | None] = so.relationship("User", back_populates="payments")
     stripe_payment_id: so.Mapped[str] = so.mapped_column(
