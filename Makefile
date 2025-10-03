@@ -1,20 +1,26 @@
-.PHONY: help dev local prod stop clean setup-dirs
+.PHONY: help dev local prod stop clean setup-dirs build-css
 
 # Default target - show help
 help:
 	@echo "Flask Application Makefile"
 	@echo ""
 	@echo "Available targets:"
-	@echo "  make dev    - Run everything in Docker (development mode)"
-	@echo "  make local  - Run only Redis and Celery in Docker (for local Flask development)"
-	@echo "  make prod   - Run in production mode"
-	@echo "  make stop   - Stop all containers"
-	@echo "  make clean  - Stop containers and remove volumes"
-	@echo "  make help   - Show this help message"
+	@echo "  make dev       - Run everything in Docker (development mode)"
+	@echo "  make local     - Run only Redis and Celery in Docker (for local Flask development)"
+	@echo "  make prod      - Run in production mode (builds CSS first)"
+	@echo "  make build-css - Build production CSS with npm"
+	@echo "  make stop      - Stop all containers"
+	@echo "  make clean     - Stop containers and remove volumes"
+	@echo "  make help      - Show this help message"
 
 # Setup required directories
 setup-dirs:
 	@mkdir -p ./logs/app ./instance
+
+# Build production CSS
+build-css:
+	@echo "Building production CSS..."
+	npm run build
 
 # Development mode - run everything in Docker
 dev: setup-dirs
@@ -31,7 +37,7 @@ local: setup-dirs
 	@echo "  flask run"
 
 # Production mode
-prod: setup-dirs
+prod: setup-dirs build-css
 	@echo "Starting Flask server in PROD..."
 	docker compose up -d --build
 
