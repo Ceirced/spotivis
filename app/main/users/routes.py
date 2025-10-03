@@ -1,8 +1,11 @@
-from flask import make_response, render_template, request, url_for
+import datetime
+
+from flask import flash, make_response, redirect, render_template, request, url_for
 from flask_security import current_user
+from flask_security.utils import logout_user
 from sqlalchemy import select
 
-from app import db, htmx
+from app import db
 from app.main.users import bp
 from app.models import FriendRequest, User
 
@@ -20,13 +23,6 @@ def index():
     ).all()
 
     title = "Users"
-    if htmx.boosted:
-        return render_template(
-            "users/partials/_content.html",
-            title=title,
-            incoming_requests=incoming_requests,
-            friends=current_user.friends,
-        )
     return render_template(
         "users/index.html",
         title=title,
@@ -37,7 +33,8 @@ def index():
 
 @bp.route("/search_users", methods=["POST"])
 def search_users():
-    # get the search term from the form with the name search and return table rows with results
+    # get the search term from the form with the name search
+    # and return table rows with results
     search_term = request.form.get("search", type=str, default="").strip()
 
     if search_term == "":
@@ -183,7 +180,41 @@ def friend_requests():
 
 @bp.route("/settings", methods=["GET"])
 def settings():
+    from flask_wtf import FlaskForm
+
     title = "Settings"
-    if htmx.boosted:
-        return render_template("users/partials/_settings_content.html", title=title)
-    return render_template("users/settings.html", title=title)
+    delete_form = FlaskForm()
+    return render_template("users/settings.html", title=title, delete_form=delete_form)
+
+
+@bp.route("/delete-account", methods=["POST"])
+def delete_account():
+    """Delete the current user's account. Requires fresh login."""
+    from flask_security import check_and_update_authn_fresh
+    from flask_wtf import FlaskForm
+
+    # Validate CSRF token
+    form = FlaskForm()
+    if not form.validate_on_submit():
+        flash("Invalid request. Please try again.", "error")
+        return redirect(url_for("users.settings"))
+
+    # Check if the session is fresh (user recently logged in)
+    if not check_and_update_authn_fresh(
+        datetime.timedelta(seconds=10), grace=datetime.timedelta(seconds=10)
+    ):
+        flash("Please re-authenticate to delete your account.", "error")
+        return redirect(url_for("security.verify", next=url_for("users.settings")))
+
+    user_id = current_user.id
+
+    # Get the user object and delete it (this triggers database CASCADE)
+    user = User.query.get(user_id)
+    db.session.delete(user)
+    db.session.commit()
+
+    # Log out the user
+    logout_user()
+
+    flash("Your account has been successfully deleted.", "success")
+    return redirect(url_for("security.login"))

@@ -56,6 +56,25 @@ def create_app():
     mail.init_app(app)
     migrate.init_app(app, db)
 
+    # Enable foreign key support for SQLite
+    if "sqlite" in app.config.get("SQLALCHEMY_DATABASE_URI", ""):
+        from sqlalchemy import event
+        from sqlalchemy.engine import Engine
+
+        @event.listens_for(Engine, "connect")
+        def set_sqlite_pragma(dbapi_connection, connection_record):
+            # the sqlite3 driver will not set PRAGMA foreign_keys
+            # if autocommit=False; set to True temporarily
+            ac = dbapi_connection.autocommit
+            dbapi_connection.autocommit = True
+
+            cursor = dbapi_connection.cursor()
+            cursor.execute("PRAGMA foreign_keys=ON")
+            cursor.close()
+
+            # restore previous autocommit setting
+            dbapi_connection.autocommit = ac
+
     from app.public import bp as public_bp
 
     app.register_blueprint(public_bp)

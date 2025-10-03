@@ -13,13 +13,13 @@ class BaseConfig:
     LOG_TO_STDOUT = os.environ.get("LOG_TO_STDOUT")
     PREPROCESSED_DATA_DIR = "preprocessed"
     SERVER_NAME = os.getenv("HOST_NAME")
+    SECURITY_PASSWORD_SALT = os.getenv("SECURITY_PASSWORD_SALT")
 
 
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
     FLASK_ENV = "development"
     REDIS_URL = "redis://redis" if os.getenv("IN_CONTAINER") else "redis://localhost"
-    SECURITY_PASSWORD_SALT = os.getenv("SECURITY_PASSWORD_SALT")
 
 
 class TestingConfig(BaseConfig):
