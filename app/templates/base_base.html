@@ -63,6 +63,7 @@
                 !(function (t, e) {
                     var o, n, p, r;
                     e.__SV ||
+                        (window.posthog && window.posthog.__loaded) ||
                         ((window.posthog = e),
                         (e._i = []),
                         (e.init = function (i, s, a) {
@@ -82,8 +83,13 @@
                             }
                             (((p = t.createElement("script")).type =
                                 "text/javascript"),
+                                (p.crossOrigin = "anonymous"),
                                 (p.async = !0),
-                                (p.src = s.api_host + "/static/array.js"),
+                                (p.src =
+                                    s.api_host.replace(
+                                        ".i.posthog.com",
+                                        "-assets.i.posthog.com"
+                                    ) + "/static/array.js"),
                                 (r =
                                     t.getElementsByTagName(
                                         "script"
@@ -106,7 +112,7 @@
                                         return u.toString(1) + ".people (stub)";
                                     },
                                     o =
-                                        "capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(
+                                        "init Fe Us zs Oe js Ns capture Ze calculateEventProperties Hs register register_once register_for_session unregister unregister_for_session Js getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey displaySurvey canRenderSurvey canRenderSurveyAsync identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty Gs Bs createPersonProfile Vs As Ks opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing get_explicit_consent_status is_capturing clear_opt_in_out_capturing qs debug L Ws getPageViewId captureTraceFeedback captureTraceMetric".split(
                                             " "
                                         ),
                                     n = 0;
@@ -119,8 +125,12 @@
                         (e.__SV = 1));
                 })(document, window.posthog || []);
                 posthog.init(
-                    "phc_9Z6hpJyX25Gokn4rASmV8zy8NvXpueX1LXojWjQpwIL",
-                    { api_host: "/king" }
+                    "phc_5DF31F9uUag3N8oKOqJxONqnZVU5MxxZmEMmJb9P4Ib",
+                    {
+                        api_host: "https://eu.i.posthog.com",
+                        defaults: "2025-05-24",
+                        person_profiles: "identify_only", // or 'always' to create profiles for anonymous users as well
+                    }
                 );
             </script>
         {% else %}
