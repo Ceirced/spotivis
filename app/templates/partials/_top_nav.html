@@ -1,0 +1,83 @@
+<nav
+    class="navbar bg-base-100 z-20 mx-auto hidden h-[calc(env(safe-area-inset-top)+70px)] w-full max-w-7xl pt-[env(safe-area-inset-top)] lg:flex"
+    hx-boost="true"
+    hx-swap="show:window:top">
+    <div class="flex-1">
+        <a
+            hx-target="#content"
+            class="btn btn-ghost text-lg opacity-50"
+            href="{{ url_for('first.index') }}"
+            onclick="document.getElementById('first-top-link').checked = true;"
+            >{{ config['APP_NAME'] }}</a
+        >
+    </div>
+    <div class="flex-none">
+        <ul class="menu menu-horizontal gap-4 px-1 text-lg font-semibold">
+            <li class="">
+                <input
+                    id="second-top-link"
+                    type="radio"
+                    class="peer hidden"
+                    name="nav" />
+                <a
+                    href="{{ url_for('second_page.index') }}"
+                    hx-target="#content"
+                    class="peer-checked:text-primary flex items-center opacity-50 peer-checked:opacity-100"
+                    onclick="document.getElementById('second-top-link').checked = true;">
+                    Second Page
+                </a>
+            </li>
+            <li class="">
+                <input
+                    id="first-top-link"
+                    type="radio"
+                    class="peer hidden"
+                    name="nav" />
+                <a
+                    href="{{ url_for('first.index') }}"
+                    hx-target="#content"
+                    class="peer-checked:text-primary flex items-center opacity-50 peer-checked:opacity-100"
+                    onclick="document.getElementById('first-top-link').checked = true;">
+                    First
+                </a>
+            </li>
+            <li class="">
+                <input
+                    id="users-top-link"
+                    type="radio"
+                    class="peer hidden"
+                    name="nav" />
+                <a
+                    href="{{ url_for('users.index') }}"
+                    hx-target="#content"
+                    class="peer-checked:text-primary flex items-center opacity-50 peer-checked:opacity-100"
+                    onclick="document.getElementById('users-top-link').checked = true;">
+                    Users
+                </a>
+            </li>
+            <li>
+                <input
+                    id="settings-top-link"
+                    type="radio"
+                    class="peer hidden"
+                    name="nav" />
+                <a
+                    href="{{ url_for('users.settings') }}"
+                    hx-target="#content"
+                    class="peer-checked:text-primary flex items-center opacity-50 peer-checked:opacity-100"
+                    onclick="document.getElementById('settings-top-link').checked = true;">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        class="hover:stroke-primary size-7 stroke-current stroke-[1.5px] transition-colors duration-200 ease-out">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+                    </svg>
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
