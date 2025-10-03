@@ -34,7 +34,7 @@ def create_app():
     stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
     app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER", "smtp.ionos.com")
-    app.config["MAIL_PORT"] = int(os.getenv("MAIL_PORT", 587))
+    app.config["MAIL_PORT"] = os.getenv("MAIL_PORT", 587)
     app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
     app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
     app.config["MAIL_USE_TLS"] = True
