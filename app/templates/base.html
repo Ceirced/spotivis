@@ -2,14 +2,16 @@
 {% block body %}
     <body
         class="h-screen touch-pan-y touch-manipulation scroll-smooth pt-[env(safe-area-inset-top)] font-sans text-base">
+        {% include 'partials/_top_nav.html' %}
+
         <div
             id="top-bar"
-            class="fixed top-0 z-20 flex h-[calc(env(safe-area-inset-top)+40px)] w-full items-center justify-center px-4 pt-[env(safe-area-inset-top)] text-gray-500 backdrop-blur-md md:h-[calc(env(safe-area-inset-top)+52px)]">
+            class="fixed top-0 z-20 flex h-[calc(env(safe-area-inset-top)+40px)] w-full items-center justify-center px-4 pt-[env(safe-area-inset-top)] text-gray-500 backdrop-blur-md lg:hidden lg:h-[calc(env(safe-area-inset-top)+70px)]">
             {% block top_bar %}{% endblock %}
         </div>
         <div
             id="body-container"
-            class="container mx-auto px-4 pt-12 pb-[calc(env(safe-area-inset-bottom)+56px)] md:pt-16">
+            class="mx-auto max-w-7xl px-4 pt-12 pb-[calc(env(safe-area-inset-bottom)+56px)] lg:pt-2">
             <div id="content">
                 {% block content %}
                 {% endblock %}
