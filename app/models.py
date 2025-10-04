@@ -117,6 +117,9 @@ class UploadedFile(Model):
     __tablename__ = "uploaded_files"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    uuid: Mapped[str] = mapped_column(
+        String(36), nullable=False, unique=True, default=lambda: str(uuid.uuid4())
+    )
     filename: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     original_filename: Mapped[str] = mapped_column(String(255), nullable=False)
     file_size: Mapped[int] = mapped_column(db.BigInteger, nullable=False)
