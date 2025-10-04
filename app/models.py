@@ -6,7 +6,7 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from flask_security.models import fsqla_v3 as fsqla
-from sqlalchemy import DECIMAL, ForeignKey, String, select
+from sqlalchemy import DECIMAL, DateTime, ForeignKey, String, func, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app import db
@@ -19,6 +19,18 @@ if TYPE_CHECKING:
     from flask_sqlalchemy.model import Model
 else:
     Model = db.Model
+
+
+class TimestampMixin:
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
 
 
 class Role(Model, fsqla.FsRoleMixin):
@@ -113,7 +125,7 @@ class Payment(Model):
         return f"<Payment {self.id} - {self.amount} {self.currency}>"
 
 
-class UploadedFile(Model):
+class UploadedFile(TimestampMixin, Model):
     __tablename__ = "uploaded_files"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
