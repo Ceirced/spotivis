@@ -109,9 +109,7 @@ class UploadedFile(TimestampMixin, Model):
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     file_size: Mapped[int] = mapped_column(db.BigInteger, nullable=False)
-    uploaded_at: Mapped[datetime] = mapped_column(
-        db.DateTime, nullable=False, default=db.func.current_timestamp()
-    )
+
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     user: Mapped[User] = relationship("User", back_populates="uploaded_files")
 
