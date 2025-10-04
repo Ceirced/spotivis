@@ -10,7 +10,7 @@
                     Files
                 </a>
             </li>
-            <li>{{ file.original_name }}</li>
+            <li>{{ file.name }}</li>
         </ul>
     </div>
 
@@ -20,41 +20,38 @@
                 <div>
                     <p class="text-xs">Original Name</p>
                     <p class="text-sm font-medium text-white">
-                        {{ file.original_name }}
+                        {{ file.name }}
                     </p>
                 </div>
                 <div>
                     <p class="text-xs">File Size</p>
                     <p class="text-sm font-medium text-white">
-                        {{ file.size_mb }} MB
+                        {{ file_size_mb }} MB
                     </p>
                 </div>
                 <div>
                     <p class="text-xs">Upload Time</p>
-                    <p class="font-medium text-white">{{ file.upload_time }}</p>
-                </div>
-                <div>
-                    <p class="text-xs">Full Filename</p>
-                    <p class="text-xs font-medium text-white">
-                        {{ file.filename }}
+                    <p class="font-medium text-white">
+                        {{ file.created_at }} (UTC)
                     </p>
                 </div>
-                {% if file.start_date and file.end_date %}
+                {% if file.data_start_date and file.data_end_date %}
                     <div>
                         <p class="text-xs">Data Period</p>
                         <p class="font-medium text-white">
-                            {{ file.start_date.strftime('%B %d, %Y') }} to
-                            {{ file.end_date.strftime('%B %d, %Y') }}
+                            {{ file.data_start_date.strftime('%Y-%m-%d') }} to
+                            {{ file.data_end_date.strftime('%Y-%m-%d') }}
                         </p>
                         <p class="text-secondary-content/70 text-xs">
-                            ({{ file.days_covered }} days)
+                            ({{ (file.data_end_date - file.data_start_date).days }}
+                            days)
                         </p>
                     </div>
                 {% endif %}
             </div>
             <div class="card-actions mt-4 justify-end">
                 <button
-                    hx-post="{{ url_for('first.start_preprocessing', filename=file.filename) }}"
+                    hx-post="{{ url_for('first.start_preprocessing', uuid=file.uuid) }}"
                     hx-target="#preprocessing-container"
                     hx-swap="innerHTML"
                     class="btn btn-primary btn-soft"
@@ -91,7 +88,7 @@
         <div class="card-body">
             <div
                 id="file-preprocessing-history"
-                hx-get="{{ url_for('first.preprocessing_history', filename=file.filename) }}"
+                hx-get="{{ url_for('first.preprocessing_history', uuid=file.uuid) }}"
                 hx-trigger="load, refresh from:body">
                 <div class="skeleton h-32 w-full"></div>
             </div>
@@ -154,7 +151,7 @@
             <h2 class="card-title">Data Preview (First 10 rows)</h2>
             <div
                 id="preview-data"
-                hx-get="{{ url_for('first.preview_data', filename=file.filename) }}"
+                hx-get="{{ url_for('first.preview_data', uuid=file.uuid) }}"
                 hx-trigger="load">
                 <div class="skeleton h-96 w-full"></div>
             </div>

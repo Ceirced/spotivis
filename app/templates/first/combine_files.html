@@ -1,18 +1,19 @@
 {% macro content() %}
-    <div class="breadcrumbs text-sm mb-4">
+    <div class="breadcrumbs mb-4 text-sm">
         <ul>
             <li>
-                <a href="{{ url_for('first.index') }}" 
-                   hx-boost="true"
-                   hx-target="#content"
-                   hx-swap="show:window:top">
+                <a
+                    href="{{ url_for('first.index') }}"
+                    hx-boost="true"
+                    hx-target="#content"
+                    hx-swap="show:window:top">
                     Files
                 </a>
             </li>
             <li>Combine Datasets</li>
         </ul>
     </div>
-    
+
     <div class="flex flex-col gap-6">
         <div class="card bg-base-200 shadow-sm">
             <div class="card-body">
@@ -50,7 +51,7 @@
                                 </option>
                                 {% for job in completed_jobs %}
                                     <option value="{{ job.uuid }}">
-                                        {{ job.uploaded_file.original_filename }}
+                                        {{ job.uploaded_file.name }}
                                         ({{ job.completed_at.strftime('%Y-%m-%d') if job.completed_at else 'Unknown' }})
                                     </option>
                                 {% endfor %}
@@ -77,7 +78,7 @@
                                 </option>
                                 {% for job in completed_jobs %}
                                     <option value="{{ job.uuid }}">
-                                        {{ job.uploaded_file.original_filename }}
+                                        {{ job.uploaded_file.name }}
                                         ({{ job.completed_at.strftime('%Y-%m-%d') if job.completed_at else 'Unknown' }})
                                     </option>
                                 {% endfor %}

@@ -19,7 +19,7 @@
                 {% for job in jobs %}
                     <tr>
                         {% if not hide_file_column %}
-                            <td>{{ job.uploaded_file.original_filename }}</td>
+                            <td>{{ job.uploaded_file.name }}</td>
                         {% endif %}
                         <td>
                             <span

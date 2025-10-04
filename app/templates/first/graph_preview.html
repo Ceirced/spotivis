@@ -13,11 +13,11 @@
                 </li>
                 <li>
                     <a
-                        href="{{ url_for('first.preview_file', filename=job.uploaded_file.filename) }}"
+                        href="{{ url_for('first.preview_file', uuid=job.uploaded_file.uuid) }}"
                         hx-boost="true"
                         hx-target="#content"
                         hx-swap="show:window:top">
-                        {{ job.uploaded_file.original_filename }}
+                        {{ job.uploaded_file.name }}
                     </a>
                 </li>
                 <li>Graph Preview</li>
@@ -26,7 +26,7 @@
 
         <div class="bg-secondary text-secondary-content mb-6 rounded-lg p-4">
             <h3 class="mb-2 text-xl font-bold">
-                Graph Preview: {{ job.uploaded_file.original_filename }}
+                Graph Preview: {{ job.uploaded_file.name }}
             </h3>
             <div class="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
                 <div>
@@ -66,7 +66,7 @@
             jobId: "{{ job.uuid }}",
             nodesUrl: `/first/graph-data/{{ job.uuid }}/nodes`,
             edgesUrl: `/first/graph-data/{{ job.uuid }}/edges`,
-            defaultNodeColor: "#3b82f6"
+            defaultNodeColor: "#3b82f6",
         });
     </script>
 {% endmacro %}

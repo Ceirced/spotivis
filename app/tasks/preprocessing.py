@@ -1,11 +1,12 @@
+import uuid
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import networkx as nx
 import pandas as pd
-from celery import shared_task
+from celery import shared_task, states
+from celery.exceptions import Ignore
 from loguru import logger
-from sqlalchemy import select
 
 from app import db
 from app.models import PreprocessingJob, UploadedFile
@@ -159,41 +160,39 @@ def save_graph(
 
 
 @shared_task(bind=True)
-def preprocess_spotify_data_original(self, filename: str):
+def preprocess_spotify_data_original(self, uuid: uuid.UUID):
     """
     Celery task using the exact same algorithm as create_data.py.
     """
 
     try:
         # Get the uploaded file record to create job
-        stmt = select(UploadedFile).where(UploadedFile.filename == filename)
-        uploaded_file = db.session.scalar(stmt)
+        uploaded_file = db.session.get(UploadedFile, str(uuid))
 
         if not uploaded_file:
-            logger.error(f"No uploaded file found for filename: {filename}")
+            logger.error(f"No uploaded file found for uuid: {uuid}")
 
             self.update_state(
-                state="FAILURE",
-                meta={"error": f"File {filename} not found in database"},
+                state=states.FAILURE,
+                meta={
+                    "exc_type": "FileNotFoundError",
+                    "exc_message": [f"File {uuid} not found in database"],
+                    "status": "error",
+                },
             )
 
-            return {
-                "status": "error",
-                "error": f"File {filename} not found in database",
-            }
+            raise Ignore()
 
         # Create preprocessing job record
         job = PreprocessingJob(
             task_id=self.request.id,
-            uploaded_file_id=uploaded_file.id,
+            file_uuid=uploaded_file.uuid,
             status="processing",
         )  # type: ignore
         db.session.add(job)
         db.session.commit()
 
-        logger.info(
-            f"Created and started processing job {job.uuid} for file {filename}"
-        )
+        logger.info(f"Created and started processing job {job.uuid} for file {uuid}")
         # Set up paths using Flask app configuration
         from flask import current_app
 
@@ -206,23 +205,29 @@ def preprocess_spotify_data_original(self, filename: str):
         )
         preprocessed_data_directory.mkdir(exist_ok=True)
 
-        input_filepath = upload_folder / filename
+        input_filepath = upload_folder / (str(uuid) + ".parquet")
 
         if not input_filepath.exists():
             if job:
                 job.status = "failed"
-                job.error_message = f"File {filename} not found"
+                job.error_message = f"File {str(uuid) + '.parquet'} not found"
                 job.completed_at = datetime.now(UTC)
                 db.session.commit()
 
             self.update_state(
-                state="FAILURE",
-                meta={"error": f"File {filename} not found"},
+                state=states.FAILURE,
+                meta={
+                    "exc_type": "FileNotFoundError",
+                    "exc_message": [f"File {str(uuid) + '.parquet'} not found"],
+                    "status": "error",
+                },
             )
 
-            return {"status": "error", "error": f"File {filename} not found"}
+            raise Ignore()
 
-        logger.info(f"Starting original algorithm preprocessing of {filename}")
+        logger.info(
+            f"Starting original algorithm preprocessing of {str(uuid) + '.parquet'}"
+        )
 
         self.update_state(
             state="PROGRESS",
@@ -305,7 +310,7 @@ def preprocess_spotify_data_original(self, filename: str):
 
         result = {
             "status": "success",
-            "input_file": filename,
+            "input_file": str(uuid) + ".parquet",
             "output_files": {
                 "edges": edges_file,
                 "nodes": nodes_file,

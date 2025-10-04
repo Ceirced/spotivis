@@ -11,7 +11,7 @@
 
             <form
                 id="upload-form"
-                hx-post="/first/upload"
+                hx-post="{{ url_for('first.upload_file') }}"
                 hx-encoding="multipart/form-data"
                 hx-trigger="submit"
                 hx-indicator="#upload-progress"

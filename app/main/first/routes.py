@@ -1,10 +1,16 @@
 import uuid
-from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
 import pyarrow.parquet as pq
-from flask import current_app, jsonify, render_template, request, send_from_directory
+from flask import (
+    current_app,
+    flash,
+    jsonify,
+    render_template,
+    request,
+    send_from_directory,
+)
 from flask_htmx import make_response
 from flask_login import current_user
 from loguru import logger
@@ -73,47 +79,31 @@ def index():
     )
 
 
-@bp.route("/preview/<filename>", methods=["GET"])
+@bp.route("/preview/<uuid:uuid>", methods=["GET"])
 @cache.cached(
     timeout=300,
     make_cache_key=make_cache_key_with_htmx,
     unless=lambda: current_app.config.get("DEBUG", False),
 )  # Cache for 5 minutes
-def preview_file(filename):
+def preview_file(uuid):
     """Show file preview page with metadata and data preview."""
     upload_folder = Path(current_app.root_path).parent / "uploads"
-    file_path = upload_folder / filename
+    file_path = upload_folder / (str(uuid) + ".parquet")
 
     if not file_path.exists() or file_path.suffix != ".parquet":
         return render_template("errors/404.html", error="File not found"), 404
 
     file_stat = file_path.stat()
 
-    # Extract original filename and timestamp
-    parts = filename.split("_")
-    if len(parts) >= 3:
-        try:
-            timestamp_str = f"{parts[0]}_{parts[1]}"
-            upload_time = datetime.strptime(timestamp_str, "%Y%m%d_%H%M%S")
-            formatted_time = upload_time.strftime("%Y-%m-%d %H:%M:%S")
-            original_name = "_".join(parts[2:])
-        except (ValueError, IndexError):
-            formatted_time = "Unknown"
-            original_name = filename
-    else:
-        original_name = filename
-        formatted_time = "Unknown"
-
     # Check for running preprocessing jobs for this file
-    stmt = select(UploadedFile).where(UploadedFile.filename == filename)
-    uploaded_file = db.session.scalar(stmt)
+    uploaded_file = db.session.get(UploadedFile, str(uuid))
 
     running_job = None
     if uploaded_file:
         # Look for any running or pending jobs for this file (exclude cancelled)
         job_stmt = (
             select(PreprocessingJob)
-            .where(PreprocessingJob.uploaded_file_id == uploaded_file.id)
+            .where(PreprocessingJob.file_uuid == uploaded_file.uuid)
             .where(PreprocessingJob.status.in_(["pending", "processing"]))
             .order_by(PreprocessingJob.started_at.desc())
         )
@@ -124,49 +114,24 @@ def preview_file(filename):
         None,
     )
 
-    # Get date range from database (stored during upload)
-    date_range_info = {}
-    if uploaded_file and uploaded_file.data_start_date and uploaded_file.data_end_date:
-        date_range_info = {
-            "start_date": uploaded_file.data_start_date,
-            "end_date": uploaded_file.data_end_date,
-            "days_covered": (
-                uploaded_file.data_end_date - uploaded_file.data_start_date
-            ).days
-            + 1,
-        }
-    else:
-        date_range_info = {
-            "start_date": None,
-            "end_date": None,
-            "days_covered": None,
-        }
-
-    file_info = {
-        "filename": filename,
-        "original_name": original_name,
-        "size_mb": round(file_stat.st_size / (1024 * 1024), 2),
-        "upload_time": formatted_time,
-        **date_range_info,  # Include date range info
-    }
-
     return render_template(
         "./first/file_preview.html",
-        file=file_info,
+        file=uploaded_file,
+        file_size_mb=round(file_stat.st_size / (1024 * 1024), 2),
         running_job=running_job,
         completed_job=completed_job,
     )
 
 
-@bp.route("/preview-data/<filename>", methods=["GET"])
+@bp.route("/preview-data/<uuid:uuid>", methods=["GET"])
 @cache.cached(
     timeout=300,
     unless=lambda: current_app.config.get("DEBUG", False),
 )  # Cache for 5 minutes
-def preview_data(filename):
+def preview_data(uuid):
     """Load and return the actual parquet file data preview."""
     upload_folder = Path(current_app.root_path).parent / "uploads"
-    file_path = upload_folder / filename
+    file_path = upload_folder / (str(uuid) + ".parquet")
 
     if not file_path.exists() or file_path.suffix != ".parquet":
         return render_template("errors/404.html", error="File not found"), 422
@@ -332,86 +297,118 @@ def list_files():
     else:
         stmt = select(UploadedFile)
 
-    db_files = db.session.scalars(stmt).all()
+    files = [
+        file
+        for file in db.session.scalars(
+            stmt.order_by(UploadedFile.created_at.desc())
+        ).all()
+        if (upload_folder / (file.uuid + ".parquet")).exists()
+    ]
 
-    # Only include files that exist both in database and on disk
-    for uploaded_file in db_files:
-        file_path = upload_folder / uploaded_file.filename
-
-        # Skip if file doesn't exist on disk
-        if not file_path.exists():
-            continue
-
-        file_stat = file_path.stat()
-
-        # Extract original filename and timestamp for display
-        parts = uploaded_file.filename.split("_")
-        if len(parts) >= 3:
-            try:
-                # Reconstruct timestamp from first two parts
-                timestamp_str = f"{parts[0]}_{parts[1]}"
-                upload_time = datetime.strptime(timestamp_str, "%Y%m%d_%H%M%S")
-                formatted_time = upload_time.strftime("%Y-%m-%d %H:%M:%S")
-                # Original name is everything after the timestamp
-                original_name = "_".join(parts[2:])
-            except (ValueError, IndexError):
-                formatted_time = "Unknown"
-                original_name = uploaded_file.original_filename or uploaded_file.filename
-        else:
-            original_name = uploaded_file.original_filename or uploaded_file.filename
-            formatted_time = "Unknown"
-
-        files.append(
-            {
-                "filename": uploaded_file.filename,
-                "original_name": original_name,
-                "size": file_stat.st_size,
-                "upload_time": formatted_time,
-                "size_mb": round(file_stat.st_size / (1024 * 1024), 2),
-            }
-        )
-
-    # Sort by most recent first
-    files.sort(key=lambda x: x["filename"], reverse=True)
     return render_template("./first/partials/_file_list.html", files=files)
 
 
-@bp.route("/delete/<filename>", methods=["DELETE"])
-def delete_file(filename):
-    """Delete an uploaded file and its database record."""
-    upload_folder = Path(current_app.root_path).parent / "uploads"
-    file_path = upload_folder / filename
-
+@bp.route("/<uuid:uuid>/rename", methods=["PUT"])
+def rename_file(uuid: uuid.UUID):
+    """Rename an uploaded file's display name (original_filename)."""
     # Get the uploaded file record from database
-    stmt = select(UploadedFile).where(UploadedFile.filename == filename)
-    uploaded_file = db.session.scalar(stmt)
+    file = db.session.get(UploadedFile, str(uuid))
 
-    if not uploaded_file:
+    if not file:
         return (
-            render_template("./first/partials/_error.html", error="File not found in database"),
+            render_template(
+                "./first/partials/_error.html", error="File not found in database"
+            ),
             404,
         )
 
     # Check if user owns the file (if authentication is enabled)
-    if current_user.is_authenticated and uploaded_file.user_id != current_user.id:
+    if current_user.is_authenticated and file.user_id != current_user.id:
+        return (
+            render_template("./first/partials/_error.html", error="Access denied"),
+            403,
+        )
+
+    # Get the new name from the request
+    new_name = request.form.get("new_name", "").strip()
+
+    if not new_name:
+        return (
+            render_template(
+                "./first/partials/_error.html", error="New name cannot be empty"
+            ),
+            422,
+        )
+
+    # Ensure the new name ends with .parquet extension
+
+    try:
+        # Update only the original_filename field
+        file.name = new_name
+        db.session.commit()
+
+        # Invalidate cache for files list
+        cache.delete_memoized(list_files)
+        flash("File renamed successfully", "success")
+
+        response = make_response(
+            render_template("./first/partials/_file_row.html", file=file),
+            trigger={
+                "refresh": {
+                    "target": "#preprocessing-history"
+                },  # Trigger HTMX refresh of preprocessing history
+                "flash-update": True,
+            },
+        )
+        return response
+    except Exception as e:
+        db.session.rollback()
+        return (
+            render_template(
+                "./first/partials/_error.html",
+                error=f"Failed to rename file: {str(e)}",
+            ),
+            500,
+        )
+
+
+@bp.route("/<uuid:uuid>", methods=["DELETE"])
+def delete_file(uuid: uuid.UUID):
+    """Delete an uploaded file and its database record."""
+    upload_folder = Path(current_app.root_path).parent / "uploads"
+    file_path = upload_folder / (str(uuid) + ".parquet")
+
+    # Get the uploaded file record from database
+    stmt = select(UploadedFile).where(UploadedFile.uuid == str(uuid))
+    file = db.session.scalar(stmt)
+
+    if not file:
+        return (
+            render_template(
+                "./first/partials/_error.html", error="File not found in database"
+            ),
+            404,
+        )
+
+    # Check if user owns the file (if authentication is enabled)
+    if current_user.is_authenticated and file.user_id != current_user.id:
         return (
             render_template("./first/partials/_error.html", error="Access denied"),
             403,
         )
 
     # Check if there are any active jobs for this file
-    active_jobs_stmt = (
-        select(PreprocessingJob)
-        .where(PreprocessingJob.uploaded_file_id == uploaded_file.id)
-        .where(PreprocessingJob.status.in_(["pending", "processing"]))
-    )
-    active_jobs = db.session.scalars(active_jobs_stmt).all()
+    active_jobs = [
+        job
+        for job in file.preprocessing_jobs
+        if job.status in ["pending", "processing"]
+    ]
 
     if active_jobs:
         return (
             render_template(
                 "./first/partials/_error.html",
-                error="Cannot delete file with active processing jobs. Cancel jobs first."
+                error="Cannot delete file with active processing jobs. Cancel jobs first.",
             ),
             422,
         )
@@ -419,14 +416,17 @@ def delete_file(filename):
     try:
         # First, delete database record (this will cascade to related jobs due to foreign key constraints)
         # If this fails due to FK constraints, the transaction will be rolled back and no file will be deleted
-        db.session.delete(uploaded_file)
+        db.session.delete(file)
         db.session.commit()
 
         # Only delete physical file after successful database deletion
         if file_path.exists():
             file_path.unlink()
 
-        return "", 200  # Return empty content to remove the row from UI
+        response = make_response(
+            "", trigger={"refresh": {"target": "#preprocessing-history"}}
+        )
+        return response
 
     except Exception as e:
         db.session.rollback()
@@ -484,9 +484,8 @@ def upload_file():
 
     filename = secure_filename(file.filename)
     # Add timestamp to avoid collisions
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"{timestamp}_{filename}"
-
+    file_uuid = str(uuid.uuid4())
+    filename = file_uuid + ".parquet"
     file_path = upload_folder / filename
 
     try:
@@ -525,8 +524,8 @@ def upload_file():
 
         # Save file metadata to database
         uploaded_file = UploadedFile(
-            filename=filename,
-            original_filename=file.filename,
+            uuid=file_uuid,
+            name=file.filename.replace(".parquet", ""),
             file_size=file_length,
             user_id=current_user.id if current_user.is_authenticated else None,
             data_start_date=data_start_date,
@@ -535,33 +534,33 @@ def upload_file():
         db.session.add(uploaded_file)
         db.session.commit()
 
-        return (
+        flash("File uploaded successfully", "success")
+        return make_response(
             render_template(
                 "./first/partials/_upload_success.html",
-                filename=filename,
-                size=file_length,
-                message="File uploaded successfully",
             ),
-            200,
+            trigger={"refresh": {"target": "#file-list"}, "flash-update": True},
         )
 
     except Exception as e:
         if file_path.exists():
             file_path.unlink()
-        return (
+        flash("Failed to save file", "error")
+        return make_response(
             render_template(
                 "./first/partials/_error.html",
                 error=f"Failed to save file: {str(e)}",
             ),
             422,
+            trigger={"flash-update": True},
         )
 
 
-@bp.route("/preprocess/<filename>", methods=["POST"])
-def start_preprocessing(filename):
+@bp.route("/preprocess/<uuid:uuid>", methods=["POST"])
+def start_preprocessing(uuid: uuid.UUID):
     """Start preprocessing task for uploaded parquet file."""
     upload_folder = Path(current_app.root_path).parent / "uploads"
-    file_path = upload_folder / filename
+    file_path = upload_folder / (str(uuid) + ".parquet")
 
     if not file_path.exists() or file_path.suffix != ".parquet":
         return (
@@ -570,8 +569,7 @@ def start_preprocessing(filename):
         )
 
     # Get the uploaded file record using SQLAlchemy 2.0 style
-    stmt = select(UploadedFile).where(UploadedFile.filename == filename)
-    uploaded_file = db.session.scalar(stmt)
+    uploaded_file = db.session.get(UploadedFile, str(uuid))
 
     if not uploaded_file:
         return (
@@ -585,7 +583,7 @@ def start_preprocessing(filename):
     # Check if there's already a running job for this file (exclude cancelled)
     job_stmt = (
         select(PreprocessingJob)
-        .where(PreprocessingJob.uploaded_file_id == uploaded_file.id)
+        .where(PreprocessingJob.file_uuid == uploaded_file.uuid)
         .where(PreprocessingJob.status.in_(["pending", "processing"]))
         .order_by(PreprocessingJob.started_at.desc())
     )
@@ -601,10 +599,12 @@ def start_preprocessing(filename):
         )
 
     # Start the Celery task - it will create the job record internally
-    task = preprocess_spotify_data_original.delay(filename)
+    task = preprocess_spotify_data_original.delay(uuid)
 
     return render_template(
-        "./first/partials/_preprocess_started.html", task_id=task.id, filename=filename
+        "./first/partials/_preprocess_started.html",
+        task_id=task.id,
+        filename=uploaded_file.name,
     )
 
 
@@ -708,8 +708,8 @@ def cancel_job(task_id):
 
 
 @bp.route("/preprocessing-history", methods=["GET"])
-@bp.route("/preprocessing-history/<filename>", methods=["GET"])
-def preprocessing_history(filename=None):
+@bp.route("/preprocessing-history/<uuid:uuid>", methods=["GET"])
+def preprocessing_history(uuid=None):
     """Display preprocessing history for uploaded files."""
     # Base query for user's jobs
     stmt = (
@@ -718,15 +718,15 @@ def preprocessing_history(filename=None):
         .where(UploadedFile.user_id == current_user.id)
     )
 
-    # If filename is provided, filter by that specific file
-    if filename:
-        stmt = stmt.where(UploadedFile.filename == filename)
+    # If uuid is provided, filter by that specific file
+    if uuid:
+        stmt = stmt.where(UploadedFile.uuid == str(uuid))
 
     stmt = stmt.order_by(PreprocessingJob.started_at.desc())
     jobs = db.session.scalars(stmt).all()
 
     # Set hide_file_column flag when showing jobs for a specific file
-    hide_file_column = filename is not None
+    hide_file_column = uuid is not None
 
     return render_template(
         "./first/partials/_preprocessing_history.html",
@@ -751,7 +751,8 @@ def graph_preview(job_id: uuid.UUID):
     if not job or job.status != "completed":
         return (
             render_template(
-                "error.html", error="Preprocessing job not found or not completed"
+                "first/partials/_error.html",
+                error="Preprocessing job not found or not completed",
             ),
             422,
         )

@@ -1,34 +1,33 @@
 {% macro content() %}
-    <div class="breadcrumbs text-sm mb-4">
+    <div class="breadcrumbs mb-4 text-sm">
         <ul>
             <li>
-                <a href="{{ url_for('first.index') }}" 
-                   hx-boost="true"
-                   hx-target="#content"
-                   hx-swap="show:window:top">
+                <a
+                    href="{{ url_for('first.index') }}"
+                    hx-boost="true"
+                    hx-target="#content"
+                    hx-swap="show:window:top">
                     Files
                 </a>
             </li>
             <li>
-                <a href="{{ url_for('first.preview_file', filename=uploaded_file.filename) }}" 
-                   hx-boost="true"
-                   hx-target="#content"
-                   hx-swap="show:window:top">
-                    {{ uploaded_file.original_filename }}
+                <a
+                    href="{{ url_for('first.preview_file', uuid=uploaded_file.uuid) }}"
+                    hx-boost="true"
+                    hx-target="#content"
+                    hx-swap="show:window:top">
+                    {{ uploaded_file.name }}
                 </a>
             </li>
             <li>{{ file_type|title }} Data</li>
         </ul>
     </div>
-    
+
     <div class="space-y-6">
         <div class="card bg-secondary text-secondary-content shadow-sm">
             <div class="card-body">
                 <h2 class="card-title">{{ file_type|title }} Data</h2>
-                <p class="text-sm">
-                    From: {{ uploaded_file.original_filename }}
-                </p>
-                <p class="text-sm">File: {{ file_name }}</p>
+                <p class="text-sm">From: {{ uploaded_file.name }}</p>
                 <p class="text-sm">
                     <span class="font-extrabold"
                         >{{ "{:,}".format(total_rows) }}</span
@@ -74,9 +73,9 @@
                 id="enrichment-container"
                 class="mb-4">
                 {% if enrichment_job and enrichment_job.status == 'processing' %}
-                {% with task_id=enrichment_job.task_id %}
-                    {% include 'first/partials/_enrichment_started.html' %}
-                {% endwith %}
+                    {% with task_id=enrichment_job.task_id %}
+                        {% include 'first/partials/_enrichment_started.html' %}
+                    {% endwith %}
                 {% endif %}
             </div>
         {% endif %}
@@ -292,7 +291,7 @@
                     hx-target="#content"
                     hx-swap="show:window:top"
                     href="
-                        {{ url_for('first.preview_file', filename=uploaded_file.filename) }}"
+                        {{ url_for('first.preview_file', uuid=uploaded_file.uuid) }}"
                     class="group hover:text-primary flex items-center gap-1 transition-colors">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"

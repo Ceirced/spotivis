@@ -103,9 +103,10 @@ class FriendRequest(Model):
 class UploadedFile(TimestampMixin, Model):
     __tablename__ = "uploaded_files"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     uuid: Mapped[str] = mapped_column(
-        String(36), nullable=False, unique=True, default=lambda: str(uuid.uuid4())
+        String(36),
+        default=lambda: str(uuid.uuid4()),
+        primary_key=True,
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     file_size: Mapped[int] = mapped_column(db.BigInteger, nullable=False)
@@ -136,8 +137,8 @@ class PreprocessingJob(Model):
         String(36), primary_key=True, default=lambda: str(uuid.uuid4())
     )
     task_id: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
-    uploaded_file_id: Mapped[int] = mapped_column(
-        ForeignKey("uploaded_files.id", ondelete="CASCADE"), nullable=False
+    file_uuid: Mapped[str] = mapped_column(
+        ForeignKey("uploaded_files.uuid", ondelete="CASCADE"), nullable=False
     )
     uploaded_file: Mapped[UploadedFile] = relationship(
         "UploadedFile", back_populates="preprocessing_jobs"

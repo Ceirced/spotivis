@@ -1,6 +1,6 @@
 {% if combined_jobs %}
     <div class="overflow-x-auto">
-        <table class="table table-sm">
+        <table class="table-sm table">
             <thead>
                 <tr>
                     <th>Date</th>
@@ -21,42 +21,54 @@
                         </td>
                         <td>
                             <div class="text-xs">
-                                {{ job.first_job.uploaded_file.original_filename[:20] }}...
+                                {{ job.first_job.uploaded_file.name }}
                                 {% if job.first_start_date and job.first_end_date %}
-                                    <br>
+                                    <br />
                                     <span class="text-base-content/60">
-                                        {{ job.first_start_date.strftime('%b %Y') }} - {{ job.first_end_date.strftime('%b %Y') }}
+                                        {{ job.first_start_date.strftime('%b %Y') }}
+                                        -
+                                        {{ job.first_end_date.strftime('%b %Y') }}
                                     </span>
                                 {% endif %}
                             </div>
                         </td>
                         <td>
                             <div class="text-xs">
-                                {{ job.second_job.uploaded_file.original_filename[:20] }}...
+                                {{ job.second_job.uploaded_file.name }}
                                 {% if job.second_start_date and job.second_end_date %}
-                                    <br>
+                                    <br />
                                     <span class="text-base-content/60">
-                                        {{ job.second_start_date.strftime('%b %Y') }} - {{ job.second_end_date.strftime('%b %Y') }}
+                                        {{ job.second_start_date.strftime('%b %Y') }}
+                                        -
+                                        {{ job.second_end_date.strftime('%b %Y') }}
                                     </span>
                                 {% endif %}
                             </div>
                         </td>
                         <td>
                             {% if job.status == "completed" %}
-                                <span class="badge badge-success badge-sm">Completed</span>
+                                <span class="badge badge-success badge-sm"
+                                    >Completed</span
+                                >
                             {% elif job.status == "processing" %}
-                                <span class="badge badge-info badge-sm">Processing</span>
+                                <span class="badge badge-info badge-sm"
+                                    >Processing</span
+                                >
                             {% elif job.status == "failed" %}
-                                <span class="badge badge-error badge-sm">Failed</span>
+                                <span class="badge badge-error badge-sm"
+                                    >Failed</span
+                                >
                             {% else %}
-                                <span class="badge badge-sm">{{ job.status }}</span>
+                                <span class="badge badge-sm"
+                                    >{{ job.status }}</span
+                                >
                             {% endif %}
                         </td>
                         <td>
                             {% if job.total_nodes %}
                                 <div class="text-xs">
-                                    Total: {{ job.total_nodes }}<br>
-                                    Old: {{ job.nodes_from_first }}<br>
+                                    Total: {{ job.total_nodes }}<br />
+                                    Old: {{ job.nodes_from_first }}<br />
                                     New: {{ job.new_nodes }}
                                 </div>
                             {% else %}
@@ -74,9 +86,12 @@
                                     View Graph
                                 </a>
                             {% elif job.status == "failed" %}
-                                <span class="text-xs text-error">{{ job.error_message[:50] if job.error_message else 'Error' }}</span>
+                                <span class="text-error text-xs"
+                                    >{{ job.error_message[:50] if job.error_message else 'Error' }}</span
+                                >
                             {% else %}
-                                <span class="loading loading-spinner loading-xs"></span>
+                                <span
+                                    class="loading loading-spinner loading-xs"></span>
                             {% endif %}
                         </td>
                     </tr>
@@ -85,7 +100,7 @@
         </table>
     </div>
 {% else %}
-    <div class="text-center py-8 text-base-content/60">
+    <div class="text-base-content/60 py-8 text-center">
         <p>No combined datasets yet</p>
     </div>
 {% endif %}
