@@ -132,8 +132,7 @@ class UploadedFile(TimestampMixin, Model):
     uuid: Mapped[str] = mapped_column(
         String(36), nullable=False, unique=True, default=lambda: str(uuid.uuid4())
     )
-    filename: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
-    original_filename: Mapped[str] = mapped_column(String(255), nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
     file_size: Mapped[int] = mapped_column(db.BigInteger, nullable=False)
     uploaded_at: Mapped[datetime] = mapped_column(
         db.DateTime, nullable=False, default=db.func.current_timestamp()
@@ -150,7 +149,7 @@ class UploadedFile(TimestampMixin, Model):
     )
 
     def __repr__(self):
-        return f"<UploadedFile {self.id} - {self.original_filename}>"
+        return f"<UploadedFile {self.id} - {self.name}>"
 
 
 class PreprocessingJob(Model):
