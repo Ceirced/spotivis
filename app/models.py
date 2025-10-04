@@ -172,6 +172,10 @@ class PreprocessingJob(Model):
     # Error tracking
     error_message: Mapped[str | None] = mapped_column(db.Text, nullable=True)
 
+    enrichment_jobs: Mapped[list[PlaylistEnrichmentJob]] = relationship(
+        back_populates="preprocessing_job", cascade="all, delete-orphan"
+    )
+
     def __repr__(self):
         return f"<PreprocessingJob {self.uuid} - {self.status}>"
 
@@ -187,7 +191,7 @@ class PlaylistEnrichmentJob(Model):
         ForeignKey("preprocessing_jobs.uuid"), nullable=False
     )
     preprocessing_job: Mapped[PreprocessingJob] = relationship(
-        "PreprocessingJob", backref="enrichment_jobs"
+        back_populates="enrichment_jobs"
     )
 
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="pending")
