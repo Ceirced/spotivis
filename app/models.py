@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
-from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from flask_security.models import fsqla_v3 as fsqla
-from sqlalchemy import DECIMAL, DateTime, ForeignKey, String, func, select
+from sqlalchemy import DateTime, ForeignKey, String, func, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app import db
@@ -38,8 +37,6 @@ class Role(Model, fsqla.FsRoleMixin):
 
 
 class User(Model, fsqla.FsUserMixin):
-    payments: Mapped[list[Payment]] = relationship("Payment", back_populates="user")
-
     def __repr__(self):
         return (
             f"<User(id='{self.id}', username='{self.username}', email='{self.email}')>"
@@ -95,34 +92,6 @@ class FriendRequest(Model):
     )
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     db.UniqueConstraint("sender_id", "receiver_id")
-
-
-class Payment(Model):
-    __tablename__ = "payments"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    user_email: Mapped[str] = mapped_column(String(100), nullable=False)
-    amount: Mapped[Decimal] = mapped_column(DECIMAL(10, 2), nullable=False)
-    currency: Mapped[str] = mapped_column(String(3), nullable=False)
-    created: Mapped[datetime] = mapped_column(
-        db.DateTime, nullable=False, default=db.func.current_timestamp()
-    )
-    user_id: Mapped[int | None] = mapped_column(
-        ForeignKey("user.id", ondelete="CASCADE"), nullable=True
-    )
-    user: Mapped[User | None] = relationship("User", back_populates="payments")
-    stripe_payment_id: Mapped[str] = mapped_column(
-        String(150), nullable=False, unique=True
-    )
-    status: Mapped[str] = mapped_column(String(50), nullable=False)
-    stripe_customer_email: Mapped[str | None] = mapped_column(String(100))
-    stripe_customer_name: Mapped[str | None] = mapped_column(String(100))
-    stripe_customer_address_country: Mapped[str | None] = mapped_column(String(20))
-
-    __table_args__ = (db.UniqueConstraint("stripe_payment_id"),)
-
-    def __repr__(self):
-        return f"<Payment {self.id} - {self.amount} {self.currency}>"
 
 
 class UploadedFile(TimestampMixin, Model):
