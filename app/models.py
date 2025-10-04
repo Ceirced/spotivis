@@ -148,6 +148,10 @@ class UploadedFile(TimestampMixin, Model):
         "PreprocessingJob", back_populates="uploaded_file", cascade="all, delete-orphan"
     )
 
+    @property
+    def size_mb(self) -> float:
+        return round(self.file_size / (1024 * 1024), 2)
+
     def __repr__(self):
         return f"<UploadedFile {self.id} - {self.name}>"
 
