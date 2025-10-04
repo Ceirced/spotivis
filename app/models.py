@@ -37,6 +37,12 @@ class Role(Model, fsqla.FsRoleMixin):
 
 
 class User(Model, fsqla.FsUserMixin):
+    uploaded_files: Mapped[list[UploadedFile]] = relationship(
+        "UploadedFile",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
     def __repr__(self):
         return (
             f"<User(id='{self.id}', username='{self.username}', email='{self.email}')>"
@@ -106,8 +112,8 @@ class UploadedFile(TimestampMixin, Model):
     uploaded_at: Mapped[datetime] = mapped_column(
         db.DateTime, nullable=False, default=db.func.current_timestamp()
     )
-    user_id: Mapped[int | None] = mapped_column(ForeignKey("user.id"), nullable=True)
-    user: Mapped[User | None] = relationship("User", backref="uploaded_files")
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    user: Mapped[User] = relationship("User", back_populates="uploaded_files")
 
     # Date range from the parquet data
     data_start_date: Mapped[datetime | None] = mapped_column(db.DateTime, nullable=True)
@@ -133,7 +139,7 @@ class PreprocessingJob(Model):
     )
     task_id: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     uploaded_file_id: Mapped[int] = mapped_column(
-        ForeignKey("uploaded_files.id"), nullable=False
+        ForeignKey("uploaded_files.id", ondelete="CASCADE"), nullable=False
     )
     uploaded_file: Mapped[UploadedFile] = relationship(
         "UploadedFile", back_populates="preprocessing_jobs"
@@ -208,18 +214,14 @@ class CombinedPreprocessingJob(Model):
 
     # References to the two preprocessing jobs being combined
     first_job_id: Mapped[str] = mapped_column(
-        ForeignKey("preprocessing_jobs.uuid"), nullable=False
+        ForeignKey("preprocessing_jobs.uuid", ondelete="CASCADE"), nullable=False
     )
-    first_job: Mapped[PreprocessingJob] = relationship(
-        "PreprocessingJob", foreign_keys=[first_job_id], backref="combined_as_first"
-    )
+    first_job: Mapped[PreprocessingJob] = relationship(foreign_keys=[first_job_id])
 
     second_job_id: Mapped[str] = mapped_column(
-        ForeignKey("preprocessing_jobs.uuid"), nullable=False
+        ForeignKey("preprocessing_jobs.uuid", ondelete="CASCADE"), nullable=False
     )
-    second_job: Mapped[PreprocessingJob] = relationship(
-        "PreprocessingJob", foreign_keys=[second_job_id], backref="combined_as_second"
-    )
+    second_job: Mapped[PreprocessingJob] = relationship(foreign_keys=[second_job_id])
 
     # Task and status tracking
     task_id: Mapped[str | None] = mapped_column(String(255), nullable=True, unique=True)
@@ -251,8 +253,8 @@ class CombinedPreprocessingJob(Model):
     # Error tracking
     error_message: Mapped[str | None] = mapped_column(db.Text, nullable=True)
     # User reference
-    user_id: Mapped[int | None] = mapped_column(ForeignKey("user.id"), nullable=True)
-    user: Mapped[User | None] = relationship("User", backref="combined_jobs")
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
+    user: Mapped[User] = relationship("User")
 
     def __repr__(self):
         return f"<CombinedPreprocessingJob {self.uuid} - {self.status}>"
