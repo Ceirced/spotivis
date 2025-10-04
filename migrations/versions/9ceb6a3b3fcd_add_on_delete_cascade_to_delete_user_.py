@@ -1,8 +1,8 @@
 """add on delete cascade to delete user accounts
 
-Revision ID: 90c0f9cf161e
-Revises: b4012e3fe836
-Create Date: 2025-10-03 20:11:11.306955
+Revision ID: 9ceb6a3b3fcd
+Revises: 46e77fd6dc35
+Create Date: 2025-10-04 11:55:13.154322
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '90c0f9cf161e'
-down_revision = 'b4012e3fe836'
+revision = '9ceb6a3b3fcd'
+down_revision = '46e77fd6dc35'
 branch_labels = None
 depends_on = None
 
@@ -21,8 +21,8 @@ def upgrade():
     with op.batch_alter_table('friend_request', schema=None) as batch_op:
         batch_op.drop_constraint(batch_op.f('fk_friend_request_sender_id_user'), type_='foreignkey')
         batch_op.drop_constraint(batch_op.f('fk_friend_request_receiver_id_user'), type_='foreignkey')
-        batch_op.create_foreign_key(batch_op.f('fk_friend_request_sender_id_user'), 'user', ['sender_id'], ['id'], ondelete='CASCADE')
         batch_op.create_foreign_key(batch_op.f('fk_friend_request_receiver_id_user'), 'user', ['receiver_id'], ['id'], ondelete='CASCADE')
+        batch_op.create_foreign_key(batch_op.f('fk_friend_request_sender_id_user'), 'user', ['sender_id'], ['id'], ondelete='CASCADE')
 
     with op.batch_alter_table('payments', schema=None) as batch_op:
         batch_op.drop_constraint(batch_op.f('fk_payments_user_id_user'), type_='foreignkey')
@@ -38,8 +38,8 @@ def downgrade():
         batch_op.create_foreign_key(batch_op.f('fk_payments_user_id_user'), 'user', ['user_id'], ['id'])
 
     with op.batch_alter_table('friend_request', schema=None) as batch_op:
-        batch_op.drop_constraint(batch_op.f('fk_friend_request_receiver_id_user'), type_='foreignkey')
         batch_op.drop_constraint(batch_op.f('fk_friend_request_sender_id_user'), type_='foreignkey')
+        batch_op.drop_constraint(batch_op.f('fk_friend_request_receiver_id_user'), type_='foreignkey')
         batch_op.create_foreign_key(batch_op.f('fk_friend_request_receiver_id_user'), 'user', ['receiver_id'], ['id'])
         batch_op.create_foreign_key(batch_op.f('fk_friend_request_sender_id_user'), 'user', ['sender_id'], ['id'])
 
