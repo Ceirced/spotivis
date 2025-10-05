@@ -1,0 +1,162 @@
+{% extends 'base_base.html' %}
+{% block body %}
+    <body class="container mx-auto pt-[env(safe-area-inset-top)] font-sans">
+        <header class="flex justify-between p-4">
+            <a
+                href="{{ url_for('public.index') }}"
+                class="btn btn-ghost">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    class="size-4 stroke-current stroke-2">
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                </svg>
+                Back to Gallery
+            </a>
+            <div class="flex items-center gap-2">
+                <a
+                    hx-boost="true"
+                    href="{{ url_for('security.login') }}"
+                    class="btn btn-ghost btn-sm">
+                    Login
+                </a>
+                {% include 'components/theme_toggle_inline.html' %}
+            </div>
+        </header>
+
+        <main class="flex min-h-[calc(100vh-5rem)] flex-col p-4">
+            <div class="bg-secondary text-secondary-content mb-6 rounded-lg p-6">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <h1 class="mb-3 text-3xl font-bold">
+                            {% if graph_type == 'regular' %}
+                                {{ job.uploaded_file.name }}
+                            {% else %}
+                                Combined Graph
+                            {% endif %}
+                        </h1>
+                        <div class="flex items-center gap-2 mb-4">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-5 w-5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            <span class="text-lg">
+                                Created by
+                                {% if graph_type == 'regular' %}
+                                    {{ job.uploaded_file.user.username if job.uploaded_file.user else 'Anonymous' }}
+                                {% else %}
+                                    {{ job.user.username if job.user else 'Anonymous' }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+                            <div class="stat bg-base-100 rounded-lg p-4">
+                                <div class="stat-title">Nodes</div>
+                                <div class="stat-value text-base-content">
+                                    {% if graph_type == 'regular' %}
+                                        {{ job.final_nodes }}
+                                    {% else %}
+                                        {{ job.total_nodes }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="stat bg-base-100 rounded-lg p-4">
+                                <div class="stat-title">Edges</div>
+                                <div class="stat-value text-base-content">
+                                    {% if graph_type == 'regular' %}
+                                        {{ job.final_edges }}
+                                    {% else %}
+                                        {{ job.total_edges }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% if graph_type == 'regular' %}
+                                <div class="stat bg-base-100 rounded-lg p-4">
+                                    <div class="stat-title">Time Periods</div>
+                                    <div class="stat-value">{{ job.time_periods }}</div>
+                                </div>
+                            {% endif %}
+                            <div class="stat bg-base-100 rounded-lg p-4">
+                                <div class="stat-title">Published</div>
+                                <div class="stat-value text-sm text-base-content">
+                                    {{ job.published_at.strftime('%b %d, %Y') if job.published_at else 'Recently' }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if graph_type == 'combined' %}
+                <dl class="mb-1 flex items-center justify-end-safe gap-4 text-sm">
+                    <div class="flex items-center gap-1">
+                        <dt class="h-3 w-3 rounded-full bg-blue-500"></dt>
+                        <dd>Old Dataset</dd>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <dt class="h-3 w-3 rounded-full bg-green-500"></dt>
+                        <dd>New Dataset</dd>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <dt class="h-3 w-3 rounded-full bg-purple-500"></dt>
+                        <dd>Both Periods</dd>
+                    </div>
+                </dl>
+            {% endif %}
+
+            <div class="relative flex flex-1 flex-col overflow-hidden">
+                <div
+                    id="graph-container"
+                    class="bg-base-100 relative m-[1px] flex-1 overflow-hidden rounded-lg ring-1 inset-shadow-sm/15 ring-black/5">
+                    <div class="skeleton h-full w-full"></div>
+                </div>
+
+                {% include 'partials/graph_tooltip.html' %}
+                {% include 'partials/graph_controls.html' %}
+            </div>
+        </main>
+
+        <script type="module">
+            import { createGraph } from "{{ url_for('static', filename='js/build/graph-preview.js') }}";
+
+            {% if graph_type == 'combined' %}
+                // Color scheme for combined graph time periods
+                const COLOR_MAP = {
+                    old: "#3b82f6", // blue for old dataset only
+                    new: "#10b981", // green for new dataset only
+                    both: "#8b5cf6", // purple for nodes in both periods
+                };
+
+                // Initialize combined graph with colors
+                createGraph({
+                    jobId: "{{ job.uuid }}",
+                    nodesUrl: `/graph-data/{{ graph_type }}/{{ job.uuid }}/nodes`,
+                    edgesUrl: `/graph-data/{{ graph_type }}/{{ job.uuid }}/edges`,
+                    defaultNodeColor: "#6b7280",
+                    colorField: "time_period",
+                    colorMap: COLOR_MAP,
+                });
+            {% else %}
+                // Initialize regular graph
+                createGraph({
+                    jobId: "{{ job.uuid }}",
+                    nodesUrl: `/graph-data/{{ graph_type }}/{{ job.uuid }}/nodes`,
+                    edgesUrl: `/graph-data/{{ graph_type }}/{{ job.uuid }}/edges`,
+                    defaultNodeColor: "#3b82f6",
+                });
+            {% endif %}
+        </script>
+    </body>
+{% endblock %}

@@ -158,6 +158,12 @@ class PreprocessingJob(Model):
     final_edges: Mapped[int | None] = mapped_column(db.Integer, nullable=True)
     time_periods: Mapped[int | None] = mapped_column(db.Integer, nullable=True)
 
+    # Publishing
+    published: Mapped[bool | None] = mapped_column(
+        db.Boolean, nullable=True, default=False
+    )
+    published_at: Mapped[datetime | None] = mapped_column(db.DateTime, nullable=True)
+
     # Error tracking
     error_message: Mapped[str | None] = mapped_column(db.Text, nullable=True)
 
@@ -249,6 +255,13 @@ class CombinedPreprocessingJob(Model):
         db.DateTime, nullable=True
     )
     second_end_date: Mapped[datetime | None] = mapped_column(db.DateTime, nullable=True)
+
+    # Publishing
+    published: Mapped[bool | None] = mapped_column(
+        db.Boolean, nullable=True, default=False
+    )
+    published_at: Mapped[datetime | None] = mapped_column(db.DateTime, nullable=True)
+
     # Error tracking
     error_message: Mapped[str | None] = mapped_column(db.Text, nullable=True)
     # User reference

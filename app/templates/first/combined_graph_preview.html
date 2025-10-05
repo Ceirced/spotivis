@@ -25,9 +25,17 @@
 
     <div class="card bg-secondary text-secondary-content mb-8 shadow-sm">
         <div class="card-body">
-            <h2 class="card-title text-white">
-                Combined Dataset Visualization
-            </h2>
+            <div class="flex items-start justify-between">
+                <h2 class="card-title text-white">
+                    Combined Dataset Visualization
+                </h2>
+                <div class="ml-4">
+                    {% set published = job.published %}
+                    {% set job_id = job.uuid %}
+                    {% set is_combined = true %}
+                    {% include 'first/partials/_publish_button.html' %}
+                </div>
+            </div>
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                     <p class="text-xs">First Dataset</p>

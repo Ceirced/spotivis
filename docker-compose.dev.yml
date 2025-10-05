@@ -1,6 +1,5 @@
 services:
   app:
-    container_name: app-dev
     volumes:
       - ./app:/home/app/app
       - ./migrations:/home/app/migrations

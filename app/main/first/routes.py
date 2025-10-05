@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
@@ -1021,6 +1022,82 @@ def cancel_enrichment_job(task_id):
             ),
             422,
         )
+
+
+@bp.route("/publish-graph/<uuid:job_id>", methods=["POST"])
+def publish_graph(job_id: uuid.UUID):
+    """Publish a preprocessing job graph to the public gallery."""
+
+    stmt = (
+        select(PreprocessingJob)
+        .join(UploadedFile)
+        .where(
+            PreprocessingJob.uuid == str(job_id),
+            UploadedFile.user_id == current_user.id,
+        )
+    )
+    job = db.session.scalar(stmt)
+
+    if not job or job.status != "completed":
+        flash("Job not found or not completed", "error")
+        return "", 404
+
+    if job.published:
+        flash("Graph is already published", "info")
+        return make_response("", 200, trigger="flash-update")
+
+    job.published = True
+    job.published_at = datetime.now()
+    db.session.commit()
+
+    flash("Graph published successfully!", "success")
+    return make_response(
+        render_template(
+            "first/partials/_publish_button.html",
+            published=True,
+            job_id=job.uuid,
+        ),
+        200,
+        trigger="flash-update",
+    )
+
+
+@bp.route("/unpublish-graph/<uuid:job_id>", methods=["POST"])
+def unpublish_graph(job_id: uuid.UUID):
+    """Unpublish a preprocessing job graph from the public gallery."""
+
+    stmt = (
+        select(PreprocessingJob)
+        .join(UploadedFile)
+        .where(
+            PreprocessingJob.uuid == str(job_id),
+            UploadedFile.user_id == current_user.id,
+        )
+    )
+    job = db.session.scalar(stmt)
+
+    if not job:
+        flash("Job not found", "error")
+        return "", 404
+
+    if not job.published:
+        flash("Graph is not published", "warning")
+        return make_response("", 200, trigger="flash-update")
+
+    job.published = False
+    job.published_at = None
+    db.session.commit()
+
+    flash("Graph unpublished successfully!", "success")
+    return make_response(
+        render_template(
+            "first/partials/_publish_button.html",
+            published=False,
+            job_id=job.uuid,
+        ),
+        200,
+        trigger="flash-update",
+    )
 
 
 # Import combine routes

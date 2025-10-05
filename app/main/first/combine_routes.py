@@ -4,6 +4,7 @@ import uuid
 from pathlib import Path
 
 from flask import current_app, jsonify, render_template, request, send_from_directory
+from flask_htmx import make_response
 from flask_login import current_user
 from sqlalchemy import select
 
@@ -301,3 +302,71 @@ def cancel_combine_job(task_id):
             ),
             422,
         )
+
+
+@bp.route("/combine/publish/<uuid:job_id>", methods=["POST"])
+def publish_combined_graph(job_id: uuid.UUID):
+    """Publish a combined preprocessing job graph to the public gallery."""
+    from datetime import datetime
+
+    from flask import flash
+    from flask_login import current_user
+
+    stmt = select(CombinedPreprocessingJob).where(
+        CombinedPreprocessingJob.uuid == str(job_id),
+        CombinedPreprocessingJob.user_id == current_user.id,
+    )
+    job = db.session.scalar(stmt)
+
+    if not job or job.status != "completed":
+        flash("Job not found or not completed", "error")
+        return "", 404
+
+    job.published = True
+    job.published_at = datetime.now()
+    db.session.commit()
+
+    flash("Combined graph published successfully!", "success")
+    return make_response(
+        render_template(
+            "first/partials/_publish_button.html",
+            published=True,
+            job_id=job.uuid,
+            is_combined=True,
+        ),
+        200,
+        {"HX-Trigger": "flash-update"},
+    )
+
+
+@bp.route("/combine/unpublish/<uuid:job_id>", methods=["POST"])
+def unpublish_combined_graph(job_id: uuid.UUID):
+    """Unpublish a combined preprocessing job graph from the public gallery."""
+    from flask import flash
+    from flask_login import current_user
+
+    stmt = select(CombinedPreprocessingJob).where(
+        CombinedPreprocessingJob.uuid == str(job_id),
+        CombinedPreprocessingJob.user_id == current_user.id,
+    )
+    job = db.session.scalar(stmt)
+
+    if not job:
+        flash("Job not found", "error")
+        return "", 404
+
+    job.published = False
+    job.published_at = None
+    db.session.commit()
+
+    flash("Combined graph unpublished successfully!", "success")
+    return make_response(
+        render_template(
+            "first/partials/_publish_button.html",
+            published=False,
+            job_id=job.uuid,
+            is_combined=True,
+        ),
+        200,
+        {"HX-Trigger": "flash-update"},
+    )
