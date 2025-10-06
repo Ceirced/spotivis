@@ -19,6 +19,7 @@ def init_app(app):
         SECURITY_USE_REGISTER_V2=True,
         SECURITY_USERNAME_ENABLE=True,
         SECURITY_SEND_REGISTER_EMAIL=True,
+        SECURITY_POST_REGISTER_VIEW="security.login",
         SECURITY_CONFIRMABLE=True,
         SECURITY_USERNAME_REQUIRED=True,
         SECURITY_EMAIL_SENDER=f'"{app.config["APP_NAME"]}" <hi@aufsichtsr.at>',
