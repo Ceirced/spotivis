@@ -9,7 +9,7 @@ SpotiVis is a web application that visualizes Spotify streaming data from .parqu
 - **Framework**: Flask 3.x with Flask-Security for authentication
 - **Task Queue**: Celery with Redis
 - **File Processing**: PyArrow for .parquet file handling
-- **Database**: SQLAlchemy with Flask-Migrate
+- **Database**: SQLite with SQLAlchemy ORM and Flask-Migrate for migrations
 - **Python Version**: ^3.12
 
 ### Frontend
