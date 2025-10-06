@@ -50,14 +50,6 @@
         <!-- File list will be loaded here -->
     </div>
 
-    <div
-        id="preprocessing-history"
-        class="mt-8"
-        hx-get="{{ url_for('first.preprocessing_history') }}"
-        hx-trigger="load, refresh">
-        <!-- Preprocessing history will be loaded here -->
-    </div>
-
     {% if config['FLASK_ENV'] == 'production' %}
         <script>
             posthog.identify(

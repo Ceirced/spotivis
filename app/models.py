@@ -129,6 +129,10 @@ class UploadedFile(TimestampMixin, Model):
     def __repr__(self):
         return f"<UploadedFile {self.id} - {self.name}>"
 
+    @property
+    def preprocessed(self) -> bool:
+        return any(job.status == "completed" for job in self.preprocessing_jobs)
+
 
 class PreprocessingJob(Model):
     __tablename__ = "preprocessing_jobs"

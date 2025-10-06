@@ -19,21 +19,24 @@
                     {{ uploaded_file.name }}
                 </a>
             </li>
-            <li>{{ file_type|title }} Data</li>
+            <li>{{ file_type|title }}</li>
         </ul>
     </div>
 
     <div class="space-y-6">
         <div class="card bg-secondary text-secondary-content shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title">{{ file_type|title }} Data</h2>
-                <p class="text-sm">From: {{ uploaded_file.name }}</p>
-                <p class="text-sm">
-                    <span class="font-extrabold"
-                        >{{ "{:,}".format(total_rows) }}</span
-                    >
-                    total rows
-                </p>
+            <div class="card-body flex flex-row justify-between">
+                <div class="">
+                    <h2 class="card-title text-2xl">
+                        {{ uploaded_file.name }} - {{ file_type|title }}
+                    </h2>
+                    <p class="text-sm">
+                        <span class="font-extrabold"
+                            >{{ "{:,}".format(total_rows) }}</span
+                        >
+                        total rows
+                    </p>
+                </div>
 
                 {% if file_type == 'nodes' %}
                     <div class="card-actions mt-4 justify-end">

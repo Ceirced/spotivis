@@ -13,147 +13,136 @@
             <li>{{ file.name }}</li>
         </ul>
     </div>
-
-    <div class="card bg-secondary text-secondary-content mb-8 shadow-sm">
-        <div class="card-body">
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
-                    <p class="text-xs">Original Name</p>
-                    <p class="text-sm font-medium text-white">
-                        {{ file.name }}
-                    </p>
-                </div>
-                <div>
-                    <p class="text-xs">File Size</p>
-                    <p class="text-sm font-medium text-white">
-                        {{ file_size_mb }} MB
-                    </p>
-                </div>
-                <div>
-                    <p class="text-xs">Upload Time</p>
-                    <p class="font-medium text-white">
-                        {{ file.created_at }} (UTC)
-                    </p>
-                </div>
-                {% if file.data_start_date and file.data_end_date %}
+    <div class="flex flex-1 flex-col gap-8">
+        <div class="card bg-secondary text-secondary-content shadow-sm">
+            <div class="card-body">
+                <h1 class="card-title text-2xl">{{ file.name }}</h1>
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
-                        <p class="text-xs">Data Period</p>
-                        <p class="font-medium text-white">
-                            {{ file.data_start_date.strftime('%Y-%m-%d') }} to
-                            {{ file.data_end_date.strftime('%Y-%m-%d') }}
-                        </p>
-                        <p class="text-secondary-content/70 text-xs">
-                            ({{ (file.data_end_date - file.data_start_date).days }}
-                            days)
+                        <p class="text-sm font-medium text-white">
+                            {{ file_size_mb }} MB
                         </p>
                     </div>
-                {% endif %}
-            </div>
-            <div class="card-actions mt-4 justify-end">
-                <button
-                    hx-post="{{ url_for('first.start_preprocessing', uuid=file.uuid) }}"
-                    hx-target="#preprocessing-container"
-                    hx-swap="innerHTML"
-                    class="btn btn-primary btn-soft"
-                    {% if running_job or completed_job %}disabled{% endif %}>
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke-width="1.5"
-                        stroke="currentColor"
-                        class="h-5 w-5">
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-                    </svg>
-                    {% if running_job %}Processing...{% else %}Preprocess Data{% endif %}
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div
-        id="preprocessing-container"
-        class="mb-4">
-        {% if running_job %}
-            {% with task_id=running_job.task_id %}
-                {% include 'first/partials/_preprocess_started.html' %}
-            {% endwith %}
-        {% endif %}
-    </div>
-
-    <div class="card bg-base-200 mb-4 shadow-sm">
-        <div class="card-body">
-            <div
-                id="file-preprocessing-history"
-                hx-get="{{ url_for('first.preprocessing_history', uuid=file.uuid) }}"
-                hx-trigger="load, refresh from:body">
-                <div class="skeleton h-32 w-full"></div>
-            </div>
-        </div>
-    </div>
-    {% if completed_job %}
-        <div class="card bg-base-200 mb-4 shadow-sm">
-            <div class="card-body">
-                <h3 class="card-title">Processed Files</h3>
-                <div class="flex flex-col gap-4 sm:flex-row">
-                    <a
-                        href="{{ url_for('first.view_processed_file', job_id=completed_job.uuid, file_type='edges') }}"
-                        hx-boost="true"
-                        hx-target="#content"
-                        hx-swap="show:window:top"
-                        class="btn btn-outline btn-neutral flex-1">
+                    <div>
+                        <p class="text-xs">Upload Time</p>
+                        <p class="font-medium text-white">
+                            {{ file.created_at }} (UTC)
+                        </p>
+                    </div>
+                    {% if file.data_start_date and file.data_end_date %}
+                        <div>
+                            <p class="text-xs">Data Period</p>
+                            <p class="font-medium text-white">
+                                {{ file.data_start_date.strftime('%Y-%m-%d') }}
+                                to {{ file.data_end_date.strftime('%Y-%m-%d') }}
+                            </p>
+                            <p class="text-secondary-content/70 text-xs">
+                                ({{ (file.data_end_date - file.data_start_date).days }}
+                                days)
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-actions mt-4 justify-end">
+                    <button
+                        hx-post="{{ url_for('first.start_preprocessing', uuid=file.uuid) }}"
+                        hx-target="#preprocessing-container"
+                        hx-swap="innerHTML"
+                        class="btn btn-primary btn-soft"
+                        {% if running_job or file.preprocessed %}disabled{% endif %}>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke-width="1.5"
                             stroke="currentColor"
-                            class="size-4">
+                            class="h-5 w-5">
                             <path
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
-                                d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
                         </svg>
-
-                        Edges
-                    </a>
-                    <a
-                        href="{{ url_for('first.view_processed_file', job_id=completed_job.uuid, file_type='nodes') }}"
-                        hx-boost="true"
-                        hx-target="#content"
-                        hx-swap="show:window:top"
-                        class="btn btn-outline btn-neutral flex-1">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke-width="1.5"
-                            stroke="currentColor"
-                            class="size-4">
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                        </svg>
-
-                        Nodes
-                    </a>
+                        {% if running_job %}
+                            Processing...
+                        {% else %}
+                            Preprocess Data
+                        {% endif %}
+                    </button>
                 </div>
             </div>
         </div>
-    {% endif %}
 
-    <div class="card bg-base-200 shadow-sm">
-        <div class="card-body">
-            <h2 class="card-title">Data Preview (First 10 rows)</h2>
-            <div
-                id="preview-data"
-                hx-get="{{ url_for('first.preview_data', uuid=file.uuid) }}"
-                hx-trigger="load">
-                <div class="skeleton h-96 w-full"></div>
+        <div
+            id="preprocessing-container"
+            class="empty:hidden">
+            {%- if running_job -%}
+                {% with task_id=running_job.task_id %}
+                    {% include 'first/partials/_preprocess_started.html' %}
+                {% endwith %}
+            {%- endif -%}
+        </div>
+
+        {% if file.preprocessed %}
+            <div class="card bg-base-200 shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title">Processed Files</h3>
+                    <div class="flex flex-col gap-4 sm:flex-row">
+                        <a
+                            href="{{ url_for('first.view_processed_file', job_id=completed_job.uuid, file_type='edges') }}"
+                            hx-boost="true"
+                            hx-target="#content"
+                            hx-swap="show:window:top"
+                            class="btn btn-outline btn-neutral flex-1">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="1.5"
+                                stroke="currentColor"
+                                class="size-4">
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                            </svg>
+
+                            Edges
+                        </a>
+                        <a
+                            href="{{ url_for('first.view_processed_file', job_id=completed_job.uuid, file_type='nodes') }}"
+                            hx-boost="true"
+                            hx-target="#content"
+                            hx-swap="show:window:top"
+                            class="btn btn-outline btn-neutral flex-1">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="1.5"
+                                stroke="currentColor"
+                                class="size-4">
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                            </svg>
+
+                            Nodes
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="card bg-base-200 shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title">Data Preview (First 10 rows)</h2>
+                <div
+                    id="preview-data"
+                    hx-get="{{ url_for('first.preview_data', uuid=file.uuid) }}"
+                    hx-trigger="load">
+                    <div class="skeleton h-96 w-full"></div>
+                </div>
             </div>
         </div>
     </div>
