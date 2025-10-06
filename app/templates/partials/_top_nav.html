@@ -1,11 +1,11 @@
 <nav
-    class="navbar bg-base-100 z-20 mx-auto hidden h-[calc(env(safe-area-inset-top)+70px)] w-full max-w-7xl pt-[env(safe-area-inset-top)] lg:flex"
+    class="navbar bg-base-100 text-base-content/50 z-20 mx-auto hidden h-[calc(env(safe-area-inset-top)+70px)] w-full max-w-7xl pt-[env(safe-area-inset-top)] lg:flex"
     hx-boost="true"
     hx-swap="show:window:top">
     <div class="flex-1">
         <a
             hx-target="#content"
-            class="btn btn-ghost text-lg opacity-50"
+            class="btn btn-ghost text-lg"
             href="{{ url_for('first.index') }}"
             onclick="document.getElementById('first-top-link').checked = true;"
             >{{ config['APP_NAME'] }}</a
@@ -22,7 +22,7 @@
                 <a
                     href="{{ url_for('first.combine_files') }}"
                     hx-target="#content"
-                    class="peer-checked:text-primary flex items-center opacity-50 peer-checked:opacity-100"
+                    class="peer-checked:text-primary flex items-center peer-checked:opacity-100"
                     onclick="document.getElementById('second-top-link').checked = true;">
                     Combine Data
                 </a>
@@ -36,7 +36,7 @@
                 <a
                     href="{{ url_for('first.index') }}"
                     hx-target="#content"
-                    class="peer-checked:text-primary flex items-center opacity-50 peer-checked:opacity-100"
+                    class="peer-checked:text-primary flex items-center peer-checked:opacity-100"
                     onclick="document.getElementById('first-top-link').checked = true;">
                     Files
                 </a>
@@ -50,7 +50,7 @@
                 <a
                     href="{{ url_for('users.index') }}"
                     hx-target="#content"
-                    class="peer-checked:text-primary flex items-center opacity-50 peer-checked:opacity-100"
+                    class="peer-checked:text-primary flex items-center peer-checked:opacity-100"
                     onclick="document.getElementById('users-top-link').checked = true;">
                     Users
                 </a>
@@ -64,7 +64,7 @@
                 <a
                     href="{{ url_for('users.settings') }}"
                     hx-target="#content"
-                    class="peer-checked:text-primary flex items-center opacity-50 peer-checked:opacity-100"
+                    class="peer-checked:text-primary flex items-center peer-checked:opacity-100"
                     onclick="document.getElementById('settings-top-link').checked = true;">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
