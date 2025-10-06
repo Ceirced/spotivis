@@ -68,6 +68,11 @@
                             Preprocess Data
                         {% endif %}
                     </button>
+                    <a
+                        href="{{ url_for('first.graph_preview', file_uuid=file.uuid) }}"
+                        class="btn btn-primary btn-soft">
+                        View graph
+                    </a>
                 </div>
             </div>
         </div>

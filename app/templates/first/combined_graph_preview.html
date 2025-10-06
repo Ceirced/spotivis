@@ -128,8 +128,8 @@
         // Call the function when ready
         createGraph({
             jobId: "{{ job.uuid }}",
-            nodesUrl: `/first/combine/data/{{ job.uuid }}/nodes`,
-            edgesUrl: `/first/combine/data/{{ job.uuid }}/edges`,
+            nodesUrl: `{{ url_for('first.combined_graph_nodes_data', job_id=job.uuid) }}`,
+            edgesUrl: `{{ url_for('first.combined_graph_edges_data', job_id=job.uuid) }}`,
             defaultNodeColor: "#6b7280",
             colorField: "time_period",
             colorMap: COLOR_MAP,
