@@ -1,5 +1,5 @@
 {% macro content() %}
-    <h1 class="mb-8 text-3xl font-bold">Spotify Data Visualizer</h1>
+    <h1 class="mb-8 text-3xl font-bold">Files</h1>
 
     <div class="card bg-base-200 shadow-sm">
         <div class="card-body">
@@ -45,7 +45,7 @@
     <div
         id="file-list"
         class="mt-8"
-        hx-get="/first/files"
+        hx-get="{{ url_for('first.list_files') }}"
         hx-trigger="load, refresh">
         <!-- File list will be loaded here -->
     </div>

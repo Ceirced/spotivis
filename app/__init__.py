@@ -93,7 +93,7 @@ def create_app():
 
     from app.main.first import bp as first_bp
 
-    app.register_blueprint(first_bp, url_prefix="/first")
+    app.register_blueprint(first_bp, url_prefix="/files")
 
     from app.main.users import bp as users_bp
 

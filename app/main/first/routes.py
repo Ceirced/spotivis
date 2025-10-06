@@ -80,7 +80,7 @@ def index():
     )
 
 
-@bp.route("/preview/<uuid:uuid>", methods=["GET"])
+@bp.route("/<uuid:uuid>", methods=["GET"])
 @cache.cached(
     timeout=300,
     make_cache_key=make_cache_key_with_htmx,
@@ -124,7 +124,7 @@ def preview_file(uuid):
     )
 
 
-@bp.route("/preview-data/<uuid:uuid>", methods=["GET"])
+@bp.route("/<uuid:uuid>/preview", methods=["GET"])
 @cache.cached(
     timeout=300,
     unless=lambda: current_app.config.get("DEBUG", False),
@@ -173,7 +173,7 @@ def preview_data(uuid):
         )
 
 
-@bp.route("/view-processed/<uuid:job_id>/<file_type>", methods=["GET"])
+@bp.route("/<uuid:job_id>/<file_type>", methods=["GET"])
 @cache.cached(
     timeout=300,
     make_cache_key=make_cache_key_with_htmx,
@@ -286,7 +286,7 @@ def view_processed_file(job_id: uuid.UUID, file_type: str):
         )
 
 
-@bp.route("/files", methods=["GET"])
+@bp.route("/list", methods=["GET"])
 def list_files():
     """List all uploaded files that exist both on disk and in database."""
     upload_folder = Path(current_app.root_path).parent / "uploads"
@@ -440,7 +440,7 @@ def delete_file(uuid: uuid.UUID):
         )
 
 
-@bp.route("/upload", methods=["POST"])
+@bp.route("/", methods=["POST"])
 def upload_file():
     if "file" not in request.files:
         return (
@@ -557,7 +557,7 @@ def upload_file():
         )
 
 
-@bp.route("/preprocess/<uuid:uuid>", methods=["POST"])
+@bp.route("/<uuid:uuid>/preprocess", methods=["POST"])
 def start_preprocessing(uuid: uuid.UUID):
     """Start preprocessing task for uploaded parquet file."""
     upload_folder = Path(current_app.root_path).parent / "uploads"
