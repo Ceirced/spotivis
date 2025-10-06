@@ -1,30 +1,27 @@
-<div class="card bg-base-100 shadow-sm">
-    <div class="card-body">
-        <h3 class="card-title">Uploaded Files</h3>
-        <div class="group overflow-x-auto">
-            <p class="text-base-content/70 not-group-has-[tbody:empty]:hidden">
-                No files uploaded yet.
-            </p>
-            <table class="table-zebra table group-has-[tbody:empty]:hidden">
-                <thead>
-                    <tr>
-                        <th>File Name</th>
-                        <th>Size</th>
-                        <th>Upload Time</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody
-                    hx-boost="true"
-                    hx-swap="show:window:top"
-                    hx-target="#content">
-                    {%- for file in files -%}
-                        {% include 'first/partials/_file_row.html' %}
-                    {%- endfor -%}
-                </tbody>
-            </table>
-        </div>
-    </div>
+<h2 class="card-title">Uploaded Files</h2>
+<div class="group overflow-x-auto">
+    <p class="text-base-content/70 not-group-has-[tbody:empty]:hidden">
+        No files uploaded yet.
+    </p>
+    <table class="table-zebra table group-has-[tbody:empty]:hidden">
+        <thead>
+            <tr>
+                <th>File Name</th>
+                <th></th>
+                <th>Size</th>
+                <th>Upload Time</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody
+            hx-boost="true"
+            hx-swap="show:window:top"
+            hx-target="#content">
+            {%- for file in files -%}
+                {% include 'first/partials/_file_row.html' %}
+            {%- endfor -%}
+        </tbody>
+    </table>
 </div>
 <!-- Single Rename Modal -->
 <dialog

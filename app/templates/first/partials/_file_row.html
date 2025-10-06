@@ -8,6 +8,14 @@
             {{ file.name }}
         </a>
     </td>
+    <td>
+        {% if file.preprocessed %}
+            <div class="badge badge-success badge-sm badge-soft">
+                preprocessed
+            </div>
+        {% endif %}
+    </td>
+
     <td>{{ file.size_mb }} MB</td>
     <td>{{ file.created_at }}</td>
     <td>
