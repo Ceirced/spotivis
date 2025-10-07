@@ -21,7 +21,6 @@ def combine_files():
         select(PreprocessingJob)
         .join(UploadedFile)
         .where(
-            UploadedFile.user_id == current_user.id,
             PreprocessingJob.status == "completed",
         )
         .order_by(PreprocessingJob.completed_at.desc())
@@ -55,13 +54,12 @@ def start_combine_files():
             422,
         )
 
-    # Verify both jobs exist and belong to the user
+    # Verify both jobs exist
     first_job_stmt = (
         select(PreprocessingJob)
         .join(UploadedFile)
         .where(
             PreprocessingJob.uuid == first_job_id,
-            UploadedFile.user_id == current_user.id,
             PreprocessingJob.status == "completed",
         )
     )
@@ -72,7 +70,6 @@ def start_combine_files():
         .join(UploadedFile)
         .where(
             PreprocessingJob.uuid == second_job_id,
-            UploadedFile.user_id == current_user.id,
             PreprocessingJob.status == "completed",
         )
     )
@@ -169,10 +166,8 @@ def combine_status(task_id):
 @bp.route("/combine/history", methods=["GET"])
 def combined_history():
     """Display history of combined preprocessing jobs."""
-    stmt = (
-        select(CombinedPreprocessingJob)
-        .where(CombinedPreprocessingJob.user_id == current_user.id)
-        .order_by(CombinedPreprocessingJob.started_at.desc())
+    stmt = select(CombinedPreprocessingJob).order_by(
+        CombinedPreprocessingJob.started_at.desc()
     )
     combined_jobs = db.session.scalars(stmt).all()
 
@@ -186,7 +181,6 @@ def view_combined_graph(job_id: uuid.UUID):
     """View the combined graph visualization."""
     stmt = select(CombinedPreprocessingJob).where(
         CombinedPreprocessingJob.uuid == str(job_id),
-        CombinedPreprocessingJob.user_id == current_user.id,
         CombinedPreprocessingJob.status == "completed",
     )
     combined_job = db.session.scalar(stmt)
@@ -202,7 +196,6 @@ def combined_graph_nodes_data(job_id: uuid.UUID):
     """Serve nodes data for combined graph visualization."""
     stmt = select(CombinedPreprocessingJob).where(
         CombinedPreprocessingJob.uuid == str(job_id),
-        CombinedPreprocessingJob.user_id == current_user.id,
         CombinedPreprocessingJob.status == "completed",
     )
     job = db.session.scalar(stmt)
@@ -238,7 +231,6 @@ def combined_graph_edges_data(job_id: uuid.UUID):
     """Serve edges data for combined graph visualization."""
     stmt = select(CombinedPreprocessingJob).where(
         CombinedPreprocessingJob.uuid == str(job_id),
-        CombinedPreprocessingJob.user_id == current_user.id,
         CombinedPreprocessingJob.status == "completed",
     )
     job = db.session.scalar(stmt)
@@ -321,7 +313,6 @@ def publish_combined_graph(job_id: uuid.UUID):
     if not job or job.status != "completed":
         flash("Job not found or not completed", "error")
         return "", 404
-
     job.published = True
     job.published_at = datetime.now()
     db.session.commit()

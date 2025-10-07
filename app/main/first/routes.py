@@ -189,7 +189,6 @@ def view_processed_file(job_id: uuid.UUID, file_type: str):
         .join(UploadedFile)
         .where(
             PreprocessingJob.uuid == str(job_id),
-            UploadedFile.user_id == current_user.id,
         )
     )
     job = db.session.scalar(stmt)
@@ -290,18 +289,11 @@ def view_processed_file(job_id: uuid.UUID, file_type: str):
 def list_files():
     """List all uploaded files that exist both on disk and in database."""
     upload_folder = Path(current_app.root_path).parent / "uploads"
-    files = []
-
-    # Get all files from database for current user (or all if no auth)
-    if current_user.is_authenticated:
-        stmt = select(UploadedFile).where(UploadedFile.user_id == current_user.id)
-    else:
-        stmt = select(UploadedFile)
 
     files = [
         file
         for file in db.session.scalars(
-            stmt.order_by(UploadedFile.created_at.desc())
+            select(UploadedFile).order_by(UploadedFile.created_at.desc())
         ).all()
         if (upload_folder / (file.uuid + ".parquet")).exists()
     ]
@@ -532,7 +524,7 @@ def upload_file():
             uuid=file_uuid,
             name=file.filename.replace(".parquet", ""),
             file_size=file_length,
-            user_id=current_user.id if current_user.is_authenticated else None,
+            user_id=current_user.id,
             data_start_date=data_start_date,
             data_end_date=data_end_date,
         )
@@ -717,11 +709,7 @@ def cancel_job(task_id):
 def preprocessing_history(uuid=None):
     """Display preprocessing history for uploaded files."""
     # Base query for user's jobs
-    stmt = (
-        select(PreprocessingJob)
-        .join(UploadedFile)
-        .where(UploadedFile.user_id == current_user.id)
-    )
+    stmt = select(PreprocessingJob).join(UploadedFile)
 
     # If uuid is provided, filter by that specific file
     if uuid:
@@ -740,31 +728,33 @@ def preprocessing_history(uuid=None):
     )
 
 
-@bp.route("/graph-preview/<uuid:job_id>", methods=["GET"])
-def graph_preview(job_id: uuid.UUID):
-    """Preview processed graph data."""
-    logger.debug(f"Fetching graph preview for job_id: {job_id}")
-    stmt = (
+@bp.route("/<uuid:file_uuid>/graph", methods=["GET"])
+def graph_preview(file_uuid: uuid.UUID):
+    """Show graph for processed file"""
+    # get the latest completed preprocessing job for this file and user
+    preprocessing_job = db.session.scalar(
         select(PreprocessingJob)
         .join(UploadedFile)
         .where(
-            PreprocessingJob.uuid == str(job_id),
-            UploadedFile.user_id == current_user.id,
+            PreprocessingJob.file_uuid == str(file_uuid),
+            PreprocessingJob.status == "completed",
         )
+        .order_by(PreprocessingJob.completed_at.desc())
     )
-    job = db.session.scalar(stmt)
-    if not job or job.status != "completed":
-        return (
+    if not preprocessing_job:
+        flash("No completed preprocessing job found for this file", "error")
+        return make_response(
             render_template(
                 "first/partials/_error.html",
-                error="Preprocessing job not found or not completed",
+                error="No completed preprocessing job found for this file",
             ),
             422,
+            trigger={"flash-update": True},
         )
 
     return render_template(
         "./first/graph_preview.html",
-        job=job,
+        job=preprocessing_job,
     )
 
 
@@ -776,7 +766,6 @@ def graph_nodes_data(job_id: uuid.UUID):
         .join(UploadedFile)
         .where(
             PreprocessingJob.uuid == str(job_id),
-            UploadedFile.user_id == current_user.id,
         )
     )
     job = db.session.scalar(stmt)
@@ -819,7 +808,6 @@ def graph_edges_data(job_id: uuid.UUID):
         .join(UploadedFile)
         .where(
             PreprocessingJob.uuid == str(job_id),
-            UploadedFile.user_id == current_user.id,
         )
     )
     job = db.session.scalar(stmt)
@@ -866,7 +854,6 @@ def start_playlist_enrichment(job_id: uuid.UUID):
         .join(UploadedFile)
         .where(
             PreprocessingJob.uuid == str(job_id),
-            UploadedFile.user_id == current_user.id,
         )
     )
     preprocessing_job = db.session.scalar(stmt)
