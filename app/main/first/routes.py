@@ -353,17 +353,15 @@ def rename_file(uuid: uuid.UUID):
         flash("File renamed successfully", "success")
 
         response = make_response(
-            render_template("./first/partials/_file_row.html", file=file),
+            file.name,
             trigger={
-                "refresh": {
-                    "target": "#preprocessing-history"
-                },  # Trigger HTMX refresh of preprocessing history
                 "flash-update": True,
             },
         )
         return response
     except Exception as e:
         db.session.rollback()
+        flash("Failed to rename file", "error")
         return (
             render_template(
                 "./first/partials/_error.html",
@@ -424,8 +422,14 @@ def delete_file(uuid: uuid.UUID):
         if file_path.exists():
             file_path.unlink()
 
+        flash("File deleted successfully", "success")
+
         response = make_response(
-            "", trigger={"refresh": {"target": "#preprocessing-history"}}
+            "File deleted successfully",
+            trigger={
+                "flash-update": True,
+            },
+            location=url_for("first.index"),
         )
         return response
 

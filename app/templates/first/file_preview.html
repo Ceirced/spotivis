@@ -1,78 +1,137 @@
 {% macro content() %}
-    <div class="breadcrumbs mb-4 text-sm">
-        <ul>
-            <li>
-                <a
-                    href="{{ url_for('first.index') }}"
-                    hx-boost="true"
-                    hx-target="#content"
-                    hx-swap="show:window:top">
-                    Files
-                </a>
-            </li>
-            <li>{{ file.name }}</li>
-        </ul>
-    </div>
-    <div class="flex flex-1 flex-col gap-8">
-        <div class="card bg-secondary text-secondary-content shadow-sm">
-            <div class="card-body">
-                <h1 class="card-title text-2xl">{{ file.name }}</h1>
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div>
-                        <p class="text-sm font-medium text-white">
-                            {{ file_size_mb }} MB
-                        </p>
+    <div class="flex flex-col gap-8">
+        <div x-data="{ filename: '{{ file.name }}' }">
+            <div class="breadcrumbs mb-4 text-sm">
+                <ul>
+                    <li>
+                        <a
+                            href="{{ url_for('first.index') }}"
+                            hx-boost="true"
+                            hx-target="#content"
+                            hx-swap="show:window:top">
+                            Files
+                        </a>
+                    </li>
+                    <li x-text="filename"></li>
+                </ul>
+            </div>
+            <div class="card bg-secondary text-secondary-content shadow-sm">
+                <div class="card-body">
+                    <div class="mb-4 flex items-start justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <h1
+                                class="card-title text-2xl"
+                                id="filename"
+                                x-text="filename"
+                                @htmx:after-swap="filename = $el.innerText"></h1>
+                            {% if current_user.id == file.user_id %}
+                                <div class="flex gap-2">
+                                    <button
+                                        onclick="openRenameModal()"
+                                        class="btn btn-secondary btn-sm btn-square size-8"
+                                        title="Rename file">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke-width="1.5"
+                                            stroke="currentColor"
+                                            class="size-5">
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            {% endif %}
+                            {% if file.preprocessed %}
+                                <div
+                                    class="badge badge-success badge-sm badge-outline">
+                                    preprocessed
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% if current_user.id == file.user_id %}
+                            <button
+                                hx-delete="{{ url_for('first.delete_file', uuid=file.uuid) }}"
+                                hx-confirm="Are you sure you want to delete this file? This action cannot be undone."
+                                class="btn btn-secondary btn-sm btn-square size-8"
+                                title="Delete file">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke-width="1.5"
+                                    stroke="currentColor"
+                                    class="size-6">
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                </svg>
+                            </button>
+                        {% endif %}
                     </div>
-                    <div>
-                        <p class="text-xs">Upload Time</p>
-                        <p class="font-medium text-white">
-                            {{ file.created_at }} (UTC)
-                        </p>
-                    </div>
-                    {% if file.data_start_date and file.data_end_date %}
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div>
-                            <p class="text-xs">Data Period</p>
-                            <p class="font-medium text-white">
-                                {{ file.data_start_date.strftime('%Y-%m-%d') }}
-                                to {{ file.data_end_date.strftime('%Y-%m-%d') }}
-                            </p>
-                            <p class="text-secondary-content/70 text-xs">
-                                ({{ (file.data_end_date - file.data_start_date).days }}
-                                days)
+                            <p class="text-sm font-medium text-white">
+                                {{ file_size_mb }} MB
                             </p>
                         </div>
-                    {% endif %}
-                </div>
-                <div class="card-actions mt-4 justify-end">
-                    <button
-                        hx-post="{{ url_for('first.start_preprocessing', uuid=file.uuid) }}"
-                        hx-target="#preprocessing-container"
-                        hx-swap="innerHTML"
-                        class="btn btn-primary btn-soft"
-                        {% if running_job or file.preprocessed %}disabled{% endif %}>
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke-width="1.5"
-                            stroke="currentColor"
-                            class="h-5 w-5">
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-                        </svg>
-                        {% if running_job %}
-                            Processing...
-                        {% else %}
-                            Preprocess Data
+                        <div>
+                            <p class="text-xs">Upload Time</p>
+                            <p class="font-medium text-white">
+                                {{ file.created_at }} (UTC)
+                            </p>
+                        </div>
+                        {% if file.data_start_date and file.data_end_date %}
+                            <div>
+                                <p class="text-xs">Data Period</p>
+                                <p class="font-medium text-white">
+                                    {{ file.data_start_date.strftime('%Y-%m-%d') }}
+                                    to
+                                    {{ file.data_end_date.strftime('%Y-%m-%d') }}
+                                </p>
+                                <p class="text-secondary-content/70 text-xs">
+                                    ({{ (file.data_end_date - file.data_start_date).days }}
+                                    days)
+                                </p>
+                            </div>
                         {% endif %}
-                    </button>
-                    <a
-                        href="{{ url_for('first.graph_preview', file_uuid=file.uuid) }}"
-                        class="btn btn-primary btn-soft">
-                        View graph
-                    </a>
+                    </div>
+                    <div class="card-actions mt-4 justify-end">
+                        {% if not running_job and not file.preprocessed %}
+                            <button
+                                hx-post="{{ url_for('first.start_preprocessing', uuid=file.uuid) }}"
+                                hx-target="#preprocessing-container"
+                                hx-swap="innerHTML"
+                                class="btn btn-primary">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke-width="1.5"
+                                    stroke="currentColor"
+                                    class="h-5 w-5">
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                </svg>
+                                Preprocess Data
+                            </button>
+                        {% elif file.preprocessed %}
+                            <a
+                                hx-boost="true"
+                                hx-swap="show:window:top"
+                                hx-target="#content"
+                                href="{{ url_for('first.graph_preview', file_uuid=file.uuid) }}"
+                                class="btn btn-primary btn-outline">
+                                View graph
+                            </a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
@@ -149,6 +208,85 @@
                     <div class="skeleton h-96 w-full"></div>
                 </div>
             </div>
+
+            <!-- Rename Modal -->
+            {% if current_user.id == file.user_id %}
+                <dialog
+                    id="rename-modal"
+                    class="modal">
+                    <div class="modal-box">
+                        <h3 class="text-lg font-bold">Rename File</h3>
+                        <form
+                            id="rename-form"
+                            hx-target="#filename"
+                            hx-put="{{ url_for('first.rename_file', uuid=file.uuid) }}"
+                            class="mt-4">
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text">New Name</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    id="rename-input"
+                                    name="new_name"
+                                    class="input input-bordered w-full"
+                                    autofocus
+                                    required />
+                            </div>
+                            <div class="modal-action">
+                                <button
+                                    type="button"
+                                    class="btn"
+                                    onclick="document.getElementById('rename-modal').close()">
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary">
+                                    Rename
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <form
+                        method="dialog"
+                        class="modal-backdrop">
+                        <button>close</button>
+                    </form>
+                </dialog>
+                <script>
+                    function openRenameModal() {
+                        const modal = document.getElementById("rename-modal");
+                        const form = document.getElementById("rename-form");
+                        const input = document.getElementById("rename-input");
+
+                        // Set the current name in the input
+                        input.value = document
+                            .getElementById("filename")
+                            .innerText.trim();
+
+                        // Initialize HTMX on the form if not already done
+                        htmx.process(form);
+
+                        // Close modal after successful request
+                        form.addEventListener(
+                            "htmx:afterRequest",
+                            function closeModal(event) {
+                                if (event.detail.successful) {
+                                    modal.close();
+                                    form.removeEventListener(
+                                        "htmx:afterRequest",
+                                        closeModal
+                                    );
+                                }
+                            }
+                        );
+
+                        // Show the modal
+                        modal.showModal();
+                    }
+                </script>
+            {% endif %}
         </div>
     </div>
 {% endmacro %}
@@ -160,7 +298,7 @@
         id="top-bar"
         hx-swap-oob="innerHTML">
         {% block top_bar %}
-            <div class="container flex w-full items-center justify-between">
+            <div class="flex w-full items-center justify-between">
                 <a
                     hx-boost="true"
                     hx-target="#content"
@@ -177,7 +315,7 @@
                             stroke-linejoin="round"
                             d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
                     </svg>
-                    <span>first</span>
+                    <span>Files</span>
                 </a>
             </div>
         {% endblock %}
