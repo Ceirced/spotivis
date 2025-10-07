@@ -22,13 +22,12 @@ else:
 
 class TimestampMixin:
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
+        DateTime(timezone=True), server_default=func.now()
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
         onupdate=func.now(),
-        nullable=False,
     )
 
 
@@ -84,19 +83,14 @@ class User(Model, fsqla.FsUserMixin):
         return User.query.filter(User.id.in_(friends_ids))
 
 
-class FriendRequest(Model):
-    request_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    sender_id = db.Column(
-        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
-    )
-    receiver_id = db.Column(
-        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
-    )
-    status = db.Column(
+class FriendRequest(TimestampMixin, Model):
+    request_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    sender_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
+    receiver_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
+    status: Mapped[str] = mapped_column(
         db.Enum("pending", "accepted", "declined", name="status_enum"),
         default="pending",
     )
-    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     db.UniqueConstraint("sender_id", "receiver_id")
 
 
@@ -108,15 +102,15 @@ class UploadedFile(TimestampMixin, Model):
         default=lambda: str(uuid.uuid4()),
         primary_key=True,
     )
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
-    file_size: Mapped[int] = mapped_column(db.BigInteger, nullable=False)
+    name: Mapped[str] = mapped_column(String(255))
+    file_size: Mapped[int] = mapped_column(db.BigInteger)
 
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     user: Mapped[User] = relationship("User", back_populates="uploaded_files")
 
     # Date range from the parquet data
-    data_start_date: Mapped[datetime | None] = mapped_column(db.DateTime, nullable=True)
-    data_end_date: Mapped[datetime | None] = mapped_column(db.DateTime, nullable=True)
+    data_start_date: Mapped[datetime | None]
+    data_end_date: Mapped[datetime | None]
 
     preprocessing_jobs: Mapped[list[PreprocessingJob]] = relationship(
         "PreprocessingJob", back_populates="uploaded_file", cascade="all, delete-orphan"
@@ -140,36 +134,34 @@ class PreprocessingJob(Model):
     uuid: Mapped[str] = mapped_column(
         String(36), primary_key=True, default=lambda: str(uuid.uuid4())
     )
-    task_id: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    task_id: Mapped[str] = mapped_column(String(255), unique=True)
     file_uuid: Mapped[str] = mapped_column(
-        ForeignKey("uploaded_files.uuid", ondelete="CASCADE"), nullable=False
+        ForeignKey("uploaded_files.uuid", ondelete="CASCADE")
     )
     uploaded_file: Mapped[UploadedFile] = relationship(
         "UploadedFile", back_populates="preprocessing_jobs"
     )
 
-    status: Mapped[str] = mapped_column(String(50), nullable=False, default="pending")
+    status: Mapped[str] = mapped_column(String(50), default="pending")
     started_at: Mapped[datetime] = mapped_column(
-        db.DateTime, nullable=False, default=db.func.current_timestamp()
+        db.DateTime, default=db.func.current_timestamp()
     )
-    completed_at: Mapped[datetime | None] = mapped_column(db.DateTime, nullable=True)
+    completed_at: Mapped[datetime | None]
 
     # File paths for the generated graph data
-    edges_file: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    nodes_file: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    edges_file: Mapped[str | None] = mapped_column(String(500))
+    nodes_file: Mapped[str | None] = mapped_column(String(500))
 
-    final_nodes: Mapped[int | None] = mapped_column(db.Integer, nullable=True)
-    final_edges: Mapped[int | None] = mapped_column(db.Integer, nullable=True)
-    time_periods: Mapped[int | None] = mapped_column(db.Integer, nullable=True)
+    final_nodes: Mapped[int | None]
+    final_edges: Mapped[int | None]
+    time_periods: Mapped[int | None]
 
     # Publishing
-    published: Mapped[bool | None] = mapped_column(
-        db.Boolean, nullable=True, default=False
-    )
-    published_at: Mapped[datetime | None] = mapped_column(db.DateTime, nullable=True)
+    published: Mapped[bool | None] = mapped_column(default=False)
+    published_at: Mapped[datetime | None]
 
     # Error tracking
-    error_message: Mapped[str | None] = mapped_column(db.Text, nullable=True)
+    error_message: Mapped[str | None] = mapped_column(db.Text)
 
     enrichment_jobs: Mapped[list[PlaylistEnrichmentJob]] = relationship(
         back_populates="preprocessing_job", cascade="all, delete-orphan"
@@ -185,30 +177,30 @@ class PlaylistEnrichmentJob(Model):
     uuid: Mapped[str] = mapped_column(
         String(36), primary_key=True, default=lambda: str(uuid.uuid4())
     )
-    task_id: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    task_id: Mapped[str] = mapped_column(String(255), unique=True)
     preprocessing_job_id: Mapped[str] = mapped_column(
-        ForeignKey("preprocessing_jobs.uuid"), nullable=False
+        ForeignKey("preprocessing_jobs.uuid")
     )
     preprocessing_job: Mapped[PreprocessingJob] = relationship(
         back_populates="enrichment_jobs"
     )
 
-    status: Mapped[str] = mapped_column(String(50), nullable=False, default="pending")
+    status: Mapped[str] = mapped_column(String(50), default="pending")
     started_at: Mapped[datetime] = mapped_column(
-        db.DateTime, nullable=False, default=db.func.current_timestamp()
+        db.DateTime, default=db.func.current_timestamp()
     )
-    completed_at: Mapped[datetime | None] = mapped_column(db.DateTime, nullable=True)
+    completed_at: Mapped[datetime | None]
 
     # Output file path for the enriched data
-    output_file: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    output_file: Mapped[str | None] = mapped_column(String(500))
 
     # Statistics
-    total_playlists: Mapped[int | None] = mapped_column(db.Integer, nullable=True)
-    found_count: Mapped[int | None] = mapped_column(db.Integer, nullable=True)
-    not_found_count: Mapped[int | None] = mapped_column(db.Integer, nullable=True)
+    total_playlists: Mapped[int | None]
+    found_count: Mapped[int | None]
+    not_found_count: Mapped[int | None]
 
     # Error tracking
-    error_message: Mapped[str | None] = mapped_column(db.Text, nullable=True)
+    error_message: Mapped[str | None] = mapped_column(db.Text)
 
     def __repr__(self):
         return f"<PlaylistEnrichmentJob {self.uuid} - {self.status}>"
@@ -223,51 +215,44 @@ class CombinedPreprocessingJob(Model):
 
     # References to the two preprocessing jobs being combined
     first_job_id: Mapped[str] = mapped_column(
-        ForeignKey("preprocessing_jobs.uuid", ondelete="CASCADE"), nullable=False
+        ForeignKey("preprocessing_jobs.uuid", ondelete="CASCADE")
     )
     first_job: Mapped[PreprocessingJob] = relationship(foreign_keys=[first_job_id])
 
     second_job_id: Mapped[str] = mapped_column(
-        ForeignKey("preprocessing_jobs.uuid", ondelete="CASCADE"), nullable=False
+        ForeignKey("preprocessing_jobs.uuid", ondelete="CASCADE")
     )
     second_job: Mapped[PreprocessingJob] = relationship(foreign_keys=[second_job_id])
 
     # Task and status tracking
-    task_id: Mapped[str | None] = mapped_column(String(255), nullable=True, unique=True)
-    status: Mapped[str] = mapped_column(String(50), nullable=False, default="pending")
+    task_id: Mapped[str | None] = mapped_column(String(255), unique=True)
+    status: Mapped[str] = mapped_column(String(50), default="pending")
     started_at: Mapped[datetime] = mapped_column(
-        db.DateTime, nullable=False, default=db.func.current_timestamp()
+        db.DateTime, default=db.func.current_timestamp()
     )
-    completed_at: Mapped[datetime | None] = mapped_column(db.DateTime, nullable=True)
+    completed_at: Mapped[datetime | None]
 
     # Combined output files
-    edges_file: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    nodes_file: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    edges_file: Mapped[str | None] = mapped_column(String(500))
+    nodes_file: Mapped[str | None] = mapped_column(String(500))
 
     # Statistics
-    total_nodes: Mapped[int | None] = mapped_column(db.Integer, nullable=True)
-    total_edges: Mapped[int | None] = mapped_column(db.Integer, nullable=True)
-    nodes_from_first: Mapped[int | None] = mapped_column(db.Integer, nullable=True)
-    nodes_from_second: Mapped[int | None] = mapped_column(db.Integer, nullable=True)
-    new_nodes: Mapped[int | None] = mapped_column(db.Integer, nullable=True)
+    total_nodes: Mapped[int | None]
+    total_edges: Mapped[int | None]
+    nodes_from_first: Mapped[int | None]
+    nodes_from_second: Mapped[int | None]
+    new_nodes: Mapped[int | None]
     # Date ranges from the combined data
-    first_start_date: Mapped[datetime | None] = mapped_column(
-        db.DateTime, nullable=True
-    )
-    first_end_date: Mapped[datetime | None] = mapped_column(db.DateTime, nullable=True)
-    second_start_date: Mapped[datetime | None] = mapped_column(
-        db.DateTime, nullable=True
-    )
-    second_end_date: Mapped[datetime | None] = mapped_column(db.DateTime, nullable=True)
+    first_start_date: Mapped[datetime | None]
+    first_end_date: Mapped[datetime | None]
+    second_start_date: Mapped[datetime | None]
+    second_end_date: Mapped[datetime | None]
 
     # Publishing
-    published: Mapped[bool | None] = mapped_column(
-        db.Boolean, nullable=True, default=False
-    )
-    published_at: Mapped[datetime | None] = mapped_column(db.DateTime, nullable=True)
-
+    published: Mapped[bool | None] = mapped_column(default=False)
+    published_at: Mapped[datetime | None]
     # Error tracking
-    error_message: Mapped[str | None] = mapped_column(db.Text, nullable=True)
+    error_message: Mapped[str | None] = mapped_column(db.Text)
     # User reference
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
     user: Mapped[User] = relationship("User")
