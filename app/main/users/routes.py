@@ -1,13 +1,16 @@
 import datetime
+from typing import cast
 
 from flask import flash, make_response, redirect, render_template, request, url_for
-from flask_security import current_user
+from flask_security import current_user as flask_current_user
 from flask_security.utils import logout_user
 from sqlalchemy import select
 
 from app import db
 from app.main.users import bp
 from app.models import FriendRequest, User
+
+current_user = cast(User, flask_current_user)
 
 
 @bp.route("/", methods=["GET"])
