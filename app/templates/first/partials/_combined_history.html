@@ -47,19 +47,22 @@
                         </td>
                         <td>
                             {% if job.status == "completed" %}
-                                <span class="badge badge-success badge-sm"
+                                <span
+                                    class="badge badge-success badge-sm badge-soft"
                                     >Completed</span
                                 >
                             {% elif job.status == "processing" %}
-                                <span class="badge badge-info badge-sm"
+                                <span
+                                    class="badge badge-info badge-sm badge-soft"
                                     >Processing</span
                                 >
                             {% elif job.status == "failed" %}
-                                <span class="badge badge-error badge-sm"
+                                <span
+                                    class="badge badge-error badge-sm badge-soft"
                                     >Failed</span
                                 >
                             {% else %}
-                                <span class="badge badge-sm"
+                                <span class="badge badge-sm badge-soft"
                                     >{{ job.status }}</span
                                 >
                             {% endif %}
