@@ -121,7 +121,7 @@ class UploadedFile(TimestampMixin, Model):
         return round(self.file_size / (1024 * 1024), 2)
 
     def __repr__(self):
-        return f"<UploadedFile {self.id} - {self.name}>"
+        return f"<UploadedFile {self.uuid} - {self.name}>"
 
     @property
     def preprocessed(self) -> bool:
