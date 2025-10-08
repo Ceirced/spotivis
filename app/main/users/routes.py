@@ -1,13 +1,20 @@
 import datetime
+from typing import cast
 
 from flask import flash, make_response, redirect, render_template, request, url_for
-from flask_security import current_user
+from flask_security import (
+    check_and_update_authn_fresh,
+    current_user as flask_current_user,
+)
 from flask_security.utils import logout_user
+from flask_wtf import FlaskForm
 from sqlalchemy import select
 
 from app import db
 from app.main.users import bp
-from app.models import FriendRequest, User
+from app.models import FriendRequest, FriendRequestStatus, User
+
+current_user = cast(User, flask_current_user)
 
 
 @bp.route("/", methods=["GET"])
@@ -16,9 +23,9 @@ def index():
     incoming_requests = db.session.execute(
         select(FriendRequest, User)
         .join(User, User.id == FriendRequest.sender_id)
-        .filter(
+        .where(
             FriendRequest.receiver_id == current_user.id,
-            FriendRequest.status == "pending",
+            FriendRequest.status == FriendRequestStatus.PENDING,
         )
     ).all()
 
@@ -74,10 +81,13 @@ def profile(username):
     # Check if there's a pending friend request
     pending_request = False
     if current_user.is_authenticated and current_user.id != user.id:
-        friend_request = FriendRequest.query.filter_by(
-            sender_id=current_user.id, receiver_id=user.id
-        ).first()
-        if friend_request and friend_request.status == "pending":
+        friend_request = db.session.scalar(
+            select(FriendRequest).where(
+                FriendRequest.sender_id == current_user.id,
+                FriendRequest.receiver_id == user.id,
+            )
+        )
+        if friend_request and friend_request.status == FriendRequestStatus.PENDING:
             pending_request = True
 
     return render_template(
@@ -92,27 +102,28 @@ def profile(username):
 @bp.route("/send_friend_request", methods=["POST"])
 def send_friend_request():
     # get the post parameters that are sent with the request they are not json
-    data = request.form.to_dict()
-    receiver_id = int(data.get("receiver_id"))
-
+    receiver_id = request.form.get("receiver_id", type=int)
     sender_id = current_user.id
-    receiver = User.query.get(receiver_id)
-    if receiver is None:
+    receiver = db.session.get(User, receiver_id)
+    if not receiver:
         return {"error": "User not found"}, 404
     if current_user.is_friends_with(receiver_id):
         return {"error": "Already friends"}, 400
     if sender_id == receiver_id:
         return {"error": "Cannot send friend request to self"}, 400
 
-    existing_request = FriendRequest.query.filter_by(
-        sender_id=sender_id, receiver_id=receiver_id
-    ).first()
-    if existing_request and existing_request.status != "accepted":
-        existing_request.status = "pending"
+    existing_request = db.session.scalar(
+        select(FriendRequest).where(
+            FriendRequest.sender_id == sender_id,
+            FriendRequest.receiver_id == receiver_id,
+        )
+    )
+    if existing_request and existing_request.status != FriendRequestStatus.ACCEPTED:
+        existing_request.status = FriendRequestStatus.PENDING
         existing_request.created_at = db.func.current_timestamp()
         db.session.commit()
         return {"message": "Friend request sent"}, 200
-    elif existing_request and existing_request.status == "accepted":
+    elif existing_request and existing_request.status == FriendRequestStatus.ACCEPTED:
         return {"error": "Already friends"}, 400
     else:
         friend_request = FriendRequest(sender_id=sender_id, receiver_id=receiver_id)
@@ -123,14 +134,13 @@ def send_friend_request():
 
 @bp.route("/accept_friend_request", methods=["POST"])
 def accept_friend_request():
-    data = request.form.to_dict()
-    request_id = int(data.get("request_id"))
-    friend_request = FriendRequest.query.get(request_id)
-    if friend_request is None:
+    request_id = request.form.get("request_id", type=int)
+    friend_request = db.session.get(FriendRequest, request_id)
+    if not friend_request:
         return {"error": "Friend request not found"}, 404
     if friend_request.receiver_id != current_user.id:
         return {"error": "Unauthorized"}, 403
-    friend_request.status = "accepted"
+    friend_request.status = FriendRequestStatus.ACCEPTED
     db.session.commit()
 
     # emtpy response
@@ -142,14 +152,13 @@ def accept_friend_request():
 
 @bp.route("/decline_friend_request", methods=["POST"])
 def decline_friend_request():
-    data = request.form.to_dict()
-    request_id = int(data.get("request_id"))
-    friend_request = FriendRequest.query.get(request_id)
-    if friend_request is None:
+    request_id = request.form.get("request_id", type=int)
+    friend_request = db.session.get(FriendRequest, request_id)
+    if not friend_request:
         return {"error": "Friend request not found"}, 404
     if friend_request.receiver_id != current_user.id:
         return {"error": "Unauthorized"}, 403
-    friend_request.status = "declined"
+    friend_request.status = FriendRequestStatus.DECLINED
     db.session.commit()
     return {"message": "Friend request declined"}, 200
 
@@ -164,15 +173,14 @@ def friends():
 
 @bp.route("/friend-requests", methods=["GET"])
 def friend_requests():
-    incoming_requests = (
-        db.session.query(FriendRequest, User)
+    incoming_requests = db.session.execute(
+        select(FriendRequest, User)
         .join(User, User.id == FriendRequest.sender_id)
-        .filter(
+        .where(
             FriendRequest.receiver_id == current_user.id,
-            FriendRequest.status == "pending",
+            FriendRequest.status == FriendRequestStatus.PENDING,
         )
-        .all()
-    )
+    ).all()
     return render_template(
         "users/partials/_friend-requests.html", incoming_requests=incoming_requests
     )
@@ -180,8 +188,6 @@ def friend_requests():
 
 @bp.route("/settings", methods=["GET"])
 def settings():
-    from flask_wtf import FlaskForm
-
     title = "Settings"
     delete_form = FlaskForm()
     return render_template("users/settings.html", title=title, delete_form=delete_form)
@@ -190,8 +196,6 @@ def settings():
 @bp.route("/delete-account", methods=["POST"])
 def delete_account():
     """Delete the current user's account. Requires fresh login."""
-    from flask_security import check_and_update_authn_fresh
-    from flask_wtf import FlaskForm
 
     # Validate CSRF token
     form = FlaskForm()
@@ -206,10 +210,8 @@ def delete_account():
         flash("Please re-authenticate to delete your account.", "error")
         return redirect(url_for("security.verify", next=url_for("users.settings")))
 
-    user_id = current_user.id
-
     # Get the user object and delete it (this triggers database CASCADE)
-    user = User.query.get(user_id)
+    user = db.session.get(User, current_user.id)
     db.session.delete(user)
     db.session.commit()
 
