@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 from pathlib import Path
+from uuid import uuid4
 
 import pandas as pd
 import pyarrow.parquet as pq
@@ -111,7 +112,6 @@ def preview_file(uuid):
             .order_by(PreprocessingJob.started_at.desc())
         )
         running_job = db.session.scalar(job_stmt)
-
     completed_job = next(
         (job for job in uploaded_file.preprocessing_jobs if job.status == "completed"),
         None,
@@ -484,7 +484,7 @@ def upload_file():
 
     filename = secure_filename(file.filename)
     # Add timestamp to avoid collisions
-    file_uuid = str(uuid.uuid4())
+    file_uuid = str(uuid4())
     filename = file_uuid + ".parquet"
     file_path = upload_folder / filename
 
@@ -597,9 +597,15 @@ def start_preprocessing(uuid: uuid.UUID):
             ),
             422,
         )
-
-    # Start the Celery task - it will create the job record internally
-    task = preprocess_spotify_data_original.delay(uuid)
+    job = PreprocessingJob(
+        uuid=str(uuid4()),
+        file_uuid=uploaded_file.uuid,
+        status="pending",
+    )  # type: ignore
+    task = preprocess_spotify_data_original.delay(uuid, job.uuid)
+    job.task_id = task.id
+    db.session.add(job)
+    db.session.commit()
 
     return render_template(
         "./first/partials/_preprocess_started.html",

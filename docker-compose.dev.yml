@@ -14,3 +14,7 @@ services:
   nginx:
     ports:
       - 5026:80
+    
+  postgres:
+    ports:
+      - 5432:5432

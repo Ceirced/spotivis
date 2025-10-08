@@ -122,7 +122,7 @@ class UploadedFile(TimestampMixin, Model):
 
     uuid: Mapped[str] = mapped_column(
         String(36),
-        default=lambda: str(uuid.uuid4()),
+        default=uuid.uuid4,
         primary_key=True,
     )
     name: Mapped[str] = mapped_column(String(255))

@@ -168,38 +168,49 @@ def save_graph(
 
 
 @shared_task(bind=True)
-def preprocess_spotify_data_original(self, uuid: uuid.UUID):
+def preprocess_spotify_data_original(self, file_uuid: uuid.UUID, job_uuid: str):
     """
     Celery task using the exact same algorithm as create_data.py.
     """
+    try:
+        job = db.session.get(PreprocessingJob, job_uuid)
+        if not job:
+            logger.error(f"No preprocessing job found for uuid: {job_uuid}")
+            self.update_state(
+                state=states.FAILURE,
+            )
+            raise TaskError(f"Job with uuid {job_uuid} not found in database")
+    except Exception as e:
+        logger.error(f"Database error fetching job {job_uuid}: {str(e)}")
+        self.update_state(
+            state=states.FAILURE,
+        )
+        raise TaskError(f"Database error fetching job {job_uuid}: {str(e)}") from e
 
     try:
+        job.status = "processing"
+        db.session.commit()
         # Get the uploaded file record to create job
-        uploaded_file = db.session.get(UploadedFile, str(uuid))
+        uploaded_file = db.session.get(UploadedFile, str(file_uuid))
 
         if not uploaded_file:
-            logger.error(f"No uploaded file found for uuid: {uuid}")
+            logger.error(f"No uploaded file found for uuid: {file_uuid}")
 
             self.update_state(
                 state=states.FAILURE,
                 meta={
                     "exc_type": "FileNotFoundError",
-                    "exc_message": [f"File with uuid {uuid} not found in database"],
+                    "exc_message": [
+                        f"File with uuid {file_uuid} not found in database"
+                    ],
                     "status": "error",
                 },
             )
-            raise FileNotFoundError(f"File with uuid {uuid} not found in database")
+            raise FileNotFoundError(f"File with uuid {file_uuid} not found in database")
 
-        # Create preprocessing job record
-        job = PreprocessingJob(
-            task_id=self.request.id,
-            file_uuid=uploaded_file.uuid,
-            status="processing",
-        )  # type: ignore
-        db.session.add(job)
-        db.session.commit()
-
-        logger.info(f"Created and started processing job {job.uuid} for file {uuid}")
+        logger.info(
+            f"Created and started processing job {job.uuid} for file {file_uuid}"
+        )
         # Set up paths using Flask app configuration
         from flask import current_app
 
@@ -212,12 +223,12 @@ def preprocess_spotify_data_original(self, uuid: uuid.UUID):
         )
         preprocessed_data_directory.mkdir(exist_ok=True)
 
-        input_filepath = upload_folder / (str(uuid) + ".parquet")
+        input_filepath = upload_folder / (str(file_uuid) + ".parquet")
 
         if not input_filepath.exists():
             if job:
                 job.status = "failed"
-                job.error_message = f"File {str(uuid) + '.parquet'} not found"
+                job.error_message = f"File {str(file_uuid) + '.parquet'} not found"
                 job.completed_at = datetime.now(UTC)
                 db.session.commit()
 
@@ -225,14 +236,14 @@ def preprocess_spotify_data_original(self, uuid: uuid.UUID):
                 state=states.FAILURE,
                 meta={
                     "exc_type": "FileNotFoundError",
-                    "exc_message": [f"File {str(uuid) + '.parquet'} not found"],
+                    "exc_message": [f"File {str(file_uuid) + '.parquet'} not found"],
                     "status": "error",
                 },
             )
-            raise FileNotFoundError(f"File {str(uuid) + '.parquet'} not on disk")
+            raise FileNotFoundError(f"File {str(file_uuid) + '.parquet'} not on disk")
 
         logger.info(
-            f"Starting original algorithm preprocessing of {str(uuid) + '.parquet'}"
+            f"Starting original algorithm preprocessing of {str(file_uuid) + '.parquet'}"
         )
 
         self.update_state(
@@ -316,7 +327,7 @@ def preprocess_spotify_data_original(self, uuid: uuid.UUID):
 
         result = {
             "status": "success",
-            "input_file": str(uuid) + ".parquet",
+            "input_file": str(file_uuid) + ".parquet",
             "output_files": {
                 "edges": edges_file,
                 "nodes": nodes_file,
@@ -348,17 +359,22 @@ def preprocess_spotify_data_original(self, uuid: uuid.UUID):
         return result
 
     except Ignore:
-        if job:
-            job.status = "cancelled"
-            job.error_message = "Task cancelled by user"
-            job.completed_at = datetime.now(UTC)
-            db.session.commit()
-            logger.info(f"Job {job.uuid} status updated to cancelled")
+        job.status = "cancelled"
+        job.error_message = "Task cancelled by user"
+        job.completed_at = datetime.now(UTC)
+        db.session.commit()
+        logger.info(f"Job {job.uuid} status updated to cancelled")
+
     except FileNotFoundError:
         self.update_state(
             state=states.FAILURE,
         )
-        raise TaskError(f"File with uuid {uuid} not found in database") from None
+        error = TaskError(f"File with uuid {file_uuid} not found in database")
+        job.status = states.FAILURE
+        job.error_message = str(error)
+        db.session.commit()
+
+        raise error from None
 
     except Exception as e:
         logger.error(f"Error in original preprocessing: {str(e)}")
@@ -373,4 +389,7 @@ def preprocess_spotify_data_original(self, uuid: uuid.UUID):
                 "status": "error",
             },
         )
+        job.status = states.FAILURE
+        job.error_message = str(e)
+        db.session.commit()
         raise Ignore from None
