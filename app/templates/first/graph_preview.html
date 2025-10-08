@@ -91,30 +91,7 @@
 {% if htmx.boosted %}
     <title>{{ title }}</title>
 
-    <div
-        id="top-bar"
-        hx-swap-oob="innerHTML">
-        {% block top_bar %}
-            <div class="container flex w-full items-center justify-between">
-                <a
-                    href="javascript:history.back()"
-                    class="group hover:text-primary flex items-center gap-1 transition-colors">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        class="size-4 stroke-current stroke-2 transition-transform duration-300 ease-out group-hover:-translate-x-1">
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-                    </svg>
-                    <span>back</span>
-                </a>
-            </div>
-        {% endblock %}
-    </div>
-    {{ content() }}
+    {% include 'partials/_back_top_bar.html' %} {{ content() }}
 {% else %}
     {% extends 'base.html' %}
     {% block content %}
