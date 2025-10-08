@@ -15,6 +15,10 @@ MIN_EDGE_WEIGHT = 40
 MIN_COMPONENT_SIZE = 3
 
 
+class TaskError(Exception):
+    pass
+
+
 def load_playlist_data(filepath: Path) -> tuple[pd.DataFrame, list[pd.Timestamp]]:
     """Load playlist track network data and generate time periods."""
     df = pd.read_parquet(filepath)
@@ -184,8 +188,7 @@ def preprocess_spotify_data_original(self, uuid: uuid.UUID):
                     "status": "error",
                 },
             )
-
-            raise Ignore
+            raise FileNotFoundError(f"File with uuid {uuid} not found in database")
 
         # Create preprocessing job record
         job = PreprocessingJob(
@@ -226,8 +229,7 @@ def preprocess_spotify_data_original(self, uuid: uuid.UUID):
                     "status": "error",
                 },
             )
-
-            raise Ignore
+            raise FileNotFoundError(f"File {str(uuid) + '.parquet'} not on disk")
 
         logger.info(
             f"Starting original algorithm preprocessing of {str(uuid) + '.parquet'}"
@@ -346,39 +348,29 @@ def preprocess_spotify_data_original(self, uuid: uuid.UUID):
         return result
 
     except Ignore:
-        # Task was aborted/cancelled
-        logger.info(f"Task {self.request.id} was aborted")
         if job:
             job.status = "cancelled"
             job.error_message = "Task cancelled by user"
             job.completed_at = datetime.now(UTC)
             db.session.commit()
             logger.info(f"Job {job.uuid} status updated to cancelled")
-        raise
+    except FileNotFoundError:
+        self.update_state(
+            state=states.FAILURE,
+        )
+        raise TaskError(f"File with uuid {uuid} not found in database") from None
 
     except Exception as e:
         logger.error(f"Error in original preprocessing: {str(e)}")
         import traceback
 
         logger.error(traceback.format_exc())
-
-        # Update job record with error
-        try:
-            if job:
-                logger.info(f"Updating job {job.uuid} status to failed")
-                job.status = "failed"
-                job.error_message = str(e)
-                job.completed_at = datetime.now(UTC)
-                db.session.commit()
-                logger.info(f"Job {job.uuid} status updated to failed: {str(e)}")
-            else:
-                logger.warning(
-                    f"No job record available to update error status for task: {self.request.id}"
-                )
-        except Exception as commit_error:
-            logger.error(f"Failed to update job status to failed: {commit_error}")
-
-        return {
-            "status": "error",
-            "error": str(e),
-        }
+        self.update_state(
+            state=states.FAILURE,
+            meta={
+                "exc_type": type(e).__name__,
+                "exc_message": [str(e)],
+                "status": "error",
+            },
+        )
+        raise Ignore from None

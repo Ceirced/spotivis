@@ -44,6 +44,7 @@ def create_app():
             "broker_url": app.config["REDIS_URL"],
             "result_backend": app.config["REDIS_URL"],
             "worker_pool": "solo",
+            "task_ignore_result": False,
         }
     )
 

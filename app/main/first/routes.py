@@ -612,6 +612,7 @@ def start_preprocessing(uuid: uuid.UUID):
 def task_status(task_id):
     """Check the status of a preprocessing task."""
     task = preprocess_spotify_data_original.AsyncResult(task_id)
+    logger.info(f"Checking status for task {task_id}: {task.state}")
 
     if task.state == "PENDING":
         response = {
@@ -629,7 +630,7 @@ def task_status(task_id):
             "status": task.info.get("status", ""),
             "percent": task.info.get("percent", 0),
         }
-    elif task.successful:
+    elif task.successful():
         response = {
             "state": task.state,
             "current": 100,
@@ -639,7 +640,7 @@ def task_status(task_id):
             "result": task.info.get("result", task.result),
         }
         flash("Preprocessing completed successfully", "success")
-    elif task.state == "REVOKED":
+    elif task.state == "ABORTED":
         response = {
             "state": "CANCELLED",
             "current": 0,
@@ -666,6 +667,7 @@ def task_status(task_id):
             status=response["status"],
             result=response.get("result"),
         )
+        logger.debug(f"task_status response: {response}")
 
         return make_response(
             template, refresh=response["state"] == "SUCCESS"
@@ -684,15 +686,21 @@ def cancel_job(task_id):
     if task.state in [states.PENDING, "PROGRESS"]:
         # Abort the task - the task itself will update the database status
         task.abort()
-
+        flash("Task cancellation requested", "info")
         # Return empty content to clear the progress display
-        response = make_response("", trigger="refresh")  # Trigger HTMX refresh
+        response = make_response("", trigger="flash-update")  # Trigger HTMX refresh
         return response
+    elif task.state == states.SUCCESS:
+        flash("Task already completed successfully", "info")
+        return make_response("", trigger="flash-update")
+    elif task.state == states.FAILURE:
+        flash("Task already failed", "warning")
+        return make_response("", trigger="flash-update")
     else:
         return (
             render_template(
                 "./first/partials/_error.html",
-                error="Task cannot be cancelled (not running or already completed)",
+                error="Task could not be cancelled",
             ),
             422,
         )
