@@ -47,7 +47,7 @@
                         {% for graph in graphs %}
                             <a
                                 href="{{ url_for('public.view_graph', graph_type=graph.type, graph_id=graph.uuid) }}"
-                                class="card bg-base-200 hover:shadow-primary/20 shadow-sm ring-1 ring-black/5 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-xl">
+                                class="card bg-base-200 ring-base-content/10 shadow-sm ring-1 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-xl">
                                 <div class="card-body">
                                     <div
                                         class="flex items-start justify-between">

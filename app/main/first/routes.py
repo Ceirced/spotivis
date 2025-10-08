@@ -75,7 +75,7 @@ def add_cache_headers(response, max_age=300, private=True):
     unless=lambda: current_app.config.get("DEBUG", False),
 )
 def index():
-    title = "First"
+    title = "Files"
     max_file_size_mb = MAX_FILE_SIZE // (1024 * 1024)
     return render_template(
         "./first/index.html", title=title, max_file_size_mb=max_file_size_mb
@@ -120,6 +120,7 @@ def preview_file(uuid):
     return render_template(
         "./first/file_preview.html",
         file=uploaded_file,
+        title=uploaded_file.name,
         file_size_mb=round(file_stat.st_size / (1024 * 1024), 2),
         running_job=running_job,
         completed_job=completed_job,
@@ -717,6 +718,7 @@ def preprocessing_history(uuid=None):
     return render_template(
         "./first/partials/_preprocessing_history.html",
         jobs=jobs,
+        title="Preprocessing History",
         hide_file_column=hide_file_column,
     )
 
