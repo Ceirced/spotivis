@@ -1,8 +1,8 @@
-"""recreate all tables
+"""initial migration
 
-Revision ID: bff9f3199e21
+Revision ID: b851e956f290
 Revises: 
-Create Date: 2025-10-04 20:08:35.494231
+Create Date: 2025-10-08 11:29:10.862458
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import flask_security
 
 
 # revision identifiers, used by Alembic.
-revision = 'bff9f3199e21'
+revision = 'b851e956f290'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -61,8 +61,9 @@ def upgrade():
     sa.Column('request_id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('sender_id', sa.Integer(), nullable=False),
     sa.Column('receiver_id', sa.Integer(), nullable=False),
-    sa.Column('status', sa.Enum('pending', 'accepted', 'declined', name='status_enum'), nullable=True),
-    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('status', sa.Enum('PENDING', 'ACCEPTED', 'DECLINED', name='friendrequeststatus'), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.ForeignKeyConstraint(['receiver_id'], ['user.id'], name=op.f('fk_friend_request_receiver_id_user'), ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['sender_id'], ['user.id'], name=op.f('fk_friend_request_sender_id_user'), ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('request_id', name=op.f('pk_friend_request'))
@@ -97,6 +98,8 @@ def upgrade():
     sa.Column('final_nodes', sa.Integer(), nullable=True),
     sa.Column('final_edges', sa.Integer(), nullable=True),
     sa.Column('time_periods', sa.Integer(), nullable=True),
+    sa.Column('published', sa.Boolean(), nullable=True),
+    sa.Column('published_at', sa.DateTime(), nullable=True),
     sa.Column('error_message', sa.Text(), nullable=True),
     sa.ForeignKeyConstraint(['file_uuid'], ['uploaded_files.uuid'], name=op.f('fk_preprocessing_jobs_file_uuid_uploaded_files'), ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('uuid', name=op.f('pk_preprocessing_jobs')),
@@ -121,6 +124,8 @@ def upgrade():
     sa.Column('first_end_date', sa.DateTime(), nullable=True),
     sa.Column('second_start_date', sa.DateTime(), nullable=True),
     sa.Column('second_end_date', sa.DateTime(), nullable=True),
+    sa.Column('published', sa.Boolean(), nullable=True),
+    sa.Column('published_at', sa.DateTime(), nullable=True),
     sa.Column('error_message', sa.Text(), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['first_job_id'], ['preprocessing_jobs.uuid'], name=op.f('fk_combined_preprocessing_jobs_first_job_id_preprocessing_jobs'), ondelete='CASCADE'),
