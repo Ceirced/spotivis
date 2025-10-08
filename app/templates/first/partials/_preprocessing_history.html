@@ -1,77 +1,84 @@
-<div class="overflow-x-auto">
-    <h3 class="mb-4 text-lg font-semibold">Preprocessing History</h3>
-    {% if jobs %}
-        <table class="table-zebra table">
-            <thead>
-                <tr>
-                    {% if not hide_file_column %}
-                        <th>File</th>
-                    {% endif %}
-                    <th>Status</th>
-                    <th>Started</th>
-                    <th>Completed</th>
-                    <th>Nodes</th>
-                    <th>Edges</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for job in jobs %}
+{% macro content() %}
+    <div class="overflow-x-auto">
+        <h3 class="mb-4 text-lg font-semibold">Preprocessing History</h3>
+        {% if jobs %}
+            <table class="table-zebra table">
+                <thead>
                     <tr>
                         {% if not hide_file_column %}
-                            <td>{{ job.uploaded_file.name }}</td>
+                            <th>File</th>
                         {% endif %}
-                        <td>
-                            <span
-                                class="badge {% if job.status == 'completed' %}badge-success{% elif job.status in ['failed', 'cancelled'] %}badge-error{% else %}badge-warning{% endif %} badge-soft">
-                                {{ job.status }}
-                            </span>
-                        </td>
-                        <td>{{ job.started_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                        <td>
-                            {% if job.completed_at %}
-                                {{ job.completed_at.strftime('%Y-%m-%d %H:%M') }}
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if job.final_nodes %}
-                                {{ job.final_nodes }}
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if job.final_edges %}
-                                {{ job.final_edges }}
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if job.status == 'completed' %}
-                                <a
-                                    hx-boost="true"
-                                    href="{{ url_for('first.graph_preview', job_id=job.uuid) }}"
-                                    class="btn btn-sm btn-primary"
-                                    hx-swap="show:window:top"
-                                    hx-target="#content">
-                                    view graph
-                                </a>
-                            {% elif job.status == 'failed' and job.error_message %}
-                                <span
-                                    class="text-error text-sm"
-                                    title="{{ job.error_message }}"
-                                    >Error</span
-                                >
-                            {% endif %}
-                        </td>
+                        <th>Status</th>
+                        <th>Started</th>
+                        <th>Completed</th>
+                        <th>Nodes</th>
+                        <th>Edges</th>
+                        <th></th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p class="text-gray-500">No preprocessing jobs found.</p>
-    {% endif %}
-</div>
+                </thead>
+                <tbody>
+                    {% for job in jobs %}
+                        <tr>
+                            {% if not hide_file_column %}
+                                <td>{{ job.uploaded_file.name }}</td>
+                            {% endif %}
+                            <td>
+                                <span
+                                    class="badge {% if job.status == 'completed' %}badge-success{% elif job.status in ['failed', 'cancelled'] %}badge-error{% else %}badge-warning{% endif %} badge-soft">
+                                    {{ job.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {{ job.started_at.strftime('%Y-%m-%d %H:%M') }}
+                            </td>
+                            <td>
+                                {% if job.completed_at %}
+                                    {{ job.completed_at.strftime('%Y-%m-%d %H:%M') }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if job.final_nodes %}
+                                    {{ job.final_nodes }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if job.final_edges %}
+                                    {{ job.final_edges }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if job.status == 'failed' and job.error_message %}
+                                    <span
+                                        class="text-error text-sm"
+                                        title="{{ job.error_message }}"
+                                        >Error</span
+                                    >
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="text-gray-500">No preprocessing jobs found.</p>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% if htmx.boosted %}
+    <title>{{ title }}</title>
+
+    {% include 'partials/_back_top_bar.html' %}
+    {{ content() }}
+{% else %}
+    {% extends 'base.html' %}
+    {% block content %}
+        {{ content() }}
+    {% endblock %}
+{% endif %}

@@ -136,6 +136,16 @@
             </div>
         </div>
 
+        {% if file.preprocessing_jobs %}
+            <a
+                hx-boost="true"
+                hx-target="#content"
+                hx-swap="show:window:top"
+                href="{{ url_for('first.preprocessing_history', uuid=file.uuid) }}"
+                class="link link-info">
+                Preprocessing History
+            </a>
+        {% endif %}
         <div
             id="preprocessing-container"
             class="empty:hidden">
