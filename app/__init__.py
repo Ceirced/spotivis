@@ -43,7 +43,7 @@ def create_app():
         CELERY={
             "broker_url": app.config["REDIS_URL"],
             "result_backend": app.config["REDIS_URL"],
-            "task_ignore_result": True,
+            "worker_pool": "solo",
         }
     )
 

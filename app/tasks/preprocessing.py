@@ -112,6 +112,10 @@ def build_playlist_network(
             ]
         )
 
+        if task.is_aborted():
+            logger.info(f"Task {task.request.id} aborted, stopping processing")
+            raise Ignore
+
         # Update progress for Celery
         progress = int((i + 1) / total_weeks * 80) + 10  # 10-90% for this step
         task.update_state(
@@ -176,12 +180,12 @@ def preprocess_spotify_data_original(self, uuid: uuid.UUID):
                 state=states.FAILURE,
                 meta={
                     "exc_type": "FileNotFoundError",
-                    "exc_message": [f"File {uuid} not found in database"],
+                    "exc_message": [f"File with uuid {uuid} not found in database"],
                     "status": "error",
                 },
             )
 
-            raise Ignore()
+            raise Ignore
 
         # Create preprocessing job record
         job = PreprocessingJob(
@@ -223,7 +227,7 @@ def preprocess_spotify_data_original(self, uuid: uuid.UUID):
                 },
             )
 
-            raise Ignore()
+            raise Ignore
 
         logger.info(
             f"Starting original algorithm preprocessing of {str(uuid) + '.parquet'}"
@@ -328,7 +332,7 @@ def preprocess_spotify_data_original(self, uuid: uuid.UUID):
         }
 
         self.update_state(
-            state="SUCCESS",
+            state=states.SUCCESS,
             meta={
                 "current": 100,
                 "total": 100,
@@ -341,6 +345,17 @@ def preprocess_spotify_data_original(self, uuid: uuid.UUID):
         logger.info("Original algorithm preprocessing completed successfully")
         return result
 
+    except Ignore:
+        # Task was aborted/cancelled
+        logger.info(f"Task {self.request.id} was aborted")
+        if job:
+            job.status = "cancelled"
+            job.error_message = "Task cancelled by user"
+            job.completed_at = datetime.now(UTC)
+            db.session.commit()
+            logger.info(f"Job {job.uuid} status updated to cancelled")
+        raise
+
     except Exception as e:
         logger.error(f"Error in original preprocessing: {str(e)}")
         import traceback
@@ -349,7 +364,7 @@ def preprocess_spotify_data_original(self, uuid: uuid.UUID):
 
         # Update job record with error
         try:
-            if "job" in locals() and job:
+            if job:
                 logger.info(f"Updating job {job.uuid} status to failed")
                 job.status = "failed"
                 job.error_message = str(e)

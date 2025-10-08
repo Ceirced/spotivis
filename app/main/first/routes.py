@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 import pyarrow.parquet as pq
+from celery import states
 from flask import (
     current_app,
     flash,
@@ -11,6 +12,7 @@ from flask import (
     render_template,
     request,
     send_from_directory,
+    url_for,
 )
 from flask_htmx import make_response
 from flask_login import current_user
@@ -626,7 +628,7 @@ def task_status(task_id):
             "status": task.info.get("status", ""),
             "percent": task.info.get("percent", 0),
         }
-    elif task.state == "SUCCESS":
+    elif task.successful:
         response = {
             "state": task.state,
             "current": 100,
@@ -635,6 +637,7 @@ def task_status(task_id):
             "percent": 100,
             "result": task.info.get("result", task.result),
         }
+        flash("Preprocessing completed successfully", "success")
     elif task.state == "REVOKED":
         response = {
             "state": "CANCELLED",
@@ -677,19 +680,9 @@ def cancel_job(task_id):
     task = preprocess_spotify_data_original.AsyncResult(task_id)
 
     # Check if task exists and is cancellable
-    if task.state in ["PENDING", "PROGRESS"]:
-        # Revoke the task
-        task.revoke(terminate=True)
-
-        # Update the database status
-        stmt = select(PreprocessingJob).where(PreprocessingJob.task_id == task_id)
-        job = db.session.scalar(stmt)
-
-        if job:
-            job.status = "cancelled"
-            job.completed_at = db.func.current_timestamp()
-            job.error_message = "Task cancelled by user"
-            db.session.commit()
+    if task.state in [states.PENDING, "PROGRESS"]:
+        # Abort the task - the task itself will update the database status
+        task.abort()
 
         # Return empty content to clear the progress display
         response = make_response("", trigger="refresh")  # Trigger HTMX refresh

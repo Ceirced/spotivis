@@ -1,4 +1,5 @@
-from celery import Celery, Task, shared_task
+from celery import Celery, shared_task
+from celery.contrib.abortable import AbortableTask  # type: ignore
 from flask import Flask
 from flask_mailman import EmailMultiAlternatives
 from flask_security import MailUtil
@@ -7,7 +8,7 @@ from . import mail
 
 
 def init_celery(app: Flask) -> Celery:
-    class FlaskTask(Task):
+    class FlaskTask(AbortableTask):
         def __call__(self, *args: object, **kwargs: object) -> object:
             with app.app_context():
                 return self.run(*args, **kwargs)
