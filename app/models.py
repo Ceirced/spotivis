@@ -2,10 +2,18 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from enum import Enum
 from typing import TYPE_CHECKING
 
 from flask_security.models import fsqla_v3 as fsqla
-from sqlalchemy import DateTime, ForeignKey, String, func, select
+from sqlalchemy import (
+    DateTime,
+    ForeignKey,
+    String,
+    UniqueConstraint,
+    func,
+    select,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app import db
@@ -47,32 +55,42 @@ class User(Model, fsqla.FsUserMixin):
             f"<User(id='{self.id}', username='{self.username}', email='{self.email}')>"
         )
 
-    def is_friends_with(self, other_user_id):
-        friendship = FriendRequest.query.filter(
-            (
-                (FriendRequest.sender_id == self.id)
-                & (FriendRequest.receiver_id == other_user_id)
+    def is_friends_with(self, other_user_id: int) -> bool:
+        friendship = db.session.scalar(
+            select(FriendRequest).where(
+                (
+                    (
+                        (FriendRequest.sender_id == self.id)
+                        & (FriendRequest.receiver_id == other_user_id)
+                    )
+                    | (
+                        (FriendRequest.sender_id == other_user_id)
+                        & (FriendRequest.receiver_id == self.id)
+                    )
+                )
                 & (FriendRequest.status == "accepted")
             )
-            | (
-                (FriendRequest.sender_id == other_user_id)
-                & (FriendRequest.receiver_id == self.id)
-                & (FriendRequest.status == "accepted")
-            )
-        ).first()
+        )
         return friendship is not None
 
     @staticmethod
-    def get_user_by_name(username):
+    def get_user_by_name(username: str) -> User | None:
         return db.session.scalar(select(User).where(User.username == username))
 
     @property
     def friends(self):
-        sent_accepted = FriendRequest.query.filter_by(
-            sender_id=self.id, status="accepted"
+        sent_accepted = db.session.scalars(
+            select(FriendRequest).where(
+                (FriendRequest.sender_id == self.id)
+                & (FriendRequest.status == "accepted")
+            )
         ).all()
-        received_accepted = FriendRequest.query.filter_by(
-            receiver_id=self.id, status="accepted"
+
+        received_accepted = db.session.scalars(
+            select(FriendRequest).where(
+                (FriendRequest.receiver_id == self.id)
+                & (FriendRequest.status == "accepted")
+            )
         ).all()
 
         friends_ids = set(
@@ -80,18 +98,23 @@ class User(Model, fsqla.FsUserMixin):
             + [req.sender_id for req in received_accepted]
         )
 
-        return User.query.filter(User.id.in_(friends_ids))
+        return db.session.scalars(select(User).where(User.id.in_(friends_ids))).all()
+
+
+class FriendRequestStatus(Enum):
+    PENDING = "PENDING"
+    ACCEPTED = "ACCEPTED"
+    DECLINED = "DECLINED"
 
 
 class FriendRequest(TimestampMixin, Model):
     request_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     sender_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
     receiver_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
-    status: Mapped[str] = mapped_column(
-        db.Enum("pending", "accepted", "declined", name="status_enum"),
-        default="pending",
+    status: Mapped[FriendRequestStatus] = mapped_column(
+        default=FriendRequestStatus.PENDING
     )
-    db.UniqueConstraint("sender_id", "receiver_id")
+    UniqueConstraint("sender_id", "receiver_id")
 
 
 class UploadedFile(TimestampMixin, Model):
