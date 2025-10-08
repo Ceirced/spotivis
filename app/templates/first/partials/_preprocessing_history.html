@@ -35,8 +35,6 @@
                             <th>Status</th>
                             <th>Started</th>
                             <th>Completed</th>
-                            <th>Nodes</th>
-                            <th>Edges</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -58,20 +56,6 @@
                                 <td>
                                     {% if job.completed_at %}
                                         {{ job.completed_at.strftime('%Y-%m-%d %H:%M') }}
-                                    {% else %}
-                                        -
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if job.final_nodes %}
-                                        {{ job.final_nodes }}
-                                    {% else %}
-                                        -
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if job.final_edges %}
-                                        {{ job.final_edges }}
                                     {% else %}
                                         -
                                     {% endif %}
