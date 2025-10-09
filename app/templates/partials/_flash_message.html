@@ -14,7 +14,7 @@
         role="alert"
         class="alert {{ background }} alert-soft w-fit backdrop-blur-md"
         x-data="{ show: false }"
-        x-init="$nextTick(() => { show = true; setTimeout(() => { show = false }, 4500) })"
+        x-init="$nextTick(() => { show = true; setTimeout(() => { show = false }, 4500); setTimeout(() => { $el.remove() }, 4800); })"
         x-show="show"
         x-transition:enter="transition ease-out duration-300"
         x-transition:enter-start="opacity-0 transform -translate-y-full"
