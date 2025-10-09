@@ -302,13 +302,8 @@ def publish_combined_graph(job_id: uuid.UUID):
     from datetime import datetime
 
     from flask import flash
-    from flask_login import current_user
 
-    stmt = select(CombinedPreprocessingJob).where(
-        CombinedPreprocessingJob.uuid == str(job_id),
-        CombinedPreprocessingJob.user_id == current_user.id,
-    )
-    job = db.session.scalar(stmt)
+    job = db.session.get(CombinedPreprocessingJob, str(job_id))
 
     if not job or job.status != "completed":
         flash("Job not found or not completed", "error")
@@ -334,13 +329,8 @@ def publish_combined_graph(job_id: uuid.UUID):
 def unpublish_combined_graph(job_id: uuid.UUID):
     """Unpublish a combined preprocessing job graph from the public gallery."""
     from flask import flash
-    from flask_login import current_user
 
-    stmt = select(CombinedPreprocessingJob).where(
-        CombinedPreprocessingJob.uuid == str(job_id),
-        CombinedPreprocessingJob.user_id == current_user.id,
-    )
-    job = db.session.scalar(stmt)
+    job = db.session.get(CombinedPreprocessingJob, str(job_id))
 
     if not job:
         flash("Job not found", "error")
