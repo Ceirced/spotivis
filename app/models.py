@@ -68,7 +68,7 @@ class User(Model, fsqla.FsUserMixin):
                         & (FriendRequest.receiver_id == self.id)
                     )
                 )
-                & (FriendRequest.status == "accepted")
+                & (FriendRequest.status == FriendRequestStatus.ACCEPTED)
             )
         )
         return friendship is not None
@@ -82,14 +82,14 @@ class User(Model, fsqla.FsUserMixin):
         sent_accepted = db.session.scalars(
             select(FriendRequest).where(
                 (FriendRequest.sender_id == self.id)
-                & (FriendRequest.status == "accepted")
+                & (FriendRequest.status == FriendRequestStatus.ACCEPTED)
             )
         ).all()
 
         received_accepted = db.session.scalars(
             select(FriendRequest).where(
                 (FriendRequest.receiver_id == self.id)
-                & (FriendRequest.status == "accepted")
+                & (FriendRequest.status == FriendRequestStatus.ACCEPTED)
             )
         ).all()
 
