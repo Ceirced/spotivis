@@ -130,6 +130,20 @@
                                 </p>
                             </div>
                         {% endif %}
+                        {% if completed_job %}
+                            <div>
+                                <span class="font-semibold"
+                                    >{{ completed_job.final_nodes }}</span
+                                >
+                                Nodes
+                            </div>
+                            <div>
+                                <span class="font-semibold">
+                                    {{ completed_job.final_edges }}
+                                </span>
+                                <span class="">edges</span>
+                            </div>
+                        {% endif %}
                     </div>
                     <div class="card-actions mt-4 justify-end">
                         {% if not running_job and not file.preprocessed %}
@@ -153,30 +167,17 @@
                                 Preprocess Data
                             </button>
                         {% elif file.preprocessed %}
-                            <a
-                                hx-boost="true"
-                                hx-swap="show:window:top"
-                                hx-target="#content"
-                                href="{{ url_for('first.graph_preview', file_uuid=file.uuid) }}"
-                                class="btn btn-primary btn-outline">
-                                View graph
-                            </a>
+                            <div class="ml-4">
+                                {% set published = completed_job.published %}
+                                {% set job_id = completed_job.uuid %}
+                                {% include 'first/partials/_publish_button.html' %}
+                            </div>
                         {% endif %}
                     </div>
                 </div>
             </div>
         </div>
 
-        {% if file.preprocessing_jobs %}
-            <a
-                hx-boost="true"
-                hx-target="#content"
-                hx-swap="show:window:top"
-                href="{{ url_for('first.preprocessing_history', uuid=file.uuid) }}"
-                class="link link-info">
-                Preprocessing History
-            </a>
-        {% endif %}
         <div
             id="preprocessing-container"
             class="empty:hidden">
@@ -186,6 +187,31 @@
                 {% endwith %}
             {%- endif -%}
         </div>
+
+        <!-- Graph Container -->
+        {% if completed_job %}
+            <div class="relative flex flex-1 flex-col overflow-hidden">
+                <div
+                    id="graph-container"
+                    class="bg-base-100 relative m-[1px] flex-1 overflow-hidden rounded-lg ring-1 inset-shadow-sm/15 ring-black/5">
+                    <div class="skeleton h-full w-full"></div>
+                </div>
+
+                {% include 'partials/graph_tooltip.html' %}
+                {% include 'partials/graph_controls.html' %}
+            </div>
+            <script type="module">
+                import { createGraph } from "{{ url_for('static', filename='js/build/graph-preview.js') }}";
+
+                // Initialize the graph when ready
+                createGraph({
+                    jobId: "{{ completed_job.uuid }}",
+                    nodesUrl: `{{ url_for('first.graph_nodes_data', job_id=completed_job.uuid) }}`,
+                    edgesUrl: `{{ url_for('first.graph_edges_data', job_id=completed_job.uuid) }}`,
+                    defaultNodeColor: "#3b82f6",
+                });
+            </script>
+        {% endif %}
 
         {% if file.preprocessed %}
             <div class="card bg-base-200 shadow-sm">
@@ -239,7 +265,9 @@
             </div>
         {% endif %}
 
-        <div class="card bg-base-200 shadow-sm">
+        <div
+            id="data-preview-card"
+            class="card bg-base-200 shadow-sm">
             <div class="card-body">
                 <h2 class="card-title">Data Preview (First 10 rows)</h2>
                 <div
@@ -329,6 +357,16 @@
                 </script>
             {% endif %}
         </div>
+        {% if file.preprocessing_jobs %}
+            <a
+                hx-boost="true"
+                hx-target="#content"
+                hx-swap="show:window:top"
+                href="{{ url_for('first.preprocessing_history', uuid=file.uuid) }}"
+                class="link link-info">
+                Preprocessing History
+            </a>
+        {% endif %}
     </div>
 {% endmacro %}
 

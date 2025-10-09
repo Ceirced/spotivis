@@ -737,36 +737,6 @@ def preprocessing_history(uuid=None):
     )
 
 
-@bp.route("/<uuid:file_uuid>/graph", methods=["GET"])
-def graph_preview(file_uuid: uuid.UUID):
-    """Show graph for processed file"""
-    # get the latest completed preprocessing job for this file and user
-    preprocessing_job = db.session.scalar(
-        select(PreprocessingJob)
-        .join(UploadedFile)
-        .where(
-            PreprocessingJob.file_uuid == str(file_uuid),
-            PreprocessingJob.status == "completed",
-        )
-        .order_by(PreprocessingJob.completed_at.desc())
-    )
-    if not preprocessing_job:
-        flash("No completed preprocessing job found for this file", "error")
-        return make_response(
-            render_template(
-                "first/partials/_error.html",
-                error="No completed preprocessing job found for this file",
-            ),
-            422,
-            trigger={"flash-update": True},
-        )
-
-    return render_template(
-        "./first/graph_preview.html",
-        job=preprocessing_job,
-    )
-
-
 @bp.route("/graph-data/<uuid:job_id>/nodes", methods=["GET"])
 def graph_nodes_data(job_id: uuid.UUID):
     """Serve nodes data for graph visualization."""
