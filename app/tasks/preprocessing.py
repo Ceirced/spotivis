@@ -172,6 +172,9 @@ def preprocess_spotify_data_original(self, file_uuid: uuid.UUID, job_uuid: str):
     """
     Celery task using the exact same algorithm as create_data.py.
     """
+    if self.is_aborted():
+        logger.info(f"Task {self.request.id} aborted before started processing")
+        raise Ignore
     try:
         job = db.session.get(PreprocessingJob, job_uuid)
         if not job:
