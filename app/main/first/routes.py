@@ -84,11 +84,6 @@ def index():
 
 
 @bp.route("/<uuid:uuid>", methods=["GET"])
-@cache.cached(
-    timeout=300,
-    make_cache_key=make_cache_key_with_htmx,
-    unless=lambda: current_app.config.get("DEBUG", False),
-)  # Cache for 5 minutes
 def preview_file(uuid):
     """Show file preview page with metadata and data preview."""
     upload_folder = Path(current_app.root_path).parent / "uploads"
@@ -177,11 +172,6 @@ def preview_data(uuid):
 
 
 @bp.route("/<uuid:job_id>/<file_type>", methods=["GET"])
-@cache.cached(
-    timeout=300,
-    make_cache_key=make_cache_key_with_htmx,
-    unless=lambda: current_app.config.get("DEBUG", False),
-)  # Cache for 5 minutes
 def view_processed_file(job_id: uuid.UUID, file_type: str):
     """View processed edges or nodes CSV file from a completed job."""
     if file_type not in ["edges", "nodes"]:
@@ -343,8 +333,6 @@ def rename_file(uuid: uuid.UUID):
         file.name = new_name
         db.session.commit()
 
-        # Invalidate cache for files list
-        cache.delete_memoized(list_files)
         flash("File renamed successfully", "success")
 
         response = make_response(
