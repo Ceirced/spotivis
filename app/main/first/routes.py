@@ -598,13 +598,16 @@ def start_preprocessing(uuid: uuid.UUID):
             422,
         )
     job = PreprocessingJob(
-        uuid=str(uuid4()),
         file_uuid=uploaded_file.uuid,
         status="pending",
     )  # type: ignore
+    db.session.add(job)
+    db.session.commit()
+
+    # starting the task before committing the job would lead to
+    # a race condition where celery would not find the job in the db
     task = preprocess_spotify_data_original.delay(uuid, job.uuid)
     job.task_id = task.id
-    db.session.add(job)
     db.session.commit()
 
     return render_template(
@@ -1071,4 +1074,4 @@ def unpublish_graph(job_id: uuid.UUID):
 
 
 # Import combine routes
-from app.main.first import combine_routes  # noqa: F401
+from app.main.first import combine_routes  # noqa: F401, E402
