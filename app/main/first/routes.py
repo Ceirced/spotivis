@@ -1001,15 +1001,7 @@ def cancel_enrichment_job(task_id):
 def publish_graph(job_id: uuid.UUID):
     """Publish a preprocessing job graph to the public gallery."""
 
-    stmt = (
-        select(PreprocessingJob)
-        .join(UploadedFile)
-        .where(
-            PreprocessingJob.uuid == str(job_id),
-            UploadedFile.user_id == current_user.id,
-        )
-    )
-    job = db.session.scalar(stmt)
+    job = db.session.get(PreprocessingJob, str(job_id))
 
     if not job or job.status != "completed":
         flash("Job not found or not completed", "error")
@@ -1039,15 +1031,7 @@ def publish_graph(job_id: uuid.UUID):
 def unpublish_graph(job_id: uuid.UUID):
     """Unpublish a preprocessing job graph from the public gallery."""
 
-    stmt = (
-        select(PreprocessingJob)
-        .join(UploadedFile)
-        .where(
-            PreprocessingJob.uuid == str(job_id),
-            UploadedFile.user_id == current_user.id,
-        )
-    )
-    job = db.session.scalar(stmt)
+    job = db.session.get(PreprocessingJob, str(job_id))
 
     if not job:
         flash("Job not found", "error")
