@@ -150,6 +150,14 @@ class UploadedFile(TimestampMixin, Model):
     def preprocessed(self) -> bool:
         return any(job.status == "completed" for job in self.preprocessing_jobs)
 
+    @property
+    def enriched(self) -> bool:
+        return any(
+            job.status == "completed"
+            for prep_job in self.preprocessing_jobs
+            for job in prep_job.enrichment_jobs
+        )
+
 
 class PreprocessingJob(Model):
     __tablename__ = "preprocessing_jobs"

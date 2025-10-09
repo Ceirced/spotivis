@@ -25,6 +25,9 @@
                 preprocessed
             </div>
         {% endif %}
+        {% if file.enriched %}
+            <div class="badge badge-info badge-sm badge-soft">enriched</div>
+        {% endif %}
     </td>
 
     <td>{{ file.size_mb }} MB</td>

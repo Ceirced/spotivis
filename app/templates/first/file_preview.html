@@ -51,6 +51,12 @@
                                     preprocessed
                                 </div>
                             {% endif %}
+                            {% if file.enriched %}
+                                <div
+                                    class="badge badge-outline badge-info badge-sm">
+                                    enriched
+                                </div>
+                            {% endif %}
                         </div>
                         {% if current_user.id == file.user_id %}
                             <button
