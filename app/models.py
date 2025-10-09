@@ -45,9 +45,11 @@ class Role(Model, fsqla.FsRoleMixin):
 
 class User(Model, fsqla.FsUserMixin):
     uploaded_files: Mapped[list[UploadedFile]] = relationship(
-        "UploadedFile",
         back_populates="user",
         cascade="all, delete-orphan",
+    )
+    combined_jobs: Mapped[list[CombinedPreprocessingJob]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
     )
 
     def __repr__(self):
@@ -128,23 +130,20 @@ class UploadedFile(TimestampMixin, Model):
     name: Mapped[str] = mapped_column(String(255))
     file_size: Mapped[int] = mapped_column(db.BigInteger)
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-    user: Mapped[User] = relationship("User", back_populates="uploaded_files")
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
+    user: Mapped[User] = relationship(back_populates="uploaded_files")
 
     # Date range from the parquet data
     data_start_date: Mapped[datetime | None]
     data_end_date: Mapped[datetime | None]
 
     preprocessing_jobs: Mapped[list[PreprocessingJob]] = relationship(
-        "PreprocessingJob", back_populates="uploaded_file", cascade="all, delete-orphan"
+        back_populates="uploaded_file", cascade="all, delete-orphan"
     )
 
     @property
     def size_mb(self) -> float:
         return round(self.file_size / (1024 * 1024), 2)
-
-    def __repr__(self):
-        return f"<UploadedFile {self.uuid} - {self.name}>"
 
     @property
     def preprocessed(self) -> bool:
@@ -158,6 +157,9 @@ class UploadedFile(TimestampMixin, Model):
             for job in prep_job.enrichment_jobs
         )
 
+    def __repr__(self):
+        return f"<UploadedFile {self.uuid} - {self.name}>"
+
 
 class PreprocessingJob(Model):
     __tablename__ = "preprocessing_jobs"
@@ -170,7 +172,7 @@ class PreprocessingJob(Model):
         ForeignKey("uploaded_files.uuid", ondelete="CASCADE")
     )
     uploaded_file: Mapped[UploadedFile] = relationship(
-        "UploadedFile", back_populates="preprocessing_jobs"
+        back_populates="preprocessing_jobs"
     )
 
     status: Mapped[str] = mapped_column(String(50), default="pending")
@@ -210,7 +212,7 @@ class PlaylistEnrichmentJob(Model):
     )
     task_id: Mapped[str] = mapped_column(String(255), unique=True)
     preprocessing_job_id: Mapped[str] = mapped_column(
-        ForeignKey("preprocessing_jobs.uuid")
+        ForeignKey("preprocessing_jobs.uuid", ondelete="CASCADE")
     )
     preprocessing_job: Mapped[PreprocessingJob] = relationship(
         back_populates="enrichment_jobs"
@@ -286,7 +288,7 @@ class CombinedPreprocessingJob(Model):
     error_message: Mapped[str | None] = mapped_column(db.Text)
     # User reference
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
-    user: Mapped[User] = relationship("User")
+    user: Mapped[User] = relationship(back_populates="combined_jobs")
 
     def __repr__(self):
         return f"<CombinedPreprocessingJob {self.uuid} - {self.status}>"
