@@ -9,7 +9,7 @@ SpotiVis is a web application that visualizes Spotify streaming data from .parqu
 - **Framework**: Flask 3.x with Flask-Security for authentication
 - **Task Queue**: Celery with Redis
 - **File Processing**: PyArrow for .parquet file handling
-- **Database**: SQLite with SQLAlchemy ORM and Flask-Migrate for migrations
+- **Database**: Postgres with SQLAlchemy ORM and Flask-Migrate for migrations
 - **Python Version**: ^3.12
 
 ### Frontend
@@ -219,7 +219,11 @@ Copy `.env.example` to `.env` and configure:
 ```bash
 SECRET_KEY=your-secret-key                    # Generate a secure random key
 SECURITY_PASSWORD_SALT=your-salt-here         # Generate a random salt for password hashing
-SQLALCHEMY_DATABASE_URI=sqlite:///dev.db      # Database connection string
+POSTGRES_USER=postgres                       # Postgres username
+POSTGRES_PASSWORD=your-password               # Postgres password
+POSTGRES_DB=postgres                         # Postgres database name
+SQLALCHEMY_DATABASE_URI=postgresql://postgres:password@localhost:5432/postgres      # Database connection string
+
 APP_SETTINGS=config.DevelopmentConfig         # Configuration class to use
 APP_NAME=Flask App                            # Application name
 ```
