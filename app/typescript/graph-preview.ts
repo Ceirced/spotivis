@@ -177,7 +177,6 @@ export function createGraph(config: GraphConfig): void {
                 target: d.playlist_id_2 || '',
                 weight: +(d.weight || 1),
             }));
-            console.log(links);
 
             // Calculate link counts
             links.forEach((link) => {
