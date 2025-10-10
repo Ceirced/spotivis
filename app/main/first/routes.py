@@ -71,9 +71,8 @@ def add_cache_headers(response, max_age=300, private=True):
 
 @bp.route("/", methods=["GET"])
 @cache.cached(
-    timeout=60,
+    timeout=300,
     make_cache_key=make_cache_key_with_htmx,
-    unless=lambda: current_app.config.get("DEBUG", False),
 )
 def index():
     title = "Files"
@@ -171,20 +170,20 @@ def preview_data(uuid):
         )
 
 
-@bp.route("/<uuid:job_id>/<file_type>", methods=["GET"])
-def view_processed_file(job_id: uuid.UUID, file_type: str):
+@bp.route("/<uuid:file_uuid>/<file_type>", methods=["GET"])
+def view_processed_file(file_uuid: uuid.UUID, file_type: str):
     """View processed edges or nodes CSV file from a completed job."""
     if file_type not in ["edges", "nodes"]:
         return render_template("errors/404.html", error="Invalid file type"), 404
 
-    stmt = (
-        select(PreprocessingJob)
-        .join(UploadedFile)
-        .where(
-            PreprocessingJob.uuid == str(job_id),
-        )
+    file = db.session.get(UploadedFile, str(file_uuid))
+    if not file:
+        return render_template("errors/404.html", error="File not found"), 404
+
+    job = next(
+        (job for job in file.preprocessing_jobs if job.status == "completed"),
+        None,
     )
-    job = db.session.scalar(stmt)
 
     if not job or job.status != "completed":
         return (
@@ -244,7 +243,7 @@ def view_processed_file(job_id: uuid.UUID, file_type: str):
         total_pages = (total_rows + per_page - 1) // per_page
 
         enrichment_stmt = select(PlaylistEnrichmentJob).where(
-            PlaylistEnrichmentJob.preprocessing_job_id == str(job_id),
+            PlaylistEnrichmentJob.preprocessing_job_id == str(job.uuid),
         )
 
         enrichment_jobs = db.session.scalars(enrichment_stmt).all()
@@ -257,7 +256,7 @@ def view_processed_file(job_id: uuid.UUID, file_type: str):
 
         return render_template(
             "./first/processed_view.html",
-            job_id=job_id,
+            job_id=job.uuid,
             file_type=file_type,
             file_name=file_name,
             columns=columns,
