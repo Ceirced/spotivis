@@ -219,7 +219,7 @@
                     <h3 class="card-title">Processed Files</h3>
                     <div class="flex flex-col gap-4 sm:flex-row">
                         <a
-                            href="{{ url_for('first.view_processed_file', job_id=completed_job.uuid, file_type='edges') }}"
+                            href="{{ url_for('first.view_processed_file', file_uuid=file.uuid, file_type='edges') }}"
                             hx-boost="true"
                             hx-target="#content"
                             hx-swap="show:window:top"
@@ -240,7 +240,7 @@
                             Edges
                         </a>
                         <a
-                            href="{{ url_for('first.view_processed_file', job_id=completed_job.uuid, file_type='nodes') }}"
+                            href="{{ url_for('first.view_processed_file', file_uuid=file.uuid, file_type='nodes') }}"
                             hx-boost="true"
                             hx-target="#content"
                             hx-swap="show:window:top"
