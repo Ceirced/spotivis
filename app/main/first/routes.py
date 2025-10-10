@@ -609,7 +609,6 @@ def start_preprocessing(uuid: uuid.UUID):
 def task_status(task_id):
     """Check the status of a preprocessing task."""
     task = preprocess_spotify_data_original.AsyncResult(task_id)
-    logger.info(f"Checking status for task {task_id}: {task.state}")
 
     if task.state == "PENDING":
         response = {
@@ -664,7 +663,6 @@ def task_status(task_id):
             status=response["status"],
             result=response.get("result"),
         )
-        logger.debug(f"task_status response: {response}")
 
         return make_response(
             template, refresh=response["state"] == "SUCCESS"
@@ -754,9 +752,6 @@ def graph_nodes_data(job_id: uuid.UUID):
         nodes_path = (
             Path(current_app.static_folder) / preprocessed_data_dir / job.nodes_file  # type: ignore
         )
-        logger.debug(
-            f"nodes_file: {job.nodes_file}, resolved_path: {nodes_path}, exists: {nodes_path.exists()}"
-        )
 
         if not nodes_path.exists():
             return jsonify({"error": f"Nodes file not found at {nodes_path}"}), 404
@@ -796,13 +791,7 @@ def graph_edges_data(job_id: uuid.UUID):
         edges_path = (
             Path(current_app.static_folder) / preprocessed_data_dir / job.edges_file  # type: ignore
         )
-        logger.debug(
-            f"edges_file: {job.edges_file}, resolved_path: {edges_path}, exists: {edges_path.exists()}"
-        )
 
-        logger.debug(
-            f"static_folder: {current_app.static_folder}, edges_file: {job.edges_file}"
-        )
         if not edges_path.exists():
             return jsonify({"error": f"Edges file not found at {edges_path}"}), 404
 
