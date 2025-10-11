@@ -367,19 +367,31 @@ export function createGraph(config: GraphConfig): void {
                 .attr("fill",(d: NodeData) => d.color )
                 .attr("stroke", "#fff")
                 .attr("stroke-width", 1.5)
-                .call(drag(simulation))
                 .on("mouseover", function (event: MouseEvent, d: NodeData) {
                     selectNode(event, d, this);
                 })
                 .on("mouseout", function (event: MouseEvent, d: NodeData) {
                     deselectNode(event, d, this);
                 })
-                .on("click", function (event: MouseEvent, d: NodeData) {
-                    highlightNeighbors(event, d, this);
-                })
+                .call(
+                    drag(simulation)
+                        .on("start.highlight", function (event, d) {
+                            // Use namespaced event to avoid conflicts
+                            if (event.sourceEvent.type === 'touchstart') {
+                                selectNode(event.sourceEvent, d, this);
+                            }
+                        })
+                        .on("end.highlight", function (event, d) {
+                            if (event.sourceEvent.type === 'touchend') {
+                                deselectNode(event.sourceEvent, d, this);
+                            }
+                        })
+                );
+
 
             // Node event handlers
             function selectNode(_event: MouseEvent, d: NodeData, nodeElement: SVGCircleElement): void {
+                highlightNeighbors(_event, d, nodeElement);
                 fillTooltip(
                     d,
                     incomingCount[d.playlist_id],
@@ -388,10 +400,11 @@ export function createGraph(config: GraphConfig): void {
             }
 
             function deselectNode(_event: MouseEvent, d: NodeData, nodeElement: SVGCircleElement): void {
-                d3.select(nodeElement)
-                    .transition()
-                    .duration(200)
-                    .attr("r", nodeSize(d));
+                d3.selectAll("circle").attr("opacity", 1);
+                d3.selectAll("line").attr("opacity", (d) =>
+                    linkOpacity(d as ProcessedEdgeData)
+                );
+                d3.select("#graph-info-panel").style("display", "none");
             }
 
             function highlightNeighbors(_event: MouseEvent, d: NodeData, nodeElement: SVGCircleElement): void {
