@@ -29,6 +29,7 @@ interface ForceSettings {
     zoomLevel?: number;
     nodeSize?: number;
     lineWidth?: number;
+    nodeSizeBasis?: 'outgoing' | 'incoming';
 }
 
 interface GraphConfig {
@@ -54,7 +55,8 @@ function loadForceSettings(): ForceSettings {
         linkDistance: 80,
         zoomLevel: 1,
         nodeSize: 5,
-        lineWidth: 1
+        lineWidth: 1,
+        nodeSizeBasis: 'outgoing'
     };
 }
 
@@ -73,7 +75,7 @@ function initializeSliders(settings: ForceSettings): void {
     const linkDistanceSlider = document.getElementById("link-distance") as HTMLInputElement;
     const nodeSizeSlider = document.getElementById("node-size") as HTMLInputElement;
     const lineWidthSlider = document.getElementById("line-width") as HTMLInputElement;
-    
+
     if (centerSlider) {
         centerSlider.value = settings.centerForce.toString();
         document.getElementById("center-force-value")!.textContent = settings.centerForce.toFixed(2);
@@ -102,6 +104,15 @@ function initializeSliders(settings: ForceSettings): void {
         lineWidthSlider.value = (settings.lineWidth || 1).toString();
         document.getElementById("line-width-value")!.textContent = (settings.lineWidth || 1).toFixed(1);
     }
+
+    // Set radio button values
+    const nodeSizeBasis = settings.nodeSizeBasis || 'outgoing';
+    const radioButtons = document.getElementsByName('node-size-basis') as NodeListOf<HTMLInputElement>;
+    radioButtons.forEach((radio) => {
+        if (radio.value === nodeSizeBasis) {
+            radio.checked = true;
+        }
+    });
 }
 
 export function createGraph(config: GraphConfig): void {
@@ -217,7 +228,17 @@ export function createGraph(config: GraphConfig): void {
 
             function nodeSize(d: NodeData): number {
                 const baseSize = settings.nodeSize || 5;
-                return baseSize + Math.sqrt(outgoingCount[d.playlist_id] || 1) * 4;
+                const basis = settings.nodeSizeBasis || 'outgoing';
+
+                let connectionCount: number;
+                if (basis === 'incoming') {
+                    connectionCount = incomingCount[d.playlist_id] || 1;
+                } else {
+                    // outgoing (default)
+                    connectionCount = outgoingCount[d.playlist_id] || 1;
+                }
+
+                return baseSize + Math.sqrt(connectionCount) * 4;
             }
 
             function zoomed(event: d3.D3ZoomEvent<SVGSVGElement, unknown>): void {
@@ -547,10 +568,7 @@ export function createGraph(config: GraphConfig): void {
                     // Update node sizes
                     node.transition()
                         .duration(300)
-                        .attr("r", (d: NodeData) => {
-                            const baseSize = value;
-                            return baseSize + Math.sqrt(outgoingCount[d.playlist_id] || 1) * 4;
-                        });
+                        .attr("r", nodeSize);
                     
                     // Update collision force radius
                     collisionForce.radius((d: NodeData) => {
@@ -567,13 +585,35 @@ export function createGraph(config: GraphConfig): void {
                     const value = +this.value;
                     document.getElementById("line-width-value")!.textContent = value.toFixed(1);
                     saveForceSettings({ lineWidth: value });
-                    
+
                     // Update line widths
                     link.transition()
                         .duration(300)
                         .attr("stroke-width", value);
                 });
             }
+
+            // Add radio button event listeners for node size basis
+            const radioButtons = document.getElementsByName('node-size-basis') as NodeListOf<HTMLInputElement>;
+            radioButtons.forEach((radio) => {
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        const basis = this.value as 'outgoing' | 'incoming';
+                        settings.nodeSizeBasis = basis;
+                        saveForceSettings({ nodeSizeBasis: basis });
+
+                        // Update all node sizes
+                        node.transition()
+                            .duration(300)
+                            .attr("r", (d: NodeData) => nodeSize(d));
+
+                        // Update collision force radius
+                        collisionForce.radius((d: NodeData) => nodeSize(d) + 3);
+
+                        simulation.alpha(0.3).restart();
+                    }
+                });
+            });
         })
         .catch((error) => {
             console.error("Error loading graph data:", error);

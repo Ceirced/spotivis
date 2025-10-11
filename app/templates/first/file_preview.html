@@ -190,6 +190,10 @@
 
         <!-- Graph Container -->
         {% if completed_job %}
+            <div class="mb-4 flex items-center justify-end">
+                {% include 'partials/node_size_selector.html' %}
+            </div>
+
             <div class="relative flex flex-1 flex-col overflow-hidden">
                 <div
                     id="graph-container"
