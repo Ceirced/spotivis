@@ -539,6 +539,9 @@ export function createGraph(config: GraphConfig): void {
                 nodeSizeSlider.addEventListener("input", function() {
                     const value = +this.value;
                     document.getElementById("node-size-value")!.textContent = value.toFixed(1);
+
+                    // Update the settings object in scope
+                    settings.nodeSize = value;
                     saveForceSettings({ nodeSize: value });
                     
                     // Update node sizes
