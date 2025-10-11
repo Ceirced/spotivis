@@ -367,26 +367,15 @@ export function createGraph(config: GraphConfig): void {
                 .attr("fill",(d: NodeData) => d.color )
                 .attr("stroke", "#fff")
                 .attr("stroke-width", 1.5)
-                .on("mouseover", function (event: MouseEvent, d: NodeData) {
-                    selectNode(event, d, this);
-                })
-                .on("mouseout", function (event: MouseEvent, d: NodeData) {
-                    deselectNode(event, d, this);
-                })
                 .call(
                     drag(simulation)
-                        .on("start.highlight", function (event, d) {
-                            // Use namespaced event to avoid conflicts
-                            if (event.sourceEvent.type === 'touchstart') {
-                                selectNode(event.sourceEvent, d, this);
-                            }
-                        })
-                        .on("end.highlight", function (event, d) {
-                            if (event.sourceEvent.type === 'touchend') {
-                                deselectNode(event.sourceEvent, d, this);
-                            }
-                        })
-                );
+                )
+                .on("pointerover", function (event: MouseEvent, d: NodeData) {
+                    selectNode(event, d, this);
+                })
+                .on("pointerout", function (event: MouseEvent, d: NodeData) {
+                    deselectNode(event, d, this);
+                })
 
 
             // Node event handlers
@@ -450,18 +439,6 @@ export function createGraph(config: GraphConfig): void {
                 d3.select(nodeElement).attr("opacity", 1);
             }
 
-
-            // Reset on background click
-            svg.on("click", function (event: MouseEvent) {
-                const target = event.target as Element;
-                if (target.tagName !== "circle") {
-                    d3.selectAll("circle").attr("opacity", 1);
-                    d3.selectAll("line").attr("opacity", (d) =>
-                        linkOpacity(d as ProcessedEdgeData)
-                    );
-                    d3.select("#graph-info-panel").style("display", "none");
-                }
-            });
 
             function drag(simulation: d3.Simulation<NodeData, undefined>) {
                 function dragstarted(event: d3.D3DragEvent<SVGCircleElement, NodeData, NodeData>, d: NodeData): void {
