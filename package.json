@@ -12,7 +12,9 @@
                 "build:css": "npx @tailwindcss/cli -i ./app/static/css/input.css -o ./app/static/css/build/style.min.css --minify",
                 "build:ts": "npm run type-check && vite build --mode production",
                 "build": "npm run build:css && npm run build:ts",
-                "clean": "rm -rf app/static/js/build/ app/static/css/build/*"
+                "clean": "rm -rf app/static/js/build/ app/static/css/build/*",
+                "format:ts": "prettier --write app/typescript/**/*.ts",
+                "format:check:ts": "prettier --check app/typescript/**/*.ts"
         },
         "author": "",
         "license": "ISC",
