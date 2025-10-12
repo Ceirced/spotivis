@@ -29,6 +29,7 @@ interface ForceSettings {
     zoomLevel?: number;
     nodeSize?: number;
     lineWidth?: number;
+    nodeSizeBasis?: 'outgoing' | 'incoming' | 'followers';
 }
 
 interface GraphConfig {
@@ -54,7 +55,8 @@ function loadForceSettings(): ForceSettings {
         linkDistance: 80,
         zoomLevel: 1,
         nodeSize: 5,
-        lineWidth: 1
+        lineWidth: 1,
+        nodeSizeBasis: 'outgoing'
     };
 }
 
@@ -73,7 +75,7 @@ function initializeSliders(settings: ForceSettings): void {
     const linkDistanceSlider = document.getElementById("link-distance") as HTMLInputElement;
     const nodeSizeSlider = document.getElementById("node-size") as HTMLInputElement;
     const lineWidthSlider = document.getElementById("line-width") as HTMLInputElement;
-    
+
     if (centerSlider) {
         centerSlider.value = settings.centerForce.toString();
         document.getElementById("center-force-value")!.textContent = settings.centerForce.toFixed(2);
@@ -102,6 +104,15 @@ function initializeSliders(settings: ForceSettings): void {
         lineWidthSlider.value = (settings.lineWidth || 1).toString();
         document.getElementById("line-width-value")!.textContent = (settings.lineWidth || 1).toFixed(1);
     }
+
+    // Set radio button values
+    const nodeSizeBasis = settings.nodeSizeBasis || 'outgoing';
+    const radioButtons = document.getElementsByName('node-size-basis') as NodeListOf<HTMLInputElement>;
+    radioButtons.forEach((radio) => {
+        if (radio.value === nodeSizeBasis) {
+            radio.checked = true;
+        }
+    });
 }
 
 export function createGraph(config: GraphConfig): void {
@@ -158,7 +169,14 @@ export function createGraph(config: GraphConfig): void {
                 if (d.color) {
                     nodeColor = d.color;
                 }
-                
+
+                // Check if follower data exists - color grey if missing, otherwise keep default/mapped color
+                const hasFollowerData = d.playlist_followers && d.playlist_followers !== '' && +d.playlist_followers > 0;
+                if (!hasFollowerData && !config.colorField) {
+                    // Only override to grey if no color field mapping is active (like in combined graphs)
+                    nodeColor = '#9ca3af'; // grey color
+                }
+
                 return {
                     playlist_id: d.playlist_id || '',
                     display_name: d.display_name,
@@ -170,6 +188,8 @@ export function createGraph(config: GraphConfig): void {
                     time_period: d.time_period
                 };
             });
+
+            let maxFollowers = Math.max(...nodes.map(n => n.playlist_followers || 0), 1);
 
             // Process edges
             links = rawEdges.map((d) => ({
@@ -188,6 +208,8 @@ export function createGraph(config: GraphConfig): void {
                 incomingCount[targetId] = (incomingCount[targetId] || 0) + 1;
                 outgoingCount[sourceId] = (outgoingCount[sourceId] || 0) + 1;
             });
+            let maxOutgoing = Math.max(...nodes.map(n => outgoingCount[n.playlist_id] || 0), 1);
+            let maxIncoming = Math.max(...nodes.map(n => incomingCount[n.playlist_id] || 0), 1);
 
             // Remove duplicate links
             links = links.filter(
@@ -217,7 +239,21 @@ export function createGraph(config: GraphConfig): void {
 
             function nodeSize(d: NodeData): number {
                 const baseSize = settings.nodeSize || 5;
-                return baseSize + Math.sqrt(outgoingCount[d.playlist_id] || 1) * 4;
+                const basis = settings.nodeSizeBasis || 'outgoing';
+
+                let scalingValue: number;
+                if (basis === 'incoming') {
+                    scalingValue = (incomingCount[d.playlist_id] || 0) / maxIncoming;
+
+                } else if (basis === 'followers') {
+                    // Use follower count, with a minimum of 1 to avoid very small nodes
+                    scalingValue = Math.sqrt((d.playlist_followers || 0) / maxFollowers);
+                } else {
+                    // outgoing (default)
+                    scalingValue = ((outgoingCount[d.playlist_id] || 0) / maxOutgoing);
+                }
+
+                return (5 + scalingValue * 30) * Math.sqrt(baseSize);
             }
 
             function zoomed(event: d3.D3ZoomEvent<SVGSVGElement, unknown>): void {
@@ -545,18 +581,10 @@ export function createGraph(config: GraphConfig): void {
                     saveForceSettings({ nodeSize: value });
                     
                     // Update node sizes
-                    node.transition()
-                        .duration(300)
-                        .attr("r", (d: NodeData) => {
-                            const baseSize = value;
-                            return baseSize + Math.sqrt(outgoingCount[d.playlist_id] || 1) * 4;
-                        });
+                    node.attr("r", nodeSize);
                     
                     // Update collision force radius
-                    collisionForce.radius((d: NodeData) => {
-                        const baseSize = value;
-                        return baseSize + Math.sqrt(outgoingCount[d.playlist_id] || 1) * 4 + 3;
-                    });
+                        collisionForce.radius((d: NodeData) => nodeSize(d) + 3);
                     
                     simulation.alpha(0.3).restart();
                 });
@@ -567,13 +595,35 @@ export function createGraph(config: GraphConfig): void {
                     const value = +this.value;
                     document.getElementById("line-width-value")!.textContent = value.toFixed(1);
                     saveForceSettings({ lineWidth: value });
-                    
+
                     // Update line widths
                     link.transition()
                         .duration(300)
                         .attr("stroke-width", value);
                 });
             }
+
+            // Add radio button event listeners for node size basis
+            const radioButtons = document.getElementsByName('node-size-basis') as NodeListOf<HTMLInputElement>;
+            radioButtons.forEach((radio) => {
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        const basis = this.value as 'outgoing' | 'incoming' | 'followers';
+                        settings.nodeSizeBasis = basis;
+                        saveForceSettings({ nodeSizeBasis: basis });
+
+                        // Update all node sizes
+                        node.transition()
+                            .duration(300)
+                            .attr("r", (d: NodeData) => nodeSize(d));
+
+                        // Update collision force radius
+                        collisionForce.radius((d: NodeData) => nodeSize(d) + 3);
+
+                        simulation.alpha(0.3).restart();
+                    }
+                });
+            });
         })
         .catch((error) => {
             console.error("Error loading graph data:", error);

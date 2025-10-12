@@ -191,14 +191,18 @@
         <!-- Graph Container -->
         {% if completed_job %}
             <div class="relative flex flex-1 flex-col overflow-hidden">
-                <div
-                    id="graph-container"
-                    class="bg-base-100 relative m-[1px] flex-1 overflow-hidden rounded-lg ring-1 inset-shadow-sm/15 ring-black/5">
-                    <div class="skeleton h-full w-full"></div>
+                <div class="mb-2 flex justify-end">
+                    {% include 'partials/node_size_selector.html' %}
                 </div>
-
-                {% include 'partials/graph_tooltip.html' %}
-                {% include 'partials/graph_controls.html' %}
+                <div class="relative">
+                    <div
+                        id="graph-container"
+                        class="bg-base-100 relative m-[1px] flex-1 overflow-hidden rounded-lg ring-1 inset-shadow-sm/15 ring-black/5">
+                        <div class="skeleton h-full w-full"></div>
+                    </div>
+                    {% include 'partials/graph_tooltip.html' %}
+                    {% include 'partials/graph_controls.html' %}
+                </div>
             </div>
             <script type="module">
                 import { createGraph } from "{{ url_for('static', filename='js/build/graph-preview.js') }}";

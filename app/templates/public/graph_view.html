@@ -99,22 +99,28 @@
                 </div>
             </div>
 
-            {% if graph_type == 'combined' %}
-                <dl class="mb-1 flex items-center justify-end-safe gap-4 text-sm">
-                    <div class="flex items-center gap-1">
-                        <dt class="h-3 w-3 rounded-full bg-blue-500"></dt>
-                        <dd>Old Dataset</dd>
-                    </div>
-                    <div class="flex items-center gap-1">
-                        <dt class="h-3 w-3 rounded-full bg-green-500"></dt>
-                        <dd>New Dataset</dd>
-                    </div>
-                    <div class="flex items-center gap-1">
-                        <dt class="h-3 w-3 rounded-full bg-purple-500"></dt>
-                        <dd>Both Periods</dd>
-                    </div>
-                </dl>
-            {% endif %}
+            <div class="mb-2 flex items-center justify-between">
+                {% if graph_type == 'combined' %}
+                    <dl class="flex items-center gap-4 text-sm">
+                        <div class="flex items-center gap-1">
+                            <dt class="h-3 w-3 rounded-full bg-blue-500"></dt>
+                            <dd>Old Dataset</dd>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <dt class="h-3 w-3 rounded-full bg-green-500"></dt>
+                            <dd>New Dataset</dd>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <dt class="h-3 w-3 rounded-full bg-purple-500"></dt>
+                            <dd>Both Periods</dd>
+                        </div>
+                    </dl>
+                {% else %}
+                    <div></div>
+                {% endif %}
+
+                {% include 'partials/node_size_selector.html' %}
+            </div>
 
             <div class="relative flex flex-1 flex-col overflow-hidden">
                 <div

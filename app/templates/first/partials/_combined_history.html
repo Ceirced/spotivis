@@ -22,12 +22,12 @@
                         <td>
                             <div class="text-xs">
                                 {{ job.first_job.uploaded_file.name }}
-                                {% if job.first_start_date and job.first_end_date %}
+                                {% if job.first_job.uploaded_file.data_start_date and job.first_job.uploaded_file.data_end_date %}
                                     <br />
                                     <span class="text-base-content/60">
-                                        {{ job.first_start_date.strftime('%b %Y') }}
+                                        {{ job.first_job.uploaded_file.data_start_date.strftime('%b %Y') }}
                                         -
-                                        {{ job.first_end_date.strftime('%b %Y') }}
+                                        {{ job.first_job.uploaded_file.data_end_date.strftime('%b %Y') }}
                                     </span>
                                 {% endif %}
                             </div>
@@ -35,12 +35,12 @@
                         <td>
                             <div class="text-xs">
                                 {{ job.second_job.uploaded_file.name }}
-                                {% if job.second_start_date and job.second_end_date %}
+                                {% if job.second_job.uploaded_file.data_start_date and job.second_job.uploaded_file.data_end_date %}
                                     <br />
                                     <span class="text-base-content/60">
-                                        {{ job.second_start_date.strftime('%b %Y') }}
+                                        {{ job.second_job.uploaded_file.data_start_date.strftime('%b %Y') }}
                                         -
-                                        {{ job.second_end_date.strftime('%b %Y') }}
+                                        {{ job.second_job.uploaded_file.data_end_date.strftime('%b %Y') }}
                                     </span>
                                 {% endif %}
                             </div>
