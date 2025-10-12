@@ -29,7 +29,7 @@ interface ForceSettings {
     zoomLevel?: number;
     nodeSize?: number;
     lineWidth?: number;
-    nodeSizeBasis?: 'outgoing' | 'incoming';
+    nodeSizeBasis?: 'outgoing' | 'incoming' | 'followers';
 }
 
 interface GraphConfig {
@@ -169,7 +169,14 @@ export function createGraph(config: GraphConfig): void {
                 if (d.color) {
                     nodeColor = d.color;
                 }
-                
+
+                // Check if follower data exists - color grey if missing, otherwise keep default/mapped color
+                const hasFollowerData = d.playlist_followers && d.playlist_followers !== '' && +d.playlist_followers > 0;
+                if (!hasFollowerData && !config.colorField) {
+                    // Only override to grey if no color field mapping is active (like in combined graphs)
+                    nodeColor = '#9ca3af'; // grey color
+                }
+
                 return {
                     playlist_id: d.playlist_id || '',
                     display_name: d.display_name,
@@ -181,6 +188,8 @@ export function createGraph(config: GraphConfig): void {
                     time_period: d.time_period
                 };
             });
+
+            let maxFollowers = Math.max(...nodes.map(n => n.playlist_followers || 0), 1);
 
             // Process edges
             links = rawEdges.map((d) => ({
@@ -199,6 +208,8 @@ export function createGraph(config: GraphConfig): void {
                 incomingCount[targetId] = (incomingCount[targetId] || 0) + 1;
                 outgoingCount[sourceId] = (outgoingCount[sourceId] || 0) + 1;
             });
+            let maxOutgoing = Math.max(...nodes.map(n => outgoingCount[n.playlist_id] || 0), 1);
+            let maxIncoming = Math.max(...nodes.map(n => incomingCount[n.playlist_id] || 0), 1);
 
             // Remove duplicate links
             links = links.filter(
@@ -230,15 +241,19 @@ export function createGraph(config: GraphConfig): void {
                 const baseSize = settings.nodeSize || 5;
                 const basis = settings.nodeSizeBasis || 'outgoing';
 
-                let connectionCount: number;
+                let scalingValue: number;
                 if (basis === 'incoming') {
-                    connectionCount = incomingCount[d.playlist_id] || 1;
+                    scalingValue = (incomingCount[d.playlist_id] || 0) / maxIncoming;
+
+                } else if (basis === 'followers') {
+                    // Use follower count, with a minimum of 1 to avoid very small nodes
+                    scalingValue = Math.sqrt((d.playlist_followers || 0) / maxFollowers);
                 } else {
                     // outgoing (default)
-                    connectionCount = outgoingCount[d.playlist_id] || 1;
+                    scalingValue = ((outgoingCount[d.playlist_id] || 0) / maxOutgoing);
                 }
 
-                return baseSize + Math.sqrt(connectionCount) * 4;
+                return (5 + scalingValue * 30) * Math.sqrt(baseSize);
             }
 
             function zoomed(event: d3.D3ZoomEvent<SVGSVGElement, unknown>): void {
@@ -566,15 +581,10 @@ export function createGraph(config: GraphConfig): void {
                     saveForceSettings({ nodeSize: value });
                     
                     // Update node sizes
-                    node.transition()
-                        .duration(300)
-                        .attr("r", nodeSize);
+                    node.attr("r", nodeSize);
                     
                     // Update collision force radius
-                    collisionForce.radius((d: NodeData) => {
-                        const baseSize = value;
-                        return baseSize + Math.sqrt(outgoingCount[d.playlist_id] || 1) * 4 + 3;
-                    });
+                        collisionForce.radius((d: NodeData) => nodeSize(d) + 3);
                     
                     simulation.alpha(0.3).restart();
                 });
@@ -598,7 +608,7 @@ export function createGraph(config: GraphConfig): void {
             radioButtons.forEach((radio) => {
                 radio.addEventListener('change', function() {
                     if (this.checked) {
-                        const basis = this.value as 'outgoing' | 'incoming';
+                        const basis = this.value as 'outgoing' | 'incoming' | 'followers';
                         settings.nodeSizeBasis = basis;
                         saveForceSettings({ nodeSizeBasis: basis });
 
