@@ -76,17 +76,14 @@ def build_playlist_network(
 ) -> nx.DiGraph:
     """Build a directed graph of playlist relationships based on song transfers."""
     graph: nx.DiGraph = nx.DiGraph()
-    songs_playlists_next_week = None
     total_weeks = len(time_period)
 
+    songs_playlists_next_week = songs_playlists_of_week(df, time_period[0])
     for i, week in enumerate(time_period[:]):
-        if songs_playlists_next_week is not None:
-            songs_playlists_this_week = songs_playlists_next_week
-        else:
-            songs_playlists_this_week = songs_playlists_of_week(df, week)
-
-        next_week = week + timedelta(weeks=1)
-        songs_playlists_next_week = songs_playlists_of_week(df, next_week)
+        songs_playlists_this_week = songs_playlists_next_week
+        songs_playlists_next_week = songs_playlists_of_week(
+            df, week + timedelta(weeks=1)
+        )
 
         songs_playlists_in_both_weeks = pd.merge(
             songs_playlists_this_week,
