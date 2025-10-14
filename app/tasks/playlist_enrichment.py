@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -121,56 +122,86 @@ def enrich_playlist_nodes(self, preprocessing_job_uuid: str):
         enriched_data = []
         found_count = 0
         not_found_count = 0
+        processed_count = 0
 
-        for idx, playlist_id in enumerate(playlist_ids):
+        def fetch_playlist_data(playlist_id: str) -> dict:
+            """Fetch playlist data from Spotify API (runs in thread)."""
             try:
-                # Fetch playlist data from Spotify API
                 playlist = sp.playlist(
                     playlist_id, fields="name,description,followers,owner"
                 )
-
-                enriched_data.append(
-                    {
-                        "playlist_id": playlist_id,
-                        "display_name": playlist.get("name", ""),
-                        "playlist_description": playlist.get("description", ""),
-                        "playlist_followers": playlist.get("followers", {}).get(
-                            "total", 0
-                        ),
-                        "owner_display_name": playlist.get("owner", {}).get(
-                            "display_name", ""
-                        ),
-                    }
-                )
-                found_count += 1
-
+                return {
+                    "playlist_id": playlist_id,
+                    "display_name": playlist.get("name", ""),
+                    "playlist_description": playlist.get("description", ""),
+                    "playlist_followers": playlist.get("followers", {}).get(
+                        "total", 0
+                    ),
+                    "owner_display_name": playlist.get("owner", {}).get(
+                        "display_name", ""
+                    ),
+                    "success": True,
+                }
             except SpotifyException as e:
-                # Playlist not found or other API error
                 logger.warning(f"Failed to fetch playlist {playlist_id}: {e}")
+                return {
+                    "playlist_id": playlist_id,
+                    "display_name": None,
+                    "playlist_description": None,
+                    "playlist_followers": None,
+                    "owner_display_name": None,
+                    "success": False,
+                }
+
+        # Process playlists in parallel using ThreadPoolExecutor
+        # Use 5 workers to respect Spotify API rate limits
+        max_workers = 5
+        logger.info(f"Processing playlists with {max_workers} parallel workers")
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all tasks
+            future_to_playlist = {
+                executor.submit(fetch_playlist_data, pid): pid
+                for pid in playlist_ids
+            }
+
+            # Process completed tasks as they finish
+            # Note: as_completed() yields results serially in the main thread,
+            # so no lock is needed for updating counters
+            for future in as_completed(future_to_playlist):
+                result = future.result()
+
+                # Update counters and data (safe - runs in main thread)
                 enriched_data.append(
                     {
-                        "playlist_id": playlist_id,
-                        "display_name": None,
-                        "playlist_description": None,
-                        "playlist_followers": None,
-                        "owner_display_name": None,
+                        "playlist_id": result["playlist_id"],
+                        "display_name": result["display_name"],
+                        "playlist_description": result["playlist_description"],
+                        "playlist_followers": result["playlist_followers"],
+                        "owner_display_name": result["owner_display_name"],
                     }
                 )
-                not_found_count += 1
 
-            # Update progress
-            progress = int((idx + 1) / total_playlists * 100)
-            self.update_state(
-                state="PROGRESS",
-                meta={
-                    "current": idx + 1,
-                    "total": total_playlists,
-                    "percent": progress,
-                    "status": f"Processing playlist {idx + 1}/{total_playlists}",
-                    "found": found_count,
-                    "not_found": not_found_count,
-                },
-            )
+                if result["success"]:
+                    found_count += 1
+                else:
+                    not_found_count += 1
+
+                processed_count += 1
+
+                # Update progress
+                progress = int(processed_count / total_playlists * 100)
+                self.update_state(
+                    state="PROGRESS",
+                    meta={
+                        "current": processed_count,
+                        "total": total_playlists,
+                        "percent": progress,
+                        "status": f"Processing playlist {processed_count}/{total_playlists}",
+                        "found": found_count,
+                        "not_found": not_found_count,
+                    },
+                )
 
         # Save enriched data to CSV - overwrite the original nodes file
         enriched_df = pd.DataFrame(enriched_data)
