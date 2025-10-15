@@ -1,10 +1,10 @@
 <nav
     class="navbar bg-base-100 text-base-content/50 z-20 mx-auto hidden h-[calc(env(safe-area-inset-top)+70px)] w-full max-w-7xl pt-[env(safe-area-inset-top)] lg:flex"
     hx-boost="true"
+    hx-target="#content"
     hx-swap="show:window:top transition:true">
     <div class="flex-1">
         <a
-            hx-target="#content"
             class="btn btn-ghost text-lg"
             href="{{ url_for('first.index') }}"
             onclick="document.getElementById('first-top-link').checked = true;"
@@ -21,7 +21,6 @@
                     name="nav" />
                 <a
                     href="{{ url_for('first.combine_files') }}"
-                    hx-target="#content"
                     class="peer-checked:text-primary flex items-center peer-checked:opacity-100"
                     onclick="document.getElementById('second-top-link').checked = true;">
                     Combine Data
@@ -35,7 +34,6 @@
                     name="nav" />
                 <a
                     href="{{ url_for('first.index') }}"
-                    hx-target="#content"
                     class="peer-checked:text-primary flex items-center peer-checked:opacity-100"
                     onclick="document.getElementById('first-top-link').checked = true;">
                     Files
@@ -49,7 +47,6 @@
                     name="nav" />
                 <a
                     href="{{ url_for('users.index') }}"
-                    hx-target="#content"
                     class="peer-checked:text-primary flex items-center peer-checked:opacity-100"
                     onclick="document.getElementById('users-top-link').checked = true;">
                     Users
@@ -63,7 +60,6 @@
                     name="nav" />
                 <a
                     href="{{ url_for('users.settings') }}"
-                    hx-target="#content"
                     class="peer-checked:text-primary flex items-center peer-checked:opacity-100"
                     onclick="document.getElementById('settings-top-link').checked = true;">
                     <svg
