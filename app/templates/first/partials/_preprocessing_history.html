@@ -51,11 +51,11 @@
                                     </span>
                                 </td>
                                 <td>
-                                    {{ job.started_at.strftime('%Y-%m-%d %H:%M') }}
+                                    {{ moment(job.started_at).format('YYYY-MM-DD HH:mm') }}
                                 </td>
                                 <td>
                                     {% if job.completed_at %}
-                                        {{ job.completed_at.strftime('%Y-%m-%d %H:%M') }}
+                                        {{ moment(job.completed_at).format('YYYY-MM-DD HH:mm') }}
                                     {% else %}
                                         -
                                     {% endif %}

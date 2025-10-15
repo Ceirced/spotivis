@@ -112,17 +112,19 @@
                         </div>
                         <div>
                             <p class="text-xs">Upload Time</p>
-                            <p class="font-medium text-white">
-                                {{ file.created_at }} (UTC)
-                            </p>
+                            <time
+                                class="font-medium text-white"
+                                datetime="{{ file.created_at }}">
+                                {{- moment(file.created_at).format('YYYY-MM-DD HH:mm:ss') -}}
+                            </time>
                         </div>
                         {% if file.data_start_date and file.data_end_date %}
                             <div>
                                 <p class="text-xs">Data Period</p>
                                 <p class="font-medium text-white">
-                                    {{ file.data_start_date.strftime('%Y-%m-%d') }}
+                                    {{ moment(file.data_start_date).format('YYYY-MM-DD') }}
                                     to
-                                    {{ file.data_end_date.strftime('%Y-%m-%d') }}
+                                    {{ moment(file.data_end_date).format('YYYY-MM-DD') }}
                                 </p>
                                 <p class="text-secondary-content/70 text-xs">
                                     ({{ (file.data_end_date - file.data_start_date).days }}

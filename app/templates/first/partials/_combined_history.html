@@ -16,7 +16,7 @@
                     <tr>
                         <td>
                             <div class="text-xs">
-                                {{ job.started_at.strftime('%Y-%m-%d %H:%M') if job.started_at else 'Unknown' }}
+                                {{ moment(job.started_at).format('YYYY-MM-DD HH:mm') if job.started_at else 'Unknown' }}
                             </div>
                         </td>
                         <td>
