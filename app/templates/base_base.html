@@ -148,6 +148,13 @@
 
         {{ moment.include_moment() }}
 
+        <script>
+            document.addEventListener(
+                "htmx:afterSwap",
+                flask_moment_render_all
+            );
+        </script>
+
         <!-- Global theme initialization - runs immediately to prevent flash -->
         <script>
             (function () {
