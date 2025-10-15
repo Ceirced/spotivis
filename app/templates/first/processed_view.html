@@ -6,7 +6,7 @@
                     href="{{ url_for('first.index') }}"
                     hx-boost="true"
                     hx-target="#content"
-                    hx-swap="show:window:top transition:true">
+                    hx-swap="show:window:top">
                     Files
                 </a>
             </li>
@@ -15,7 +15,7 @@
                     href="{{ url_for('first.preview_file', uuid=uploaded_file.uuid) }}"
                     hx-boost="true"
                     hx-target="#content"
-                    hx-swap="show:window:top transition:true">
+                    hx-swap="show:window:top">
                     {{ uploaded_file.name }}
                 </a>
             </li>
@@ -291,7 +291,7 @@
                 <a
                     hx-boost="true"
                     hx-target="#content"
-                    hx-swap="show:window:top transition:true"
+                    hx-swap="show:window:top"
                     href="
                         {{ url_for('first.preview_file', uuid=uploaded_file.uuid) }}"
                     class="group hover:text-primary flex items-center gap-1 transition-colors">
