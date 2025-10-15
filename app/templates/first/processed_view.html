@@ -6,7 +6,7 @@
                     href="{{ url_for('first.index') }}"
                     hx-boost="true"
                     hx-target="#content"
-                    hx-swap="show:window:top">
+                    hx-swap="show:window:top transition:true">
                     Files
                 </a>
             </li>
@@ -15,7 +15,7 @@
                     href="{{ url_for('first.preview_file', uuid=uploaded_file.uuid) }}"
                     hx-boost="true"
                     hx-target="#content"
-                    hx-swap="show:window:top">
+                    hx-swap="show:window:top transition:true">
                     {{ uploaded_file.name }}
                 </a>
             </li>
@@ -44,7 +44,6 @@
                             class="btn btn-primary btn-sm"
                             hx-post="{{ url_for('first.start_playlist_enrichment', job_id=job_id) }}"
                             hx-target="#enrichment-container"
-                            hx-swap="innerHTML"
                             {% if enrichment_job.status == 'processing' or enriched %}disabled{% endif %}>
                             Enrich Playlists with Spotify Data
                         </button>
@@ -292,7 +291,7 @@
                 <a
                     hx-boost="true"
                     hx-target="#content"
-                    hx-swap="show:window:top"
+                    hx-swap="show:window:top transition:true"
                     href="
                         {{ url_for('first.preview_file', uuid=uploaded_file.uuid) }}"
                     class="group hover:text-primary flex items-center gap-1 transition-colors">

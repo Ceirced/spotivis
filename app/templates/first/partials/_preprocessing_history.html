@@ -7,7 +7,7 @@
                         href="{{ url_for('first.index') }}"
                         hx-boost="true"
                         hx-target="#content"
-                        hx-swap="show:window:top">
+                        hx-swap="show:window:top transition:true">
                         Files
                     </a>
                 </li>
@@ -16,7 +16,7 @@
                         href="{{ url_for('first.preview_file', uuid=jobs[0].uploaded_file.uuid) }}"
                         hx-boost="true"
                         hx-target="#content"
-                        hx-swap="show:window:top">
+                        hx-swap="show:window:top transition:true">
                         {{ jobs[0].uploaded_file.name }}
                     </a>
                 </li>

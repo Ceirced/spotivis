@@ -8,7 +8,7 @@
                             href="{{ url_for('first.index') }}"
                             hx-boost="true"
                             hx-target="#content"
-                            hx-swap="show:window:top">
+                            hx-swap="show:window:top transition:true">
                             Files
                         </a>
                     </li>
@@ -152,7 +152,6 @@
                             <button
                                 hx-post="{{ url_for('first.start_preprocessing', uuid=file.uuid) }}"
                                 hx-target="#preprocessing-container"
-                                hx-swap="innerHTML"
                                 class="btn btn-primary">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -228,7 +227,7 @@
                             href="{{ url_for('first.view_processed_file', file_uuid=file.uuid, file_type='edges') }}"
                             hx-boost="true"
                             hx-target="#content"
-                            hx-swap="show:window:top"
+                            hx-swap="show:window:top transition:true"
                             class="btn btn-outline btn-neutral flex-1">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -249,7 +248,7 @@
                             href="{{ url_for('first.view_processed_file', file_uuid=file.uuid, file_type='nodes') }}"
                             hx-boost="true"
                             hx-target="#content"
-                            hx-swap="show:window:top"
+                            hx-swap="show:window:top transition:true"
                             class="btn btn-outline btn-neutral flex-1">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -367,7 +366,7 @@
             <a
                 hx-boost="true"
                 hx-target="#content"
-                hx-swap="show:window:top"
+                hx-swap="show:window:top transition:true"
                 href="{{ url_for('first.preprocessing_history', uuid=file.uuid) }}"
                 class="link link-info">
                 Preprocessing History
@@ -387,7 +386,7 @@
                 <a
                     hx-boost="true"
                     hx-target="#content"
-                    hx-swap="show:window:top"
+                    hx-swap="show:window:top transition:true"
                     href="{{ url_for('first.index') }}"
                     class="group hover:text-primary flex items-center gap-1 transition-colors">
                     <svg

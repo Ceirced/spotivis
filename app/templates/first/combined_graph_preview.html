@@ -6,7 +6,7 @@
                     href="{{ url_for('first.combine_files') }}"
                     hx-boost="true"
                     hx-target="#content"
-                    hx-swap="show:window:top">
+                    hx-swap="show:window:top transition:true">
                     Combine Datasets
                 </a>
             </li>
@@ -146,7 +146,7 @@
                 <a
                     hx-boost="true"
                     hx-target="#content"
-                    hx-swap="show:window:top"
+                    hx-swap="show:window:top transition:true"
                     href="{{ url_for('first.combine_files') }}"
                     class="group hover:text-primary flex items-center gap-1 transition-colors">
                     <svg
