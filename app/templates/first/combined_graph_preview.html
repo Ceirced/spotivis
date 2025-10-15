@@ -33,10 +33,11 @@
                     <p class="text-sm font-medium text-white">
                         {{ job.first_job.uploaded_file.name }}
                     </p>
-                    {% if job.first_start_date and job.first_end_date %}
+                    {% if job.first_job.uploaded_file.data_start_date and job.first_job.uploaded_file.data_end_date %}
                         <p class="text-secondary-content/70 text-xs">
-                            {{ job.first_start_date.strftime('%B %d, %Y') }} to
-                            {{ job.first_end_date.strftime('%B %d, %Y') }}
+                            {{ job.first_job.uploaded_file.data_start_date.strftime('%B %d, %Y') }}
+                            to
+                            {{ job.first_job.uploaded_file.data_end_date.strftime('%B %d, %Y') }}
                         </p>
                     {% endif %}
                 </div>
@@ -45,10 +46,11 @@
                     <p class="text-sm font-medium text-white">
                         {{ job.second_job.uploaded_file.name }}
                     </p>
-                    {% if job.second_start_date and job.second_end_date %}
+                    {% if job.second_job.uploaded_file.data_start_date and job.second_job.uploaded_file.data_end_date %}
                         <p class="text-secondary-content/70 text-xs">
-                            {{ job.second_start_date.strftime('%B %d, %Y') }} to
-                            {{ job.second_end_date.strftime('%B %d, %Y') }}
+                            {{ job.second_job.uploaded_file.data_start_date.strftime('%B %d, %Y') }}
+                            to
+                            {{ job.second_job.uploaded_file.data_end_date.strftime('%B %d, %Y') }}
                         </p>
                     {% endif %}
                 </div>
