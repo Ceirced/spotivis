@@ -61,8 +61,7 @@
 {% else %}
     <div
         hx-get="{{ url_for('first.enrichment_status', task_id=task_id) }}"
-        hx-trigger="every 1s"
-        hx-swap="innerHTML">
+        hx-trigger="every 1s">
         <div class="mb-4">
             <div class="mb-2 flex justify-between text-sm">
                 <span>{{ status }}</span>

@@ -13,7 +13,6 @@
                     id="combine-form"
                     hx-post="{{ url_for('first.start_combine_files') }}"
                     hx-target="#combine-result"
-                    hx-swap="innerHTML"
                     class="mt-4">
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <!-- First File Selection -->
@@ -192,7 +191,7 @@
                 <a
                     hx-boost="true"
                     hx-target="#content"
-                    hx-swap="show:window:top"
+                    hx-swap="show:window:top transition:true"
                     href="{{ url_for('first.index') }}"
                     class="group hover:text-primary flex items-center gap-1 transition-colors">
                     <svg
