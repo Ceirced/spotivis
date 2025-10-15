@@ -8,6 +8,7 @@ from flask import Flask, render_template, request
 from flask_caching import Cache
 from flask_htmx import HTMX
 from flask_migrate import Migrate
+from flask_moment import Moment
 from posthog import Posthog
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -18,6 +19,7 @@ from app.extensions.security import init_app as init_security
 
 # to set the app Settings in the docker compose
 migrate = Migrate()
+moment = Moment()
 htmx = HTMX()
 cache = Cache(config={"CACHE_TYPE": "SimpleCache"})
 
@@ -56,6 +58,7 @@ def create_app():
     cache.init_app(app)
     mail.init_app(app)
     migrate.init_app(app, db)
+    moment.init_app(app)
 
     # Enable foreign key support for SQLite
     if "sqlite" in app.config.get("SQLALCHEMY_DATABASE_URI", ""):
