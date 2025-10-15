@@ -32,6 +32,7 @@ pytest = "^8.4.1"
 flask-caching = "^2.3.1"
 loguru = "^0.7.3"
 celery-types = "^0.23.0"
+flask-moment = "^1.0.6"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "*"
@@ -56,6 +57,7 @@ module = [
     "flask_admin.*",
     "flask_htmx.*",
     "flask_migrate.*",
+    "flask_moment.*",
     "flask_login.*",
 ]
 ignore_missing_imports = true

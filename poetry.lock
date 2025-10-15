@@ -861,6 +861,25 @@ dev = ["flake8", "pytest", "tox"]
 docs = ["sphinx"]
 
 [[package]]
+name = "flask-moment"
+version = "1.0.6"
+description = "Formatting of dates and times in Flask templates using moment.js."
+optional = false
+python-versions = ">=3.6"
+groups = ["main"]
+files = [
+    {file = "Flask_Moment-1.0.6-py3-none-any.whl", hash = "sha256:3ae8baea20a41e99f457b9710ecd1368911dd5133f09a27583eb0dcb3491e31d"},
+    {file = "flask_moment-1.0.6.tar.gz", hash = "sha256:2f8969907cbacde4a88319792e8f920ba5c9dd9d99ced2346cad563795302b88"},
+]
+
+[package.dependencies]
+Flask = "*"
+packaging = ">=14.1"
+
+[package.extras]
+docs = ["sphinx"]
+
+[[package]]
 name = "flask-principal"
 version = "0.4.0"
 description = "Identity management for flask"
@@ -2209,4 +2228,4 @@ email = ["email-validator"]
 [metadata]
 lock-version = "2.1"
 python-versions = "3.13.7"
-content-hash = "6e9b0ede06eb35929a51694cc695c3207f0ff64c7ce8194da5498dbcee0b3d89"
+content-hash = "ab8b9ee61a6e7980c5ba53e6cd2058fdbe656dc1ba16a11ee492119ce72fd116"
